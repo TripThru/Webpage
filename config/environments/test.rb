@@ -36,4 +36,20 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.delivery_method = :sendmail
+  config.action_mailer.default_url_options = {
+      :host => 'tripthru.com'
+  }
+  config.action_mailer.sendmail_settings = {
+      :address =>               'smtp.live.com',
+      :port =>                  587,
+      :enable_starttls_auto =>  true,
+      :domain =>                'tripthru.com',
+      :authentication =>        'plain',
+      :user_name =>             'tripthrusignup@outlook.com',
+      :password =>              'optimize1234'
+  }
 end

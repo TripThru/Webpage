@@ -1,1 +1,109 @@
 <% provide(:title, 'Home') %>
+
+<div class="navbar navbar-fixed-top navbar-bold" data-spy="affix" data-offset-top="1000">
+  <div class="container">
+    <div class="navbar-header">
+      <a href="#" class="navbar-brand logo">TripThru</a>
+      <a class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+    </div>
+    <div class="navbar-collapse collapse pull-right" id="navbar">
+      <ul class="nav navbar-nav">
+        <li><a href="#sec2">Features</a></li>
+        <li><a href="#sec4">Sign up</a></li>
+        <li><%= link_to 'FAQ', static_pages_faq_path %></li>
+        <li><a href="#">Developers</a></li>
+        <li><%= link_to 'About us', static_pages_about_path %></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div id="sec1" class="blurb">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1>Cloud-based gateway for taxi and limousine fleets</h1>
+        <p class="lead">Protect your customer base. Direct new customers to your fleet. Offer on-demand global access.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="featurette" id="sec2">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h1>One-time integration</h1>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 text-center">
+        <div class="featurette-item">
+          <%= image_tag('connected.png', alt: 'Get connected')%>
+          <h4>Get connected</h4>
+          <p>With only one integration, you are able to route calls to all other fleets connected to the TripThru gateway.</p>
+        </div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="featurette-item">
+          <%= image_tag('globe2.png', alt: 'Global')%>
+          <h4>Global access</h4>
+          <p>Connect with fleets in America and internationally, regardless of the dispatch system they run on.</p>
+        </div>
+      </div>
+      <div class="col-md-4 text-center">
+        <div class="featurette-item">
+          <%= image_tag('taxi.png', alt: 'Provider')%>
+          <h4>Licensed providers</h4>
+          <p>Connect your customers to licensed service providers wherever they are from their primary home city app.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="featurette" id="sec4">
+  <div class="container">
+    <div class="row">
+
+      <div class="col-lg-12 text-center v-center">
+
+        <h1>Sign-up for early access</h1>
+        <br/>
+        <br/>
+        <br/>
+
+        <%= form_tag(static_pages_signup_path, method: 'post', class: 'col-lg-12') do %>
+          <div class="input-group input-group-lg col-sm-offset-2 col-sm-8">
+                <%= text_field_tag 'email', nil, class: 'center-block form-control input-lg',
+                                   placeholder: 'Enter your e-mail address' %>
+                <span class="input-group-btn">
+                  <%= button_tag 'Send', class: 'btn btn-lg btn-primary' %>
+                </span>
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3 text-center">
+        <hr>
+        <p>TripThru ©2014</p>
+      </div>
+    </div>
+  </div>
+</footer>
