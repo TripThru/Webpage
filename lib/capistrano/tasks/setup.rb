@@ -5,9 +5,30 @@ namespace :setup do
     on roles(:app) do
       execute "mkdir -p #{shared_path}/config"
       upload! StringIO.new(File.read("config/database.yml")), "#{shared_path}/config/database.yml"
-      upload! StringIO.new(File.read("config/nginx.conf")), "#{shared_path}/config/database.yml"
-      upload! StringIO.new(File.read("config/unicorn.rb")), "#{shared_path}/config/database.yml"
-      upload! StringIO.new(File.read("config/unicorn_init.sh")), "#{shared_path}/config/database.yml"
+    end
+  end
+
+ desc "Upload nginx.conf file."
+  task :upload_nginx do
+    on roles(:app) do
+      execute "mkdir -p #{shared_path}/config"
+      upload! StringIO.new(File.read("config/nginx.conf")), "#{shared_path}/config/nginx.conf"
+    end
+  end
+
+  desc "Upload nginx.rb file."
+  task :upload_unicorn do
+    on roles(:app) do
+      execute "mkdir -p #{shared_path}/config"
+      upload! StringIO.new(File.read("config/unicorn.rb")), "#{shared_path}/config/unicorn.rb"
+    end
+  end
+
+  desc "Upload unicorn_init file."
+  task :upload_unicorn_init do
+    on roles(:app) do
+      execute "mkdir -p #{shared_path}/config"
+      upload! StringIO.new(File.read("config/unicorn_init.sh")), "#{shared_path}/config/unicorn_init.sh"
     end
   end
 
