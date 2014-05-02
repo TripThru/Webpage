@@ -1,0 +1,16 @@
+---
+
+- name: install mysql-server 
+  action: apt name=mysql-server state=installed
+
+- name: service mysql  
+  action: service name=mysql state=started 
+
+- name: install mysql python driver
+  action: apt name=python-mysqldb state=installed
+
+- name: delete anonymous MySQL server user for localhost
+  mysql_user: user="" state="absent"
+
+- name: remove test db
+  mysql_db: db=test state=absent

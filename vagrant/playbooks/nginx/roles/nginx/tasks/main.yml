@@ -1,0 +1,16 @@
+- name: add nginx latest version ppa
+  action: apt_repository repo=ppa:nginx/stable
+
+- name: update apt
+  command: sudo apt-get update
+
+- name: install nginx
+  action: apt name=nginx
+
+- name: Remove default nginx sites-available configuration
+  file: path=/etc/nginx/sites-available/default state=absent
+
+- name: delete default vhost
+  action: file path=/etc/nginx/sites-enabled/default state=absent
+  notify:
+    - restart nginx

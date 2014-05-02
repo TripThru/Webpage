@@ -1,0 +1,20 @@
+# Add deploy user to web group
+- name: Add user deploy to www-data group
+  user: name=deploy groups=www-data append=yes
+
+# Create web directory
+- name: Create web directory
+  file: path=/var/www owner=deploy group=www-data mode=0644 state=directory
+
+# Set permissions for capistrano
+- name: Set permissions for capistrano
+  action: file path=/etc/nginx/sites-enabled/ group=www-data mode=0644
+
+- name: Set permissions for capistrano
+  action: file path=/etc/nginx/sites-available/ group=www-data mode=0644
+  notify:
+    - restart nginx
+
+- name: Set permissions for capistrano
+  action: file path=/etc/init.d group=www-data mode=0644
+

@@ -1,0 +1,41 @@
+---
+# Install Postgresql latest version
+#==============================================
+
+- name: Install PostgreSQL dependencies
+  action: apt pkg={{item}} state=latest
+  with_items:
+    - python-pycurl
+    - python-psycopg2
+
+- name: Add postgres source list
+  template: src=pgdg.list dest=/etc/apt/sources.list.d/pgdg.list 
+
+- name: Download postgres key
+  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
+
+- name: Update APT cache
+  action: apt update_cache=yes
+
+- name: Install db server packages
+  action: apt pkg={{ item }} state=present
+  with_items:
+    - postgresql-9.3
+
+#- name: Add postgres user to admin group
+#  action: user name=postgres groups=admin append=yes
+
+- name: Start postgresql
+  service: name=postgresql state=started 
+
+- name: Create the postgresql deploy user 
+  postgresql_user: name=deploy password=Tr1PServ1Ce@p0$tgreSQL #login_host=127.0.0.1
+  sudo: yes
+  sudo_user: postgres
+
+#- name: Copy postgres hba config
+#  template: src=pg_hba.conf dest=/etc/postgresql/9.3/main/pg_hba.conf
+
+#- name: Copy postgres main config
+#  template: src=postgresql.conf dest=/etc/postgresql/9.3/main/postgresql.conf
+#  notify: Restart postgresql
