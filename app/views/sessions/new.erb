@@ -1,0 +1,26 @@
+<% provide(:title, "Sign in") %>
+
+<div id="login_container">
+  <div class="container">
+    <div class="login">
+        <div class="login_dialog">
+              <div class="modal-header">
+                <h1 class="text-center">Login</h1>
+              </div>
+              <div class="modal-body">
+                <%= form_for(:session, url: sessions_path, class: 'form col-md-12 center-block') do |f| %>
+                  <div class="form-group">
+                    <%= f.text_field :username, class: 'form-control input-lg', placeholder: 'Username' %>
+                  </div>
+                  <div class="form-group">
+                    <%= f.password_field :password, class: 'form-control input-lg', placeholder: 'Password' %>
+                  </div>
+                  <div class="form-group">
+                    <button class="btn btn-primary btn-lg btn-block">Sign In</button>
+                  </div>
+                <% end %>
+              </div>
+        </div>
+    </div>
+  </div>
+</div>
