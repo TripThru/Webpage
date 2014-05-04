@@ -1,0 +1,183 @@
+<% provide(:title, 'Developer') %>
+
+<div id="developer_stats">
+<div id="main_container">
+  <div class="left_container">
+    <div id="triplog_container" style="float: left;" class="draggable">
+      <div id="trip_gauges_container">
+        <div class="box_container_title">
+          Active trips
+        </div>
+        <div id="activeTripsChart" class="trip_gauge"></div>
+      </div>
+      <div id="triplog_selector" style="margin-bottom: 10px;">
+        <select>
+          <option value="All" selected="selected">All</option>
+          <option value="Queued">Queued</option>
+          <option value="Dispatched">Dispatched</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Enroute">Enroute</option>
+          <option value="ArrivedAndWaiting">ArrivedAndWaiting</option>
+          <option value="PickedUp">Picked up</option>
+          <option value="DroppedOff">DroppedOff</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Complete">Complete</option>
+        </select>
+      </div>
+      <div style="display: none; margin-top: 10px;" id="loadingTripsContainer">
+
+        <%= image_tag 'loading.gif', width: 24, height: 24%>
+      </div>
+      <div style="display: none; margin-top: 10px;" id="noTrips">No active trips found</div>
+      <div id="triplog_trips"></div>
+    </div>
+  </div>
+  <div class="right_container">
+    <div class="chart_container draggable">
+      <div class="box_container_title">
+        Trip stats
+      </div>
+      <div id="stats"></div>
+    </div>
+    <div id="counters_main_container">
+      <div style="margin-left: 10px;" class="counters_container draggable">
+        <div class="box_container_title">Requests</div>
+        <div class="box_container_subtitle">Last hour</div>
+        <div class="counter" id="requestsLastHour">
+          <input type="hidden" name="counter-value" value="0" /></div>
+        <div class="box_container_subtitle">Last 24 hours</div>
+        <div class="counter" id="requestsLast24Hrs">
+          <input type="hidden" name="counter-value" value="0" /></div>
+        <div class="box_container_subtitle">All time</div>
+        <div class="counter" id="requestsAllTime">
+          <input type="hidden" name="counter-value" value="0" /></div>
+      </div>
+      <div style="margin-left: 10px;" class="counters_container draggable">
+        <div class="box_container_title">Distance (km)</div>
+        <div class="box_container_subtitle">Last hour</div>
+        <div class="counter" id="distanceLastHour">
+          <input type="hidden" name="counter-value" value="0" /></div>
+        <div class="box_container_subtitle">Last 24 hours</div>
+        <div class="counter" id="distanceLast24Hrs">
+          <input type="hidden" name="counter-value" value="0" /></div>
+        <div class="box_container_subtitle">All time</div>
+        <div class="counter" id="distanceAllTime">
+          <input type="hidden" name="counter-value" value="0" /></div>
+      </div>
+      <div style="margin-left: 10px;" class="counters_container draggable">
+        <div class="box_container_title">Fare $</div>
+        <div class="box_container_subtitle">Last hour</div>
+        <div class="counter" id="fareLastHour">
+          <input type="hidden" name="counter-value" value="0" /></div>
+        <div class="box_container_subtitle">Last 24 hours</div>
+        <div class="counter" id="fareLast24Hrs">
+          <input type="hidden" name="counter-value" value="0" /></div>
+        <div class="box_container_subtitle">All time</div>
+        <div class="counter" id="fareAllTime">
+          <input type="hidden" name="counter-value" value="0" /></div>
+      </div>
+    </div>
+  </div>
+  <div class="middle_container">
+    <div class="map_container draggable" style="margin-left: 10px;">
+      <div class="box_container_title">
+        Tracking
+                    <span style="display: none;" id="updatingTripContainer">
+                        <%= image_tag 'loading.gif', width: 12, height: 12%>
+                    </span>
+      </div>
+      <div id="trip-info">
+        <div>
+          <p>
+            <span style='font-weight: bold;'>TripID: </span>
+            <span id="selectedTripID" ></span>
+          </p>
+        </div>
+        <br />
+        <div>
+          <p>
+            <span style='font-weight: bold;'>Passenger: </span>
+            <span id="selectedTripPassengerName"></span>
+          </p>
+        </div>
+        <div>
+          <p>
+            <span style='font-weight: bold;'>Pickup time: </span>
+            <span id="selectedTripPickupTime" ></span>
+          </p>
+        </div>
+        <br />
+        <div>
+          <p>
+            <span style='font-weight: bold;'>Pickup: </span>
+            <span id="selectedTripPickupLocation" ></span>
+          </p>
+        </div>
+        <br />
+        <div>
+          <p>
+            <span style='font-weight: bold;'>Origin: </span>
+            <span id="selectedTripOriginatingPartner"></span>
+          </p>
+        </div>
+        <div>
+          <p>
+            <span style='font-weight: bold;'>Servicing: </span>
+            <span id="selectedTripServicingPartner"></span>
+          </p>
+        </div>
+        <br />
+        <div>
+          <p>
+            <span style='font-weight: bold;'>Status: </span>
+            <span id="selectedTripStatus">Select a trip to track</span>
+          </p>
+        </div>
+        <div>
+          <p>
+            <span style='font-weight: bold;'>ETA: </span>
+            <span id="selectedTripETA" ></span>
+          </p>
+        </div>
+        <div>
+          <p>
+            <span style='font-weight: bold;'>Fare: </span>$
+            <span id="selectedTripFare" ></span>
+          </p>
+        </div>
+        <br />
+        <div>
+          <p>
+            <span style='font-weight: bold;'>Driver: </span>
+            <span id="selectedTripDriverName" ></span>
+          </p>
+          <p>
+            <span style='font-weight: bold;'>Driver location: </span>
+            <span id="selectedTripDriverLocation" ></span>
+          </p>
+          <p>
+            <span style='font-weight: bold;'>Drop off: </span>
+            <span id="selectedTripDropoffLocation" ></span>
+          </p>
+        </div>
+      </div>
+      <div id="map-canvas" class="tracking-map"></div>
+    </div>
+  </div>
+  <div class="box_container">
+    <div id="triplogs_container">
+      <div class="box_container_title" style="margin-bottom: 10px;">
+        Trip activity log
+      </div>
+      <div style="display: none; margin-top: 10px;" id="updatingTripLog">
+        <%= image_tag 'loading.gif', width: 24, height: 24%>
+      </div>
+      <div style="display: none; margin-top: 10px;" id="noTrips">No log entries found</div>
+      <div id="triplogs_logs">
+      </div>
+    </div>
+  </div>
+  <input type="hidden" id="access_token" value="<%= session[:access_token] %>"/>
+</div>
+</div>

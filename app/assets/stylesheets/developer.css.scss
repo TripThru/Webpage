@@ -1,0 +1,408 @@
+// Place all the styles related to the developer controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+#developer_stats {
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: #f8f8f8;
+    color: #525252;
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  img {
+    border: none;
+  }
+
+  h1 {
+    font-weight: 300;
+    color: #525252;
+    margin: 0 0 20px 0;
+  }
+
+  h2 {
+    font-weight: 100;
+    color: #525252;
+    margin: 0 0 20px 0;
+  }
+
+  /*HEADER STYLE*/
+  .logo {
+    float: left;
+    margin: 12px 55px 11px 11px;
+    font-size: 40px;
+    color: #0099ff;
+    font-family: 'Arimo';
+    letter-spacing: 0;
+    line-height: 1.3;
+    font-weight: bold;
+    font-style: italic;
+  }
+
+  .logo a {
+    /*
+  float: left;
+    */
+  }
+
+  #head_nav {
+    float: left;
+    margin: 31px 0px;
+    padding: 0px;
+    list-style: none;
+  }
+
+  #head_nav li {
+    float: left;
+    margin: 0px;
+    padding: 0px 10px;
+  }
+
+  #head_nav li.last {
+    border-right: none;
+  }
+
+  #head_nav li a {
+    float: left;
+    text-decoration: none;
+    color: #727272;
+  }
+
+  #head_nav li a:hover, #head_nav li a.active {
+    color: #0087bc;
+  }
+
+  #header_out {
+    width: 100%;
+    height: 72px;
+    background: #FFF;
+    font-size: 0.85em;
+    border-bottom: 1px solid #E3E3E3;
+  }
+
+  #header {
+    width: 95%;
+    height: 70px;
+    margin: 0px auto;
+  }
+  /*HEADER STYLE*/
+
+  #main_container {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    display: block;
+  }
+
+  /*CHARTS STYLE*/
+
+  .box_container {
+    width: 98%;
+    margin-top: 10px;
+  }
+
+  .left_container {
+    width: 340px;
+    float: left;
+  }
+
+  .right_container {
+    width: 425px;
+    float: right;
+  }
+
+  .middle_container {
+    overflow: hidden;
+  }
+
+  .box_container_title {
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    padding-top: 10px;
+    font-weight: bold;
+  }
+
+  .box_container_subtitle {
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    padding-top: 10px;
+  }
+
+  #counters_main_container {
+    float: right;
+    display: block;
+    overflow: hidden;
+    width: 200px;
+    height: 612px;
+  }
+
+  .counters_container {
+    background: #fff;
+    width: 90%;
+    height: 192px;
+    text-align: center;
+    display: inline-block;
+    border: 1px solid #DEDEDE;
+    margin-top: 10px;
+    margin-left: 5px;
+  }
+
+  .counter {
+    margin-top: 5px;
+  }
+
+  .chart_container {
+    height: 600px;
+    width: 200px;
+    background: #FFF;
+    float: right;
+    display: block;
+    margin-top: 10px;
+    margin-left: 5px;
+    margin-right: 10px;
+    border: 1px solid #DEDEDE;
+  }
+
+  #stats {
+    height: 570px;
+    width: 99%;
+    background: #FFF;
+    float: left;
+    display: block;
+  }
+
+  .map_container {
+    height: 600px;
+    width: 98%;
+    background: #FFF;
+    margin-top: 10px;
+    float: left;
+    border: 1px solid #DEDEDE;
+  }
+
+  #map-canvas {
+    width: 93%;
+    height: 415px;
+    margin: 0 auto;
+  }
+
+  .tracking-map {
+    width: 93%;
+    height: 415px;
+    border: 1px solid #eee;
+    margin: 0 auto;
+    margin-top: 10px;
+    background: #EBEBEB;
+  }
+
+  #trip_gauges_container {
+    width: 95%;
+    height: 220px;
+    background: #FFF;
+    float: left;
+    display: block;
+    margin: 0 auto;
+    border-bottom: 1px solid #DEDEDE;
+  }
+
+  .trip_gauge {
+    width: 175px;
+    height: 180px;
+    background: #FFF;
+    margin-left: 70px;
+    float: left;
+    display: block;
+  }
+
+  #triplog_container {
+    height: 600px;
+    width: 325px;
+    background: #FFF;
+    text-align: center;
+    display: inline-block;
+    overflow: auto;
+    float: left;
+    margin-top: 10px;
+    margin-left: 10px;
+    border: 1px solid #DEDEDE;
+  }
+
+  #triplog_trips {
+  }
+
+  #triplog_selector {
+    width: 100%;
+  }
+
+  #triplog_selector select {
+    width: 100%;
+    height: 21px;
+    font-size: 16px;
+    border: 0px;
+    border-bottom: 1px solid #DEDEDE;
+  }
+
+  .trip {
+    height: 65px;
+    width: 100%;
+    border-bottom: 1px dotted rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    border-bottom: 1px dotted #eee;
+    border-bottom: 1px solid #ccc;
+    background: #FFF;
+    text-align: left;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .trip p {
+    margin: 2px;
+    padding: 0;
+  }
+
+  .trip h2 {
+    margin: 0px;
+    padding: 0;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  .trip:hover {
+    background: #F5F5F5;
+  }
+
+  .activeTrip {
+    background: #E0E0E0;
+  }
+
+  #triplogs_container {
+    min-height: 300px;
+    width: 100%;
+    background: #FFF;
+    float: left;
+    display: block;
+    margin: 10px;
+    border: 1px solid #DEDEDE;
+  }
+
+  .triplog {
+    height: 40px;
+    width: 100%;
+    border-bottom: 1px dotted rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    border-bottom: 1px dotted #eee;
+    border-bottom: 1px solid #ccc;
+    background: #FFF;
+    text-align: left;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .triplog p {
+    margin: 2px;
+    padding: 0;
+  }
+
+  .triplog h2 {
+    margin: 0px;
+    padding: 0;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  #trip-info {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-indent: 15px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #trip-info p {
+    margin: 0px;
+    padding: 0;
+  }
+
+  #trip-info div {
+    float: left;
+  }
+
+  /*CHARTS STYLE*/
+
+  /*LOG STYLE*/
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    word-wrap: break-word;
+  }
+
+  li {
+    font-weight: 300;
+    padding-left: 1.5em;
+    word-wrap: break-word;
+  }
+
+  .request_list {
+    word-wrap: break-word;
+  }
+
+  .request_block {
+    padding-left: 0em;
+    border: 1px solid #eee;
+    background: white;
+    font-weight: bold;
+    margin: 0 auto;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    font-size: 14px;
+    word-wrap: break-word;
+    width: 97%;
+  }
+
+  .handle {
+    background: transparent url(/images/books/jquery-1-7/spacer.png);
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    display: block;
+    float: left;
+    width: 10px;
+    height: 11px;
+  }
+
+  .collapsed {
+    background: transparent url(/assets/arrow_collapsed.gif);
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+  }
+
+  .expanded {
+    background: transparent url(/assets/arrow_expanded.gif);
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+  }
+
+  pre {
+    width: 97%;
+    font-size: 13px;
+    border: 1px solid #DEDEDE;
+    background: #fff !important;
+  }
+
+  code {
+    background: #fff;
+  }
+}

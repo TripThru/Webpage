@@ -2,26 +2,28 @@
 // They will automatically be included in application.css.scss.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
-#login_container{
-  background: #545455;
-  min-height: 600px;
-  height: 100%;
+#sessions {
+  #login_container {
+    background: #545455;
+    min-height: 600px;
+    height: 100%;
 
-  .container{
-    width: 80%;
-  }
+    .container {
+      width: 80%;
+    }
 
-  .login{
-    background: #fff;
-    padding-top: 100px;
-    height: 800px;
-  }
+    .login {
+      background: #fff;
+      padding-top: 100px;
+      height: 800px;
+    }
 
-  .login_dialog {
-    margin: 0 auto;
-    width: 500px;
-    background: #fff;
-    text-align: center;
-    border: 1px solid #DEDEDE;
+    .login_dialog {
+      margin: 0 auto;
+      width: 500px;
+      background: #fff;
+      text-align: center;
+      border: 1px solid #DEDEDE;
+    }
   }
 }

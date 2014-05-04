@@ -1,74 +1,80 @@
-#sec1{
-  text-shadow: black 0.1em 0.1em 0.2em;
-}
-
-#sec3{
-  background-color: #fbfeff;
-}
-
-#sec4{
-  background-color: #229247;
-
-  h1 {
-    font-size: 50px;
+#static_pages_home {
+  #sec1 {
+    text-shadow: black 0.1em 0.1em 0.2em;
   }
 
-  button{
-    background-color: #a1202a;
-    border-color: #a1202a;
-  }
-}
-
-.faq {
-  background: #545455;
-  #background: rgb(60, 106, 221);
-  padding-bottom: 100px;
-  min-height: 600px;
-
-  .container{
-
-    width: 80%;
+  #sec3 {
+    background-color: #fbfeff;
   }
 
-  .question {
-    padding: 70px 0;
-    background-color:#fefefe;
-    margin-bottom: -150px;
+  #sec4 {
+    background-color: #229247;
 
-    h1{
-      font-size: 30px;
-      font-weight: 300;
+    h1 {
+      font-size: 50px;
     }
 
-    .lead{
-      font-size: 17px;
+    button {
+      background-color: #a1202a;
+      border-color: #a1202a;
     }
   }
 }
 
-.about_section {
-  background: #545455;
-  #background: rgb(60, 106, 221);
-  padding-bottom: 100px;
-  min-height: 600px;
+#static_pages_faq{
+  .faq {
+    background: #545455;
+    #background: rgb(60, 106, 221);
+    padding-bottom: 100px;
+    min-height: 600px;
 
-  .container{
+    .container {
 
-    width: 80%;
-  }
-
-  .about {
-    padding: 70px 0;
-    background-color:#fefefe;
-    margin-bottom: -150px;
-
-    h1{
-      font-size: 30px;
-      font-weight: 300;
+      width: 80%;
     }
 
-    .lead{
-      font-size: 17px;
+    .question {
+      padding: 70px 0;
+      background-color: #fefefe;
+      margin-bottom: -150px;
+
+      h1 {
+        font-size: 30px;
+        font-weight: 300;
+      }
+
+      .lead {
+        font-size: 17px;
+      }
+    }
+  }
+}
+
+#static_pages_about{
+  .about_section {
+    background: #545455;
+    #background: rgb(60, 106, 221);
+    padding-bottom: 100px;
+    min-height: 600px;
+
+    .container {
+
+      width: 80%;
+    }
+
+    .about {
+      padding: 70px 0;
+      background-color: #fefefe;
+      margin-bottom: -150px;
+
+      h1 {
+        font-size: 30px;
+        font-weight: 300;
+      }
+
+      .lead {
+        font-size: 17px;
+      }
     }
   }
 }

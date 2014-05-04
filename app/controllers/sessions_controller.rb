@@ -7,7 +7,7 @@ class SessionsController < ApplicationController
     password = params[:session][:password]
     if username == 'tripthru' and password == 'optimize'
       session[:access_token] = 'jaosid1201231'
-      redirect_to home_path
+      redirect_to developer_path
     else
       flash.now[:message] = 'Invalid username/password combination'
       render 'new'
@@ -15,7 +15,7 @@ class SessionsController < ApplicationController
   end
 
   def destroy
-    session[:access_token] = ''
+    session[:access_token] = nil
     redirect_to home_path
   end
 end
