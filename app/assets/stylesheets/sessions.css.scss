@@ -1,21 +1,22 @@
 // Place all the styles related to the Sessions controller here.
-// They will automatically be included in application.css.scss.
+// They will automatically be included in application.css.scss.erb.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
 #sessions {
+  height: 100%;
   #login_container {
     background: #545455;
-    min-height: 600px;
     height: 100%;
 
     .container {
       width: 80%;
+      height: 100%;
     }
 
     .login {
       background: #fff;
       padding-top: 100px;
-      height: 800px;
+      height: 100%;
     }
 
     .login_dialog {

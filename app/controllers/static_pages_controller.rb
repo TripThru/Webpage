@@ -11,6 +11,6 @@ class StaticPagesController < ApplicationController
   def signup
     email = params[:email]
     SignupMailer.signup(email).deliver
-    redirect_to static_pages_home_path
+    redirect_to home_path
   end
 end

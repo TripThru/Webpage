@@ -8412,7 +8412,7 @@ float: left;
   src: local("Arimo Bold Italic"), local("Arimo-BoldItalic"), url("http://themes.googleusercontent.com/static/fonts/arimo/v6/_K7sg-ijHdmkwPzV9FiqaBsxEYwM7FgeyaSgU71cLG0.woff") format("woff");
 }
 
-/* line 26, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 26, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 html,
 body {
   height: 100%;
@@ -8421,18 +8421,18 @@ body {
 }
 
 /* fix bs3 horizontal scrollbar bug */
-/* line 33, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 33, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .row {
   margin: 0;
   padding: 0;
 }
 
-/* line 35, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 35, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 h1 {
   font-size: 35px;
 }
 
-/* line 39, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 39, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 img.grayscale {
   filter: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='grayscale'><feColorMatrix type='matrix' values='0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -8442,17 +8442,17 @@ img.grayscale {
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
 
-/* line 45, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 45, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .icon-bar {
   background-color: #fff;
 }
 
-/* line 49, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 49, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .scroll-down a, .scroll-top a {
   color: #ffffff;
 }
 
-/* line 53, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 53, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .scroll-down {
   position: fixed;
   bottom: 20%;
@@ -8460,12 +8460,12 @@ img.grayscale {
   color: #f9f9f9;
 }
 
-/* line 60, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 60, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .scroll-top {
   background-color: #33ee67;
 }
 
-/* line 64, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 64, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .header .btn-lg {
   font-size: 28px;
   border-color: #eeeeee;
@@ -8474,24 +8474,24 @@ img.grayscale {
   color: #ffffff;
 }
 
-/* line 72, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 72, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .header .btn-lg:hover {
   background-color: #eeeeee;
   color: #777777;
 }
 
-/* line 77, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 77, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .navbar {
   background-color: #fefefe;
   border-bottom: 1px solid rgba(0, 0, 0, 0.09);
 }
 
-/* line 82, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 82, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .navbar a {
   color: #000;
 }
 
-/* line 86, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 86, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .navbar .logo {
   color: #3c6add;
   font-family: 'Arimo';
@@ -8501,29 +8501,29 @@ img.grayscale {
   font-size: 35px;
 }
 
-/* line 95, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 95, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .navbar-bold.affix {
   background-color: #33ee67;
 }
 
-/* line 99, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 99, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .navbar-bold {
   font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
 }
 
-/* line 103, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 103, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .navbar-bold li a:hover, .navbar-bold li.active {
   color: #005ba5;
 }
 
-/* line 107, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 107, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .vert {
   vertical-align: middle;
   width: 100%;
   padding-top: 4%;
 }
 
-/* line 113, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 113, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .header h1 {
   font-size: 110px;
   -webkit-text-stroke: 1px rgba(0, 0, 0, 0.1);
@@ -8534,36 +8534,36 @@ img.grayscale {
   font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
 }
 
-/* line 123, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 123, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .header .lead {
   color: #eeeeee;
   font-size: 25px;
 }
 
-/* line 128, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 128, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .header {
   height: 80%;
 }
 
-/* line 132, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 132, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .blurb {
   padding: 120px 0;
   min-height: 500px;
   background-color: #fefefe;
 }
 
-/* line 138, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 138, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .blurb .panel {
   background-color: transparent;
 }
 
-/* line 143, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 143, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .bright {
-  background: #7fbbda url("/assets/home.jpg") no-repeat center center fixed;
+  background: #7fbbda url('/assets/home-71240bfed98ece46b86ae1a3934d6087.jpg') no-repeat center center fixed;
   color: #fff;
 }
 
-/* line 148, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 148, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .featurette {
   background: #545455;
   #background: #3c6add;
@@ -8571,17 +8571,17 @@ img.grayscale {
   color: #ffffff;
   min-height: 600px;
 }
-/* line 155, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 155, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .featurette .container {
   width: 80%;
 }
 
-/* line 161, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 161, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .featurette-item {
   margin-bottom: 15px;
 }
 
-/* line 165, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 165, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .featurette-item > i {
   border: 3px solid #ffffff;
   border-radius: 50%;
@@ -8594,41 +8594,41 @@ img.grayscale {
   text-align: center;
 }
 
-/* line 177, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 177, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .featurette-item > i:hover {
   font-size: 68px;
 }
 
-/* line 181, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 181, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .callout {
   color: #ffffff;
   padding-top: 7%;
   height: 100%;
   width: 100%;
-  background: url("http://www.pulsarecard.com/data/media/872/Abstract_Background_Wallpaper_070.jpg") no-repeat center center fixed;
+  background: url("home.jpg") no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
 }
 
-/* line 194, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 194, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .gallery {
   padding: 50px 0;
 }
 
-/* line 198, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 198, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .call-to-action {
   background: #eeeeee;
   padding: 50px 0;
 }
 
-/* line 203, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 203, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 .call-to-action .btn {
   margin: 10px;
 }
 
-/* line 207, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss */
+/* line 207, /Users/danielmontesdeoca/WindowsDev/TripThruWeb/Webpage/app/assets/stylesheets/application.css.scss.erb */
 footer {
   padding: 20px 0;
   background: #545455;

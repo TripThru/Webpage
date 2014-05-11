@@ -57,7 +57,7 @@ img.grayscale {
 }
 
 .scroll-top {
-    background-color:#33ee67;
+    background-color:#fff;
 }
 
 .header .btn-lg {
@@ -76,6 +76,10 @@ img.grayscale {
 .navbar{
     background-color:#fefefe;
     border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+
+    .container {
+        width: 80%;
+    }
 }
 
 .navbar a {
@@ -140,7 +144,7 @@ img.grayscale {
 
 
 .bright {
-    background: #7fbbda url('home.jpg') no-repeat center center fixed;
+    background: #7fbbda url(<%= asset_path 'home.jpg' %>) no-repeat fixed;
     color:#fff;
 }
 

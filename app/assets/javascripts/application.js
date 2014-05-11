@@ -10,9 +10,15 @@
 // Read Sprockets README (https://github.com/sstephenson/sprockets#sprockets-directives) for details
 // about supported directives.
 //
+//= require jquery
+//= require jquery.turbolinks
 //= require jquery_ujs
 //= require turbolinks
 //= require jquery.easing.1.3
 //= require jquery.flipCounter.1.2.pack
 //= require prism
+//= require bootstrap
+//= require jquery-readyselector.js
+//= require justgage
+//= require raphael.2.1.0.min
 //= require_tree .

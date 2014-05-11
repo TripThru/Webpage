@@ -1,37 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title><%= full_title(yield(:title)) %></title>
+  <title><%= full_title('Developer') %></title>
+  <meta name="viewport" content="width=device-width">
   <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
   <%= csrf_meta_tags %>
   <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
   <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script type="text/javascript" src="http://code.highcharts.com/3.0.10/highcharts.js"></script>
-  <script type="text/javascript" src="http://code.highcharts.com/3.0.10/highcharts-more.js"></script>
   <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
 </head>
-<body data-no-turbolink="true">
-<div class="navbar navbar-bold" data-offset-top="1000">
-  <div class="container">
-    <div class="navbar-header">
-      <a href="<%= root_path %>" class="navbar-brand logo">TripThru</a>
-      <a class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-    </div>
-    <div class="navbar-collapse collapse pull-right" id="navbar">
-      <ul class="nav navbar-nav">
-        <li><%= link_to 'Sign out', signout_path, method: :delete %></li>
-      </ul>
-    </div>
-  </div>
-</div>
+<body class="<%= controller_name %> <%= action_name %>">
+    <div id="developer">
 
-<%= yield %>
+      <div id="header" class="navbar navbar-default navbar-fixed-top">
+          <a href="<%= root_path %>" class="navbar-brand logo">TripThru</a>
+          <ul class="nav navbar-nav navbar-user navbar-right">
+            <li class="dropdown">
+              <a href="#" id="icon-user" class="dropdown-toggle cursor pull-right" data-toggle="dropdown">
+                <i class="fa fa-user"></i> <%= session[:username] %> <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu pull-right">
+                <li><%= link_to 'Log out', signout_path, method: :delete %></li>
+              </ul>
+            </li>
+          </ul>
+      </div>
+
+        <div id="wrapper">
+            <div id="sidebar-wrapper" class="col-md-0">
+              <div id="sidebar">
+                <ul class="nav list-group" id="developer-menu">
+                  <li>
+                    <a class="list-group-item" id="tracking-button" href="<%= developer_dashboard_path  %>">
+                      <i class="icon-home icon-1x"></i>
+                      <div class="image-wrapper">
+                        <%= image_tag('dashboard.png', alt: 'Dashboard') %>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="list-group-item" id="statistics-button" href="<%= developer_statistics_path %>">
+                      <i class="icon-home icon-1x"></i>
+                      <div class="image-wrapper">
+                        <%= image_tag('statistics.png', alt: 'Statistics', style: 'padding-top: 5px;') %>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="list-group-item" id="api-button" href="#">
+                      <i class="icon-home icon-1x"></i>
+                      <div class="image-wrapper">
+                        <%= image_tag('api.png', alt: 'API', style: 'margin-top: -2px;') %>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="list-group-item" id="settings-button" href="<%= developer_settings_path %>">
+                      <i class="icon-home icon-1x"></i>
+                      <div class="image-wrapper">
+                        <%= image_tag('settings.png', alt: 'Settings') %>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div id="main-wrapper" class="col-md-11">
+              <div id="main">
+                <%= yield %>
+              </div>
+            </div>
+            <input type="hidden" id="access_token" value="<%= session[:access_token] %>"/>
+        </div>
+    </div>
 </body>
 </html>

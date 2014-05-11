@@ -1,11 +1,14 @@
 Rails.application.routes.draw do
 
   get 'developer', to: 'developer#show'
+  get 'developer/dashboard', to: 'developer#dashboard'
+  get 'developer/settings', to: 'developer#settings'
+  get 'developer/statistics', to: 'developer#statistics'
 
   root 'static_pages#home'
   get '/home', to: 'static_pages#home'
   get '/about', to: 'static_pages#about'
-  get 'faq', to: 'static_pages#faq'
+  get '/faq', to: 'static_pages#faq'
   post '/signup', to: 'static_pages#signup'
 
   resources :sessions, only: [:new, :create, :destroy]

@@ -1,0 +1,504 @@
+# Place all the behaviors and hooks related to the matching controller here.
+# All this logic will automatically be available in application.js.
+# You can use CoffeeScript in this file: http://coffeescript.org/
+
+class TripThru
+    baseUrl = ''
+    access_token = ''
+
+    constructor: (url, token) ->
+        if not url? or not token?
+            console.error('Wrong parameters')
+        this.baseUrl = url
+        this.access_token = token
+
+    getStats: (_callback) ->
+        $.get(this.baseUrl + 'stats?format=json&access_token=' + this.access_token, (data) ->
+            if data.result == 'OK'
+                _callback(data)
+            else
+                _callback(null)
+
+        ).error( ->
+            _callback(null)
+        )
+        return
+
+    getLog: (status, _callback) ->
+        $.get(this.baseUrl + 'log?format=json&access_token=' + this.access_token, (data) ->
+            if data.result == 'OK'
+                _callback(data)
+            else
+                _callback(null)
+
+        ).error( ->
+            _callback(null)
+        )
+        return
+
+    getTrips: (status, _callback) ->
+        $.get(this.baseUrl + 'trips?format=json&access_token=' + this.access_token, (data) ->
+            if data.result == 'OK'
+                _callback(data)
+            else
+                _callback(null)
+
+        ).error( ->
+            _callback(null)
+        )
+        return
+
+    getTripStatus: (tripId, _callback) ->
+        $.get(this.baseUrl + 'tripstatus?format=json&access_token=' + this.access_token + '&tripid=' + tripId, (data) ->
+            if data.result == 'OK'
+                _callback(data)
+            else
+                _callback(null)
+
+        ).error( ->
+            _callback(null)
+        )
+        return
+
+
+class ActiveTripsChart
+  chart = null
+  activeTripsCount = []
+
+  constructor: (chartContainer) ->
+    chart = new JustGage({
+        id: chartContainer
+        value: 0
+        min: 0
+        max: 10
+        label: 'trips'
+        relativeGaugeSize: true
+    })
+
+  updateStats: (stats) ->
+      update(stats.activeTrips, stats.activeTrips)
+
+  update = (activeTrips, selectedTypeActiveTrips) ->
+      if not activeTrips? or not selectedTypeActiveTrips?
+          console.error('Wrong parameters')
+          return
+
+      activeTripsCount.push activeTrips
+      max = Math.max.apply(Math, activeTripsCount)
+      max = if max < 10 then 10 else max * 1.4
+
+      chart.refresh(selectedTypeActiveTrips, max)
+
+class Location
+    lat = null
+    lng = null
+    address = ''
+
+    constructor: (latitude, longitude, _address) ->
+        lat = latitude
+        lng = longitude
+        address = _address
+
+    getAddress: () ->
+        return address
+
+class Trip
+    id = null
+    containerId = null
+    passengerName = null
+    pickupTime = null
+    pickupLocation = null
+    origin = null
+    servicing = null
+    status = null
+    ETA = null
+    fare = null
+    driverName = null
+    driverLocation = null
+    dropoffLocation = null
+
+    constructor: (tripId, passenger, _pickupTime, pickupLoc, originPartner, servicingPartner, tripStatus, tripETA,
+                    tripFare, driver, driverLoc, dropoff) ->
+        id = tripId
+        containerId = tripId.replace(new RegExp('@', 'g'), '-').replace('.', '-')
+        passengerName = passenger
+        pickupTime = _pickupTime
+        pickupLocation = pickupLoc
+        origin = originPartner
+        servicing = servicingPartner
+        status = tripStatus
+        ETA = tripETA
+        fare = tripFare
+        driverName = driver
+        driverLocation = driverLoc
+        dropoffLocation = dropoff
+
+    update: (passenger, _pickupTime, pickupLoc, originPartner, servicingPartner, tripStatus, tripETA,
+             tripFare, driver, driverLoc, dropoff) ->
+        passengerName = passenger
+        pickupTime = _pickupTime
+        pickupLocation = pickupLoc
+        origin = originPartner
+        servicing = servicingPartner
+        status = tripStatus
+        ETA = tripETA
+        fare = tripFare
+        driverName = driver
+        driverLocation = driverLoc
+        dropoffLocation = dropoff
+
+    getContainerId: () ->
+        containerId
+    getId: () ->
+        id
+    getPassengerName: () ->
+        passengerName
+    getPickupTime: () ->
+        pickupTime
+    getPickupLocation: () ->
+        pickupLocation
+    getOrigin: () ->
+        origin
+    getServicing: () ->
+        servicing
+    getStatus: () ->
+        status
+    getETA: () ->
+        ETA
+    getFare: () ->
+        driverFare
+    getDriverName: () ->
+        driverName
+    getDriverLocation: () ->
+        driverLocation
+    getDropoffLocation: () ->
+        dropoffLocation
+
+
+class TripList
+    containerId = null
+
+    constructor: (renderToContainerId) ->
+        containerId = renderToContainerId
+
+    updateTrips: (tripsById) ->
+        for id, trip of tripsById
+            if !$('#' + trip.getContainerId()).length
+                addTrip(trip)
+
+    updateActiveTrip: (trip) ->
+        if not trip?
+            $('#' + containerId + '>div.active').removeClass('active')
+        else
+            if not $('#' + trip.getContainerId()).hasClass('active')
+                $('#' + containerId + '>div.active').removeClass('active')
+                $("#" + trip.getContainerId()).addClass("active")
+            else
+                $("#" + trip.getContainerId()).removeClass("active")
+
+    addTrip = (trip) ->
+        tripContainerId = trip.getContainerId()
+        tripTag = getTripTag(trip)
+        $('#' + containerId).prepend tripTag
+        $('#' + tripContainerId).slideDown()
+
+    getTripTag = (trip) ->
+        '
+            <div class="well trip" id="' + trip.getContainerId() + '" style="display:none;">
+                <h1>' + trip.getId() + '</h1>
+                <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
+                <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
+                <p><span>Pickup:</span> <i>' + trip.getPickupLocation().getAddress() + '</i></p>
+            </div>
+        '
+
+class TripTracker
+    tripInfoContainerId = null
+    mapContainerId = null
+
+
+    constructor: (tripInfoContainer, mapContainer) ->
+        tripInfoContainerId = tripInfoContainer
+        mapContainerId = mapContainer
+
+    updateActiveTrip: (trip) ->
+        updateTripInfo(trip)
+        updateMap(trip)
+
+    updateTripInfo = (trip) ->
+        '<div>
+            <h1>' + trip.getId() + '</h1>
+            <p><span>Passenger:</span>' + trip.getPassengerName() + '</p>
+            <p><span>Time: </span>' + trip.getPickupTime() + '</p>
+        </div>
+        '
+
+    updateMap = (trip) ->
+        '
+
+        '
+
+class StatisticsDashboard
+    containerId = null
+    passengerRatingGauge = null
+    driverRatingGauge = null
+    timeWithPassengerGauge = null
+    mileageWithPassengerGauge = null
+    timeEnrouteGauge = null
+    mileageEnrouteGauge = null
+    timeIdleGauge = null
+    totalTripsGauge = null
+    completedGauge = null
+    cancelledGauge = null
+    rejectedGauge = null
+    latenessGauge = null
+    withinServiceGoalGauge = null
+
+    constructor: (containerId) ->
+        $('#' + containerId).html('
+            <div class="dashboard-statistics-gauge" id="passenger-rating-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="drivers-rating-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="time-with-passenger-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="mileage-with-passenger-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="time-enroute-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="mileage-enroute-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="time-idle-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="total-trips-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="cancelled-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="completed-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="rejected-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="lateness-gauge"></div>
+            <div class="dashboard-statistics-gauge" id="within-service-goal-gauge"></div>
+        ')
+        passengerRatingGauge = new JustGage({
+            id: 'passenger-rating-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Passenger'
+        })
+        driverRatingGauge = new JustGage({
+            id: 'drivers-rating-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Driver'
+        })
+        timeWithPassengerGauge = new JustGage({
+            id: 'time-with-passenger-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Time passenger'
+        })
+        mileageWithPassengerGauge = new JustGage({
+            id: 'mileage-with-passenger-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Mileage passenger'
+        })
+        timeEnrouteGauge = new JustGage({
+            id: 'time-enroute-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Time enroute'
+        })
+        mileageEnrouteGauge = new JustGage({
+            id: 'mileage-enroute-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Mileage enroute'
+        })
+        timeIdleGauge = new JustGage({
+            id: 'time-idle-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Time idle'
+        })
+        totalTripsGauge = new JustGage({
+            id: 'total-trips-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Time passenger'
+        })
+        cancelledGauge = new JustGage({
+            id: 'cancelled-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Cancelled'
+        })
+        completedGauge = new JustGage({
+            id: 'completed-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Completed'
+        })
+        rejectedGauge = new JustGage({
+            id: 'rejected-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Rejected'
+        })
+        latenessGauge = new JustGage({
+            id: 'lateness-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Lateness'
+        })
+        withinServiceGoalGauge = new JustGage({
+            id: 'within-service-goal-gauge'
+            value: 0
+            min: 0
+            max: 100
+            label: '%'
+            title: 'Within goal'
+        })
+
+    updateStats: (stats) ->
+        update(80, 90, 55, 32, 70, 80, 15, 80, 10, 80, 10, 15, 95)
+
+    update = (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,
+                timeIdle, totalTrips, cancelled, completed, rejected, lateness, withinServiceGoal) ->
+
+        passengerRatingGauge.refresh(passengerRating)
+        driverRatingGauge.refresh(driverRating)
+        timeWithPassengerGauge.refresh(timeWithPassenger)
+        mileageWithPassengerGauge.refresh(mileageWithPassenger)
+        timeEnrouteGauge.refresh(timeEnroute)
+        mileageEnrouteGauge.refresh(mileageEnroute)
+        timeIdleGauge.refresh(timeIdle)
+        totalTripsGauge.refresh(totalTrips)
+        cancelledGauge.refresh(cancelled)
+        completedGauge.refresh(completed)
+        rejectedGauge.refresh(rejected)
+        latenessGauge.refresh(lateness)
+        withinServiceGoalGauge.refresh(withinServiceGoal)
+
+
+class DashboardManager
+    gateway = null
+    listeners = []
+    tripsById = {}
+    activeTrip = null
+
+    constructor: (tripthruGateway, updateListeners) ->
+        gateway = tripthruGateway
+        listeners = updateListeners
+
+    update: ->
+        updateStats()
+        updateTrips()
+        updateActiveTrip()
+        updateLogs()
+
+    updateStats = ->
+        gateway.getStats (data) ->
+            if data?
+                for listener in listeners
+                    if typeof listener.updateStats is 'function'
+                        listener.updateStats(data)
+
+    updateTrips = ->
+        gateway.getTrips null, (data) ->
+            if data?
+                for newTrip in data.trips
+                    do (newTrip) ->
+                        if newTrip.id not of tripsById
+                            driverLocation =
+                                if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, '') else null
+                            trip = new Trip(
+                                    newTrip.id
+                                    newTrip.passengerName
+                                    newTrip.pickupTime
+                                    new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, '')
+                                    newTrip.origin
+                                    newTrip.servicing
+                                    newTrip.status
+                                    newTrip.ETA
+                                    newTrip.fare
+                                    newTrip.driverName
+                                    driverLocation
+                                    new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, '')
+                            )
+                            tripsById[trip.getId()] = trip
+                            $('#' + trip.getContainerId()).off('click').click ->
+                                toggleActiveTrip(trip)
+
+                for listener in listeners
+                    if typeof listener.updateTrips is 'function'
+                        listener.updateTrips(tripsById)
+
+    toggleActiveTrip = (trip) ->
+        if not activeTrip? or activeTrip.id != trip.id
+            activeTrip = trip
+        else
+            activeTrip = null
+        updateActiveTrip
+
+    updateActiveTrip = ->
+        if activeTrip?
+            gateway.getTripStatus activeTrip.id, (data) ->
+                if data?
+                    for listener in listeners
+                        if typeof listener.updateActiveTrip is 'function'
+                            listener.updateActiveTrip(activeTrip)
+        else
+            for listener in listeners
+                if typeof listener.updateActiveTrip is 'function'
+                    listener.updateActiveTrip(null)
+
+    updateLogs = ->
+
+
+`
+$(document).ready(function(){
+    var url = window.location
+    $('.list-group-item').filter( function(){
+        return this.href == url;
+    }).addClass('active');
+    });
+`
+
+$('.developer.dashboard').ready ->
+    dashboardManager = new DashboardManager(
+        new TripThru('http://192.168.0.135/TripThru.TripThruGateway/', $('#access_token').val())
+        [
+            new ActiveTripsChart('active-trips-chart')
+            new TripList('trips-panel')
+            new StatisticsDashboard('statistics-gauges-container')
+        ]
+    )
+
+    update = ->
+        dashboardManager.update()
+
+    update()
+    setInterval ->
+        update()
+    , 10000
+
+    return
+
+
+
