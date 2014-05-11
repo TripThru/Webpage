@@ -15,6 +15,7 @@
 //= require jquery_ujs
 //= require turbolinks
 //= require jquery.easing.1.3
+//= require bootstrap
 //= require jquery.flipCounter.1.2.pack
 //= require prism
 //= require bootstrap
