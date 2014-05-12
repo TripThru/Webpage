@@ -3,8 +3,8 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 class TripThru
-    baseUrl = ''
-    access_token = ''
+    this.baseUrl = ''
+    this.access_token = ''
 
     constructor: (url, token) ->
         if not url? or not token?
@@ -90,89 +90,64 @@ class ActiveTripsChart
       chart.refresh(selectedTypeActiveTrips, max)
 
 class Location
-    lat = null
-    lng = null
-    address = ''
+    this.lat = null
+    this.lng = null
+    this.address = ''
 
     constructor: (latitude, longitude, _address) ->
-        lat = latitude
-        lng = longitude
-        address = _address
+        this.lat = latitude
+        this.lng = longitude
+        this.address = _address
 
     getAddress: () ->
-        return address
+        return this.address
 
 class Trip
-    id = null
-    containerId = null
-    passengerName = null
-    pickupTime = null
-    pickupLocation = null
-    origin = null
-    servicing = null
-    status = null
-    ETA = null
-    fare = null
-    driverName = null
-    driverLocation = null
-    dropoffLocation = null
 
-    constructor: (tripId, passenger, _pickupTime, pickupLoc, originPartner, servicingPartner, tripStatus, tripETA,
-                    tripFare, driver, driverLoc, dropoff) ->
-        id = tripId
-        containerId = tripId.replace(new RegExp('@', 'g'), '-').replace('.', '-')
-        passengerName = passenger
-        pickupTime = _pickupTime
-        pickupLocation = pickupLoc
-        origin = originPartner
-        servicing = servicingPartner
-        status = tripStatus
-        ETA = tripETA
-        fare = tripFare
-        driverName = driver
-        driverLocation = driverLoc
-        dropoffLocation = dropoff
+    constructor: (@id, @passengerName, @pickupTime, @pickupLocation, @origin, @servicing, @status, @ETA,
+                    @fare, @driverName, @driverLocation, @dropoffLocation) ->
+        @containerId = id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
 
-    update: (passenger, _pickupTime, pickupLoc, originPartner, servicingPartner, tripStatus, tripETA,
-             tripFare, driver, driverLoc, dropoff) ->
-        passengerName = passenger
-        pickupTime = _pickupTime
-        pickupLocation = pickupLoc
-        origin = originPartner
-        servicing = servicingPartner
-        status = tripStatus
-        ETA = tripETA
-        fare = tripFare
-        driverName = driver
-        driverLocation = driverLoc
-        dropoffLocation = dropoff
+    update: (passenger, pickupTime, pickupLocation, origin, servicing, status, ETA, fare,
+             driverName, driverLocation, dropoffLocation) ->
+        @passengerName = passenger
+        @pickupTime = pickupTime
+        @pickupLocation = pickupLocation
+        @origin = origin
+        @servicing = servicing
+        @status = status
+        @ETA = ETA
+        @fare = fare
+        @driverName = driverName
+        @driverLocation = driverLocation
+        @dropoffLocation = dropoffLocation
 
-    getContainerId: () ->
-        containerId
-    getId: () ->
-        id
+    getContainerId: () =>
+        @containerId
+    getId: () =>
+        @id
     getPassengerName: () ->
-        passengerName
+        @passengerName
     getPickupTime: () ->
-        pickupTime
+        @pickupTime
     getPickupLocation: () ->
-        pickupLocation
+        @pickupLocation
     getOrigin: () ->
-        origin
+        @origin
     getServicing: () ->
-        servicing
+        @servicing
     getStatus: () ->
-        status
+        @status
     getETA: () ->
-        ETA
+        @ETA
     getFare: () ->
-        driverFare
+        @fare
     getDriverName: () ->
-        driverName
+        @driverName
     getDriverLocation: () ->
-        driverLocation
+        @driverLocation
     getDropoffLocation: () ->
-        dropoffLocation
+        @dropoffLocation
 
 
 class TripList
@@ -193,8 +168,6 @@ class TripList
             if not $('#' + trip.getContainerId()).hasClass('active')
                 $('#' + containerId + '>div.active').removeClass('active')
                 $("#" + trip.getContainerId()).addClass("active")
-            else
-                $("#" + trip.getContainerId()).removeClass("active")
 
     addTrip = (trip) ->
         tripContainerId = trip.getContainerId()
@@ -222,8 +195,9 @@ class TripTracker
         mapContainerId = mapContainer
 
     updateActiveTrip: (trip) ->
-        updateTripInfo(trip)
-        updateMap(trip)
+        if trip?
+            updateTripInfo(trip)
+            updateMap(trip)
 
     updateTripInfo = (trip) ->
         '<div>
@@ -397,78 +371,77 @@ class StatisticsDashboard
 
 
 class DashboardManager
-    gateway = null
-    listeners = []
-    tripsById = {}
-    activeTrip = null
 
-    constructor: (tripthruGateway, updateListeners) ->
-        gateway = tripthruGateway
-        listeners = updateListeners
+    constructor: (@gateway, @listeners) ->
+        @tripsById = {}
+        @activeTrip = null
 
-    update: ->
-        updateStats()
-        updateTrips()
-        updateActiveTrip()
-        updateLogs()
+    update: =>
+        @gateway.getStats(@updateStats)
+        @gateway.getTrips(null, @updateTrips)
 
-    updateStats = ->
-        gateway.getStats (data) ->
-            if data?
-                for listener in listeners
-                    if typeof listener.updateStats is 'function'
-                        listener.updateStats(data)
-
-    updateTrips = ->
-        gateway.getTrips null, (data) ->
-            if data?
-                for newTrip in data.trips
-                    do (newTrip) ->
-                        if newTrip.id not of tripsById
-                            driverLocation =
-                                if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, '') else null
-                            trip = new Trip(
-                                    newTrip.id
-                                    newTrip.passengerName
-                                    newTrip.pickupTime
-                                    new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, '')
-                                    newTrip.origin
-                                    newTrip.servicing
-                                    newTrip.status
-                                    newTrip.ETA
-                                    newTrip.fare
-                                    newTrip.driverName
-                                    driverLocation
-                                    new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, '')
-                            )
-                            tripsById[trip.getId()] = trip
-                            $('#' + trip.getContainerId()).off('click').click ->
-                                toggleActiveTrip(trip)
-
-                for listener in listeners
-                    if typeof listener.updateTrips is 'function'
-                        listener.updateTrips(tripsById)
-
-    toggleActiveTrip = (trip) ->
-        if not activeTrip? or activeTrip.id != trip.id
-            activeTrip = trip
+        if @activeTrip?
+            @gateway.getTripStatus(@activeTrip.id, @updateActiveTrip)
         else
-            activeTrip = null
-        updateActiveTrip
+            @updateActiveTrip(null)
 
-    updateActiveTrip = ->
-        if activeTrip?
-            gateway.getTripStatus activeTrip.id, (data) ->
-                if data?
-                    for listener in listeners
-                        if typeof listener.updateActiveTrip is 'function'
-                            listener.updateActiveTrip(activeTrip)
+        @updateLogs()
+
+    updateStats: (data) =>
+        if data?
+            for listener in @listeners
+                if typeof listener.updateStats is 'function'
+                    listener.updateStats(data)
+
+    updateTrips: (data) =>
+        if data?
+            newTrips = []
+            for newTrip in data.trips
+                do (newTrip) =>
+                    if newTrip.id not of @tripsById
+                        driverLocation =
+                            if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, '') else null
+                        trip = new Trip(
+                                newTrip.id
+                                newTrip.passengerName
+                                newTrip.pickupTime
+                                new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, '')
+                                newTrip.origin
+                                newTrip.servicing
+                                newTrip.status
+                                newTrip.ETA
+                                newTrip.fare
+                                newTrip.driverName
+                                driverLocation
+                                new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, '')
+                        )
+                        @tripsById[trip.getId()] = trip
+                        newTrips.push trip
+
+            for listener in @listeners
+                if typeof listener.updateTrips is 'function'
+                    listener.updateTrips(@tripsById)
+
+            for trip in newTrips
+                $('#' + trip.getContainerId()).off('click').click =>
+                    console.info trip.getId()
+                    @toggleActiveTrip(trip.getId())
+
+    toggleActiveTrip: (tripId) =>
+        trip = @tripsById[tripId]
+        if not @activeTrip? or @activeTrip.id != trip.id
+            @activeTrip = trip
         else
-            for listener in listeners
-                if typeof listener.updateActiveTrip is 'function'
-                    listener.updateActiveTrip(null)
+            @activeTrip = null
+        @updateActiveTrip(@activeTrip)
 
-    updateLogs = ->
+    updateActiveTrip: (data) =>
+        trip = @activeTrip
+        for listener in @listeners
+            if typeof listener.updateActiveTrip is 'function'
+                listener.updateActiveTrip(trip)
+
+    updateLogs: ->
 
 
 `
@@ -487,6 +460,7 @@ $('.developer.dashboard').ready ->
             new ActiveTripsChart('active-trips-chart')
             new TripList('trips-panel')
             new StatisticsDashboard('statistics-gauges-container')
+            new TripTracker('tracking-trip-info', 'tracking-map-container')
         ]
     )
 
