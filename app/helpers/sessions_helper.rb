@@ -24,7 +24,7 @@ module SessionsHelper
   end
   def userAccessToken
     if signed_in?
-      return current_user.AccessToken
+      return 'jaosid1201231'
     else
       return nil
     end
