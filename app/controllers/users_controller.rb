@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  layout 'developer'
+
   def index
   end
 

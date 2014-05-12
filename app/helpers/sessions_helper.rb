@@ -22,6 +22,13 @@ module SessionsHelper
       return ''
     end
   end
+  def userAccessToken
+    if signed_in?
+      return current_user.AccessToken
+    else
+      return nil
+    end
+  end
   def current_user=(user)
     @current_user = user
   end

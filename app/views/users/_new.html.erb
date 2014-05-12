@@ -57,7 +57,11 @@
       <%= f.text_field :TripThruAccessToken, class: 'form-control', placeholder: 'Token', required: true %>
     </div>
     <br/>
-    <%= f.submit "Create my account", class: "btn btn-large btn-primary", align: 'center', id: 'button' %>
+    <% if edit %>
+        <%= f.submit "Update", class: "btn btn-large btn-primary", align: 'center', id: 'button' %>
+    <% else %>
+        <%= f.submit "Create", class: "btn btn-large btn-primary", align: 'center', id: 'button' %>
+    <% end %>
 <% end %>
 <script type="text/javascript">
     function changeValue() {
@@ -152,5 +156,5 @@
             document.getElementById("button").disabled = true;
         }
     }
-    changeValue()
+    changeValue();
 </script>

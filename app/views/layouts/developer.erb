@@ -19,7 +19,7 @@
           <ul class="nav navbar-nav navbar-user navbar-right">
             <li class="dropdown">
               <a href="#" id="icon-user" class="dropdown-toggle cursor pull-right" data-toggle="dropdown">
-                <i class="fa fa-user"></i> <%= session[:username] %> <b class="caret"></b>
+                <i class="fa fa-user"></i> <%= userNameuser %> <b class="caret"></b>
               </a>
               <ul class="dropdown-menu pull-right">
                 <li><%= link_to 'Log out', signout_path, method: :delete %></li>
@@ -57,7 +57,12 @@
                     </a>
                   </li>
                   <li>
-                    <a class="list-group-item" id="settings-button" href="<%= developer_settings_path %>">
+                    <% if roleUser == 'Admin' %>
+                        <% url = users_users_path %>
+                    <% else %>
+                        <% url = developer_settings_path %>
+                    <% end %>
+                    <a class="list-group-item" id="settings-button" href="<%= url %>">
                       <i class="icon-home icon-1x"></i>
                       <div class="image-wrapper">
                         <%= image_tag('settings.png', alt: 'Settings') %>
@@ -72,7 +77,7 @@
                 <%= yield %>
               </div>
             </div>
-            <input type="hidden" id="access_token" value="<%= session[:access_token] %>"/>
+            <input type="hidden" id="access_token" value="<%= userAccessToken %>"/>
         </div>
     </div>
 </body>
