@@ -24,8 +24,9 @@ class TripThru
         )
         return
 
-    getLog: (status, _callback) ->
-        $.get(this.baseUrl + 'log?format=json&access_token=' + this.access_token, (data) ->
+    getLog: (tripId, _callback) ->
+        id = if tripId? then '&tripId=' + tripId else ''
+        $.get(this.baseUrl + 'log?format=json&access_token=' + this.access_token + id, (data) ->
             if data.result == 'OK'
                 _callback(data)
             else
@@ -367,29 +368,82 @@ class StatisticsDashboard
         latenessGauge.refresh(lateness)
         withinServiceGoalGauge.refresh(withinServiceGoal)
 
+class ActivityLog
+
+    constructor: (@containerId) ->
+
+    updateLog: (logs) =>
+        if logs?
+            logsString = ''
+            i = 0
+            for log in logs.slice(0).reverse()
+                logsString += @getLogTag(i, log)
+                i++
+            $('#' + @containerId).html(logsString)
+
+    getLogTag: (id, log) =>
+        logString = '
+                <div class="accordion-group">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion">
+                            ' + log.time.split('.')[0] + ' | ' + log.messages[0].text +  '
+                        </a>
+                    </div>
+                    <div id="' + id + '-accordion" class="accordion-body collapse">
+                        <div class="accordion-inner">
+                '
+
+        for message in log.messages
+            logString += '<p>' + message.text + '</p>'
+
+        logString +=  '       </div>
+                    </div>
+                </div>
+              '
 
 class DashboardManager
 
-    constructor: (@gateway, @listeners) ->
+    constructor: (@gateway, @statusSelectorContainerId, @listeners) ->
         @tripsById = {}
         @activeTrip = null
+        @selectedStatus = 'All'
+        @updatingStats = false
+        @updatingTrips = false
+        @updatingActiveTrip = false
+        @updatingLogs = false
+
+        $('#' + @statusSelectorContainerId).change =>
+            @selectedStatus = $('#' + @statusSelectorContainerId + ' option: selected').val()
+            @update()
 
     update: =>
-        @gateway.getStats(@updateStats)
-        @gateway.getTrips(null, @updateTrips)
+        if not  @updatingStats
+            @updatingStats = true
+            @gateway.getStats(@updateStats)
 
-        if @activeTrip?
-            @gateway.getTripStatus(@activeTrip.id, @updateActiveTrip)
-        else
-            @updateActiveTrip(null)
+        if not @updatingTrips
+            @updatingTrips = true
+            status = if @selectedStatus != 'All' then @selectedStatus else null
+            @gateway.getTrips(status, @updateTrips)
 
-        @updateLogs()
+        if not @updatingActiveTrip
+            @updatingActiveTrip = true
+            if @activeTrip?
+                @gateway.getTripStatus(@activeTrip.getId(), @updateActiveTrip)
+            else
+                @updateActiveTrip(null)
+
+        if not @updatingLogs
+            @updatingLogs = true
+            tripId = if @activeTrip? then @activeTrip.getId() else null
+            @gateway.getLog tripId, @updateLogs
 
     updateStats: (data) =>
         if data?
             for listener in @listeners
                 if typeof listener.updateStats is 'function'
                     listener.updateStats(data)
+        @updatingStats = false
 
     updateTrips: (data) =>
         if data?
@@ -399,6 +453,7 @@ class DashboardManager
             for listener in @listeners
                 if typeof listener.updateTrips is 'function'
                     listener.updateTrips(@tripsById)
+        @updatingTrips = false
 
     processTrip: (newTrip) =>
         newTrips = []
@@ -433,7 +488,8 @@ class DashboardManager
             @activeTrip = trip
         else
             @activeTrip = null
-        @updateActiveTrip(@activeTrip)
+        @update()
+
 
     updateActiveTrip: (data) =>
         if data?
@@ -459,8 +515,14 @@ class DashboardManager
             if typeof listener.updateActiveTrip is 'function'
                 listener.updateActiveTrip(@activeTrip)
 
-    updateLogs: ->
+        @updatingActiveTrip = false
 
+    updateLogs: (data) =>
+        if data?
+            for listener in @listeners
+                if typeof listener.updateLog is 'function'
+                    listener.updateLog(data.logList)
+            @updatingLogs = false
 
 `
 $(document).ready(function(){
@@ -474,11 +536,13 @@ $(document).ready(function(){
 $('.developer.dashboard').ready ->
     dashboardManager = new DashboardManager(
         new TripThru('http://192.168.0.135/TripThru.TripThruGateway/', $('#access_token').val())
+        'trip-status-selector'
         [
             new ActiveTripsChart('active-trips-chart')
             new TripList('trips-panel')
             new StatisticsDashboard('statistics-gauges-container')
             new TripTracker('tracking-trip-info', 'tracking-map-container')
+            new ActivityLog('activity-log')
         ]
     )
 

@@ -365,7 +365,36 @@
       min-height: 300px;
 
       #activity-log{
+        .panel-heading a:after {
+          font-family: 'Glyphicons Halflings';
+          content: "\e114";
+          float: right;
+          color: grey;
+        }
+        .panel-heading a.collapsed:after {
+          content: "\e080";
+        }
+      }
 
+      .accordion-group {
+        margin-bottom: 10px
+      }
+
+      .accordion-heading{
+        background-color: #4687c6;
+        border: 1px solid rgba(128, 128, 128, 0.28);
+        text-align: left ;
+
+        a {
+          padding-left: 10px;
+          color: #fff;
+        }
+      }
+
+      .accordion-body{
+        border: 1px solid rgba(128, 128, 128, 0.28);
+        text-align: left;
+        padding: 10px;
       }
     }
 
@@ -391,7 +420,6 @@
       #tracking-panel{
 
         #tracking-trip-info{
-          height: 130px;
 
           h1{
             font-size: 16px;
@@ -399,7 +427,7 @@
             margin-bottom: 5px;
 
             span {
-              font-size: 12px;
+              font-size: 14px;
               padding: 0;
               color: #a1a1a1;
             }
@@ -414,6 +442,25 @@
               font-weight: bold;
             }
           }
+        }
+      }
+
+      #activity-log-panel{
+
+        .accordion-heading{
+          a {
+            font-size: 10px;
+            padding-left: 10px;
+            color: #fff;
+          }
+        }
+
+        .accordion-body{
+          border: 1px solid rgba(128, 128, 128, 0.28);
+          text-align: left;
+          padding: 10px;
+
+          font-size: 10px;
         }
       }
 
