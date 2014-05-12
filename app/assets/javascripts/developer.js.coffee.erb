@@ -212,10 +212,158 @@ class TripTracker
             '
         ).fadeIn()
 
-    updateMap = (trip) ->
-        '
+    passengerMarker = null
+    destinationMarker = null
+    driverMarker = null
+    initialMarker = null
+    map = null
+    mapOptions = null
+    directionsDisplay = null
+    directionsDisplay2 = null
+    driverPreviousLocation = null
+    setTripInfoBool = false
 
-        '
+    updateMap = (trip) ->
+        return  if setTripInfoBool is true
+        setTripInfoBool = true
+        if not driverPreviousLocation? or trip.driverLocation.lat isnt driverPreviousLocation.lat or trip.driverLocation.lng isnt driverPreviousLocation.lng
+            driverPreviousLocation = trip.driverLocation
+            pickupLocation = trip.pickupLocation
+            driverLocation = trip.driverLocation
+            dropoffLocation = trip.dropoffLocation
+            driverInitialLocation = trip.driverInitialLocation
+            if pickupLocation or driverLocation
+                passengerLocation = null
+                driverCurrentLocation = null
+                destinationLocation = null
+                initialLocation = null
+                if dropoffLocation
+                    destinationLocation = new google.maps.LatLng(dropoffLocation.lat, dropoffLocation.lng)
+                    if destinationMarker?
+                        destinationMarker.setMap map
+                        destinationMarker.setPosition destinationLocation
+                if pickupLocation
+                    passengerLocation = new google.maps.LatLng(pickupLocation.lat, pickupLocation.lng)
+                    if passengerMarker?
+                        passengerMarker.setMap map
+                        passengerMarker.setPosition passengerLocation
+                if driverLocation
+                    driverCurrentLocation = new google.maps.LatLng(driverLocation.lat, driverLocation.lng)
+                    if driverMarker?
+                        driverMarker.setMap map
+                        driverMarker.setPosition driverCurrentLocation
+                if driverInitialLocation
+                    initialLocation = new google.maps.LatLng(driverInitialLocation.lat, driverInitialLocation.lng)
+                    if initialMarker?
+                        initialMarker.setMap map
+                        initialMarker.setPosition driverInitialLocation
+                unless map?
+                    mapOptions =
+                        center: (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+                        zoom: 15
+                        mapTypeControl: false
+                        mapTypeId: google.maps.MapTypeId.ROADMAP
+
+                    map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions)
+                if passengerLocation? and not passengerMarker?
+                    passengerMarker = new google.maps.Marker(
+                        position: passengerLocation
+                        map: map
+                        icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+                        title: "Pickup"
+                    )
+                if initialLocation? and not initialMarker?
+                    initialMarker = new google.maps.Marker(
+                        position: driverInitialLocation
+                        map: map
+                        icon: "http://www.mricons.com/store/png/113267_25418_16_flag_icon.png"
+                        title: "Initial"
+                    )
+                if driverLocation? and not driverMarker?
+                    driverMarker = new google.maps.Marker(
+                        position: driverCurrentLocation
+                        map: map
+                        icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
+                        title: "Driver"
+                    )
+                if destinationLocation? and not destinationMarker?
+                    destinationMarker = new google.maps.Marker(
+                        position: dropoffLocation
+                        map: map
+                        icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+                        title: "Destination"
+                    )
+                if driverLocation? and pickupLocation? and dropoffLocation?
+                    routes = []
+                    switch trip.status
+                        when "Enroute"
+                            routes = [
+                                origin: initialLocation
+                                destination: driverCurrentLocation
+                            ]
+                        when "PickedUp"
+                            routes = [
+                                origin: initialLocation
+                                destination: passengerLocation
+                            ,
+                                origin: passengerLocation
+                                destination: driverCurrentLocation
+                            ]
+                        when "Complete"
+                            routes = [
+                                origin: initialLocation
+                                destination: passengerLocation
+                            ,
+                                origin: passengerLocation
+                                destination: destinationLocation
+                            ]
+                    rendererOptions =
+                        preserveViewport: true
+                        suppressMarkers: true
+                        polylineOptions:
+                            strokeColor: "#8B0000"
+                            strokeOpacity: 0.8
+                            strokeWeight: 5
+
+                    rendererOptions2 =
+                        preserveViewport: true
+                        suppressMarkers: true
+                        polylineOptions:
+                            strokeColor: "#008000"
+                            strokeOpacity: 0.8
+                            strokeWeight: 5
+
+                    directionsService = new google.maps.DirectionsService()
+                    directionsService2 = new google.maps.DirectionsService()
+                    boleanFirst = true
+                    if directionsDisplay?
+                        directionsDisplay.setMap null
+                        directionsDisplay = null
+                    if directionsDisplay2?
+                        directionsDisplay2.setMap null
+                        directionsDisplay2 = null
+                    routes.forEach (route) ->
+                        request =
+                            origin: route.origin
+                            destination: route.destination
+                            travelMode: google.maps.TravelMode.DRIVING
+
+                        if boleanFirst
+                            directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
+                            directionsDisplay.setMap map
+                        else
+                            directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
+                            directionsDisplay2.setMap map
+                        if boleanFirst
+                            directionsService.route request, (result, status) ->
+                                directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and directionsDisplay?
+
+                            boleanFirst = false
+                        else
+                            directionsService2.route request, (result, status) ->
+                                directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and directionsDisplay2?
+                    map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+        setTripInfoBool = false
 
 class StatisticsDashboard
     containerId = null
