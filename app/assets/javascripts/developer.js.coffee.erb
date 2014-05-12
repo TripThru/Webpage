@@ -186,24 +186,24 @@ class TripTracker
         mapContainerId = mapContainer
 
     updateActiveTrip: (trip) ->
-        if trip?
-            updateTripInfo(trip)
-            updateMap(trip)
+        updateTripInfo(trip)
+        updateMap(trip)
 
     updateTripInfo = (trip) ->
-        $('#' + tripInfoContainerId).hide().html(
-            '<div>
-                <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
-                <p><span>Passenger:</span>' + trip.getPassengerName() + '</p>
-                <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
-                <p><span>Pickup: </span>' + trip.getPickupLocation().getAddress() + '</p>
-                <p><span>Dropoff: </span>' + trip.getDropoffLocation().getAddress() + '</p>
-                <p><span>Servicing: </span>' + trip.getServicing() + '</p>
-                <p><span>Driver: </span>' + trip.getDriverName() +
-                    ' @' + if trip.getDriverLocation()? then  + trip.getDriverLocation().getAddress() else ''  + '</p>
-             </div>
-            '
-        ).fadeIn()
+        if trip?
+            $('#' + tripInfoContainerId).hide().html(
+                '<div>
+                    <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
+                    <p><span>Passenger:</span>' + trip.getPassengerName() + '</p>
+                    <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
+                    <p><span>Pickup: </span>' + trip.getPickupLocation().getAddress() + '</p>
+                    <p><span>Dropoff: </span>' + trip.getDropoffLocation().getAddress() + '</p>
+                    <p><span>Servicing: </span>' + trip.getServicing() + '</p>
+                    <p><span>Driver: </span>' + trip.getDriverName() +
+                        ' @' + if trip.getDriverLocation()? then  + trip.getDriverLocation().getAddress() else ''  + '</p>
+                 </div>
+                '
+            ).fadeIn()
 
     passengerMarker = null
     destinationMarker = null
@@ -215,10 +215,21 @@ class TripTracker
     directionsDisplay2 = null
     driverPreviousLocation = null
     setTripInfoBool = false
+    tripId = null
 
     updateMap = (trip) ->
         return  if setTripInfoBool is true
         setTripInfoBool = true
+        if not trip? or tripId isnt trip.getId()
+            passengerMarker.setMap null  if passengerMarker?
+            driverMarker.setMap null  if driverMarker?
+            destinationMarker.setMap null  if destinationMarker?
+            initialMarker.setMap null  if initialMarker?
+            driverPreviousLocation = null
+            tripId = (if trip? then trip.getId() else "")
+        unless trip?
+            setTripInfoBool = false
+            return
         if not driverPreviousLocation? or trip.driverLocation.lat isnt driverPreviousLocation.lat or trip.driverLocation.lng isnt driverPreviousLocation.lng
             driverPreviousLocation = trip.driverLocation
             pickupLocation = trip.pickupLocation
@@ -355,7 +366,7 @@ class TripTracker
                         else
                             directionsService2.route request, (result, status) ->
                                 directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and directionsDisplay2?
-                    map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+                map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
         setTripInfoBool = false
 
 class StatisticsDashboard
