@@ -105,11 +105,11 @@ class Location
 class Trip
 
     constructor: (@id, @passengerName, @pickupTime, @pickupLocation, @origin, @servicing, @status, @ETA,
-                    @fare, @driverName, @driverLocation, @dropoffLocation) ->
+                    @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation) ->
         @containerId = id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
 
     update: (passenger, pickupTime, pickupLocation, origin, servicing, status, ETA, fare,
-             driverName, driverLocation, dropoffLocation) ->
+             driverName, driverLocation, dropoffLocation, driverInitialLocation) ->
         @passengerName = passenger
         @pickupTime = pickupTime
         @pickupLocation = pickupLocation
@@ -121,6 +121,7 @@ class Trip
         @driverName = driverName
         @driverLocation = driverLocation
         @dropoffLocation = dropoffLocation
+        @driverInitialLocation = driverInitialLocation
 
     getContainerId: () =>
         @containerId
@@ -148,6 +149,8 @@ class Trip
         @driverLocation
     getDropoffLocation: () ->
         @dropoffLocation
+    getDriverInitialLocation: () ->
+        @driverInitialLocation
 
 
 class TripList
@@ -200,12 +203,14 @@ class TripTracker
             updateMap(trip)
 
     updateTripInfo = (trip) ->
-        '<div>
-            <h1>' + trip.getId() + '</h1>
-            <p><span>Passenger:</span>' + trip.getPassengerName() + '</p>
-            <p><span>Time: </span>' + trip.getPickupTime() + '</p>
-        </div>
-        '
+        $('#' + tripInfoContainerId).hide().html(
+            '<div>
+                <h1>' + trip.getId() + '</h1>
+                <p><span>Passenger:</span>' + trip.getPassengerName() + '</p>
+                <p><span>Time: </span>' + trip.getPickupTime() + '</p>
+            </div>
+            '
+        ).fadeIn()
 
     updateMap = (trip) ->
         '
@@ -395,37 +400,39 @@ class DashboardManager
 
     updateTrips: (data) =>
         if data?
-            newTrips = []
             for newTrip in data.trips
-                do (newTrip) =>
-                    if newTrip.id not of @tripsById
-                        driverLocation =
-                            if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, '') else null
-                        trip = new Trip(
-                                newTrip.id
-                                newTrip.passengerName
-                                newTrip.pickupTime
-                                new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, '')
-                                newTrip.origin
-                                newTrip.servicing
-                                newTrip.status
-                                newTrip.ETA
-                                newTrip.fare
-                                newTrip.driverName
-                                driverLocation
-                                new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, '')
-                        )
-                        @tripsById[trip.getId()] = trip
-                        newTrips.push trip
+                @processTrip(newTrip)
 
             for listener in @listeners
                 if typeof listener.updateTrips is 'function'
                     listener.updateTrips(@tripsById)
 
-            for trip in newTrips
-                $('#' + trip.getContainerId()).off('click').click =>
-                    console.info trip.getId()
-                    @toggleActiveTrip(trip.getId())
+    processTrip: (newTrip) =>
+        newTrips = []
+        if newTrip.id not of @tripsById
+            driverLocation =
+                if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, '') else null
+            driverInitialLocation =
+                if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, '') else null
+            trip = new Trip(
+                    newTrip.id
+                    newTrip.passengerName
+                    newTrip.pickupTime
+                    new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, '')
+                    newTrip.originatingPartnerName
+                    newTrip.servicingPartnerName
+                    newTrip.status
+                    newTrip.eta
+                    newTrip.price
+                    newTrip.driverName
+                    driverLocation
+                    new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, '')
+                    driverInitialLocation
+            )
+            @tripsById[trip.getId()] = trip
+            newTrips.push trip
+            $(document).off('click', '#' + trip.getContainerId()).on 'click', '#' + trip.getContainerId(),  =>
+                @toggleActiveTrip(trip.getId())
 
     toggleActiveTrip: (tripId) =>
         trip = @tripsById[tripId]
@@ -436,10 +443,28 @@ class DashboardManager
         @updateActiveTrip(@activeTrip)
 
     updateActiveTrip: (data) =>
-        trip = @activeTrip
+        if data?
+            driverLocation =
+                if data.driverLocation? then new Location(data.driverLocation.lat, data.driverLocation.lng, '') else null
+            driverInitialLocation =
+                if data.driverInitialLocation? then new Location(data.driverInitialLocation.lat, data.driverInitialLocation.lng, '') else null
+            @activeTrip.update(
+                data.passengerName
+                data.pickupTime
+                new Location(data.pickupLocation.lat, data.pickupLocation.lng, '')
+                data.originatingPartnerName
+                data.servicingPartnerName
+                data.status
+                data.eta
+                data.price
+                data.driverName
+                driverLocation
+                new Location(data.dropoffLocation.lat, data.dropoffLocation.lng, '')
+                driverInitialLocation
+            )
         for listener in @listeners
             if typeof listener.updateActiveTrip is 'function'
-                listener.updateActiveTrip(trip)
+                listener.updateActiveTrip(@activeTrip)
 
     updateLogs: ->
 
