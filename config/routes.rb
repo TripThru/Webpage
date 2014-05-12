@@ -11,9 +11,17 @@ Rails.application.routes.draw do
   get '/faq', to: 'static_pages#faq'
   post '/signup', to: 'static_pages#signup'
 
+  get 'users/new'
+  get 'users/edit'
+  get 'users/users'
+  post 'users/saveUserEdit'
+  post 'users/saveUser'
+  delete 'users/destroy'
+
   resources :sessions, only: [:new, :create, :destroy]
   get '/signin',  to: 'sessions#new'
   delete '/signout', to: 'sessions#destroy'
+  resources :users
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

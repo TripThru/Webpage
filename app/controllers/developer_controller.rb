@@ -2,7 +2,7 @@ class DeveloperController < ApplicationController
   layout 'developer'
 
   def show
-    if session[:access_token]
+    if userAccessToken
       redirect_to developer_dashboard_path
     else
       redirect_to signin_path
@@ -10,7 +10,7 @@ class DeveloperController < ApplicationController
   end
 
   def dashboard
-    if session[:access_token]
+    if userAccessToken
       render 'dashboard'
     else
       redirect_to signin_path
@@ -18,7 +18,7 @@ class DeveloperController < ApplicationController
   end
 
   def statistics
-    if session[:access_token]
+    if userAccessToken
       render 'statistics'
     else
       redirect_to signin_path
@@ -26,7 +26,7 @@ class DeveloperController < ApplicationController
   end
 
   def settings
-    if session[:access_token]
+    if userAccessToken
       render 'settings'
     else
       redirect_to signin_path

@@ -1,0 +1,160 @@
+<% if edit %>
+    <% urlUser = users_saveUserEdit_path %>
+<% else %>
+    <% urlUser = users_saveUser_path %>
+<% end %>
+<%= form_for(user, url: urlUser) do |f| %>
+    <%= f.label :Username %>
+    <div class="input-group col-xs-12">
+      <span class="input-group-addon glyphicon glyphicon-user"></span>
+      <% if edit %>
+          <%= f.text_field :UserName, class: 'form-control ', placeholder: 'Username', required: true, readonly: true %>
+      <% else %>
+          <%= f.text_field :UserName, class: 'form-control ', placeholder: 'Username', required: true %>
+      <% end %>
+    </div>
+    <br/>
+    <%= f.label :Password %>
+    <div class="input-group col-xs-12">
+      <span class="input-group-addon glyphicon glyphicon-asterisk"></span>
+      <%= f.password_field :password_digest, class: 'form-control', placeholder: 'Password', required: true %>
+    </div>
+    <br/>
+    <%= f.label :Repeat_Password %>
+    <div class="input-group col-xs-12">
+      <span class="input-group-addon glyphicon glyphicon-asterisk"></span>
+      <%= f.password_field :Repeat_Password, class: 'form-control', placeholder: 'Repeat Password', :onkeyup => 'checkPass();', required: true %>
+    </div>
+    <span id="confirmMessage" class="confirmMessage"></span>
+    <br/>
+    <%= f.label :Email %>
+    <div class="input-group col-xs-12">
+      <span class="input-group-addon glyphicon glyphicon-envelope"></span>
+      <%= f.text_field :Email, class: 'form-control', placeholder: 'example@example.com', required: true %>
+    </div>
+    <br/>
+    <%= f.label :Role %>
+    <div class="input-group col-xs-12">
+      <span class="input-group-addon glyphicon glyphicon-tags"></span>
+      <%= f.select :Role, options_for_select([%w(Partner Partner), %w(Demo Demo), %w(Admin Admin)], :selected => (user.Role.nil? ? 'Partner' : user.Role)), class: 'form-control ', required: true %>
+    </div>
+    <br/>
+    <%= f.label :Partner_Name, id: 'user_Partner_Name' %>
+    <div class="input-group col-xs-12">
+      <span class="input-group-addon glyphicon glyphicon-certificate" id="icon_Partner_Name"></span>
+      <%= f.text_field :PartnerName, class: 'form-control', placeholder: 'Partner Name', required: true %>
+    </div>
+    <br/>
+    <%= f.label :Callback_Url, id: 'user_Callback_Url' %>
+    <div class="input-group col-xs-12">
+      <span class="input-group-addon glyphicon glyphicon-globe" id="icon_Callback_Url"></span>
+      <%= f.url_field :CallbackUrl, class: 'form-control', placeholder: 'www.example.com', required: true %>
+    </div>
+    <br/>
+    <%= f.label :TripThru_AccessToken, id: 'user_TripThru_AccessToken' %>
+    <div class="input-group col-md-12">
+      <span class="input-group-addon glyphicon glyphicon-barcode" id="icon_TripThru_AccessToken"></span>
+      <%= f.text_field :TripThruAccessToken, class: 'form-control', placeholder: 'Token', required: true %>
+    </div>
+    <br/>
+    <% if edit %>
+        <%= f.submit "Update", class: "btn btn-large btn-primary", align: 'center', id: 'button' %>
+    <% else %>
+        <%= f.submit "Create", class: "btn btn-large btn-primary", align: 'center', id: 'button' %>
+    <% end %>
+<% end %>
+<script type="text/javascript">
+    function changeValue() {
+        var e = document.getElementById("user_Role");
+        var strUser = e.options[e.selectedIndex].text;
+        if (strUser == 'Partner') {
+            var partnerNameId = document.getElementById("user_PartnerName");
+            partnerNameId.setAttribute("required", "required");
+            partnerNameId.removeAttribute("type");
+            document.getElementById("icon_Partner_Name").style.display = "block";
+            document.getElementById("user_Partner_Name").style.display = "inline";
+            var callbackUrlId = document.getElementById("user_CallbackUrl");
+            callbackUrlId.setAttribute("required", "required");
+            callbackUrlId.removeAttribute("type");
+            document.getElementById("user_Callback_Url").style.display = "inline";
+            document.getElementById("icon_Callback_Url").style.display = "block";
+            var tripthruAccesstokenId = document.getElementById("user_TripThruAccessToken");
+            tripthruAccesstokenId.setAttribute("required", "required");
+            tripthruAccesstokenId.removeAttribute("type");
+            document.getElementById("user_TripThru_AccessToken").style.display = "inline";
+            document.getElementById("icon_TripThru_AccessToken").style.display = "block";
+        } else {
+            var partnerNameId = document.getElementById("user_PartnerName");
+            partnerNameId.removeAttribute("required");
+            partnerNameId.setAttribute("type", "hidden");
+            document.getElementById("user_Partner_Name").style.display = "none";
+            document.getElementById("icon_Partner_Name").style.display = "none";
+            var callbackUrlId = document.getElementById("user_CallbackUrl");
+            callbackUrlId.removeAttribute("required");
+            callbackUrlId.setAttribute("type", "hidden");
+            document.getElementById("user_Callback_Url").style.display = "none";
+            document.getElementById("icon_Callback_Url").style.display = "none";
+            var tripthruAccesstokenId = document.getElementById("user_TripThruAccessToken");
+            tripthruAccesstokenId.removeAttribute("required");
+            tripthruAccesstokenId.setAttribute("type", "hidden");
+            document.getElementById("user_TripThru_AccessToken").style.display = "none";
+            document.getElementById("icon_TripThru_AccessToken").style.display = "none";
+        }
+    }
+    var roleType = document.getElementById('user_Role');
+    var handler = function () {
+        if (this.value == 'Partner') {
+            var partnerNameId = document.getElementById("user_PartnerName");
+            partnerNameId.setAttribute("required", "required");
+            partnerNameId.removeAttribute("type");
+            document.getElementById("icon_Partner_Name").style.display = "block";
+            document.getElementById("user_Partner_Name").style.display = "inline";
+            var callbackUrlId = document.getElementById("user_CallbackUrl");
+            callbackUrlId.setAttribute("required", "required");
+            callbackUrlId.removeAttribute("type");
+            document.getElementById("user_Callback_Url").style.display = "inline";
+            document.getElementById("icon_Callback_Url").style.display = "block";
+            var tripthruAccesstokenId = document.getElementById("user_TripThruAccessToken");
+            tripthruAccesstokenId.setAttribute("required", "required");
+            tripthruAccesstokenId.removeAttribute("type");
+            document.getElementById("user_TripThru_AccessToken").style.display = "inline";
+            document.getElementById("icon_TripThru_AccessToken").style.display = "block";
+        } else {
+            var partnerNameId = document.getElementById("user_PartnerName");
+            partnerNameId.removeAttribute("required");
+            partnerNameId.setAttribute("type", "hidden");
+            document.getElementById("user_Partner_Name").style.display = "none";
+            document.getElementById("icon_Partner_Name").style.display = "none";
+            var callbackUrlId = document.getElementById("user_CallbackUrl");
+            callbackUrlId.removeAttribute("required");
+            callbackUrlId.setAttribute("type", "hidden");
+            document.getElementById("user_Callback_Url").style.display = "none";
+            document.getElementById("icon_Callback_Url").style.display = "none";
+            var tripthruAccesstokenId = document.getElementById("user_TripThruAccessToken");
+            tripthruAccesstokenId.removeAttribute("required");
+            tripthruAccesstokenId.setAttribute("type", "hidden");
+            document.getElementById("user_TripThru_AccessToken").style.display = "none";
+            document.getElementById("icon_TripThru_AccessToken").style.display = "none";
+        }
+    };
+    roleType.onchange = handler;
+    function checkPass() {
+        var pass1 = document.getElementById('user_password_digest');
+        var pass2 = document.getElementById('user_Repeat_Password');
+        var message = document.getElementById('confirmMessage');
+        var goodColor = "#66cc66";
+        var badColor = "#ff6666";
+        if (pass1.value == pass2.value) {
+            pass2.style.backgroundColor = goodColor;
+            message.style.color = goodColor;
+            message.innerHTML = "Passwords Match!"
+            document.getElementById("button").disabled = false;
+        } else {
+            pass2.style.backgroundColor = badColor;
+            message.style.color = badColor;
+            message.innerHTML = "Passwords Do Not Match!"
+            document.getElementById("button").disabled = true;
+        }
+    }
+    changeValue();
+</script>
