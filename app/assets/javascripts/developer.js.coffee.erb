@@ -108,20 +108,8 @@ class Trip
                     @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation) ->
         @containerId = id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
 
-    update: (passenger, pickupTime, pickupLocation, origin, servicing, status, ETA, fare,
-             driverName, driverLocation, dropoffLocation, driverInitialLocation) ->
-        @passengerName = passenger
-        @pickupTime = pickupTime
-        @pickupLocation = pickupLocation
-        @origin = origin
-        @servicing = servicing
-        @status = status
-        @ETA = ETA
-        @fare = fare
-        @driverName = driverName
-        @driverLocation = driverLocation
-        @dropoffLocation = dropoffLocation
-        @driverInitialLocation = driverInitialLocation
+    update: (@passengerName, @pickupTime, @pickupLocation, @origin, @servicing, @status, @ETA,
+             @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation) ->
 
     getContainerId: () =>
         @containerId
@@ -205,10 +193,15 @@ class TripTracker
     updateTripInfo = (trip) ->
         $('#' + tripInfoContainerId).hide().html(
             '<div>
-                <h1>' + trip.getId() + '</h1>
+                <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
                 <p><span>Passenger:</span>' + trip.getPassengerName() + '</p>
-                <p><span>Time: </span>' + trip.getPickupTime() + '</p>
-            </div>
+                <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
+                <p><span>Pickup: </span>' + trip.getPickupLocation().getAddress() + '</p>
+                <p><span>Dropoff: </span>' + trip.getDropoffLocation().getAddress() + '</p>
+                <p><span>Servicing: </span>' + trip.getServicing() + '</p>
+                <p><span>Driver: </span>' + trip.getDriverName() +
+                    ' @' + if trip.getDriverLocation()? then  + trip.getDriverLocation().getAddress() else ''  + '</p>
+             </div>
             '
         ).fadeIn()
 
@@ -449,18 +442,18 @@ class DashboardManager
             driverInitialLocation =
                 if data.driverInitialLocation? then new Location(data.driverInitialLocation.lat, data.driverInitialLocation.lng, '') else null
             @activeTrip.update(
-                data.passengerName
-                data.pickupTime
-                new Location(data.pickupLocation.lat, data.pickupLocation.lng, '')
-                data.originatingPartnerName
-                data.servicingPartnerName
-                data.status
-                data.eta
-                data.price
-                data.driverName
-                driverLocation
-                new Location(data.dropoffLocation.lat, data.dropoffLocation.lng, '')
-                driverInitialLocation
+                if data.passengerName? then data.passengerName else @activeTrip.getPassengerName()
+                if data.pickupTime? then data.pickupTime else @activeTrip.getPickupTime()
+                if data.pickupLocation? then new Location(data.pickupLocation.lat, data.pickupLocation.lng, '') else @activeTrip.getPickupLocation()
+                if data.originatingPartnerName? then data.originatingPartnerName else @activeTrip.getOrigin()
+                if data.servicingPartnerName? then data.servicingPartnerName else @activeTrip.getServicing()
+                if data.status? then data.status else @activeTrip.getStatus()
+                if data.eta? then data.eta else @activeTrip.getETA()
+                if data.price? then data.price else @activeTrip.getFare()
+                if data.driverName? then data.driverName else @activeTrip.getDriverName()
+                if driverLocation? then driverLocation else @activeTrip.getDriverLocation()
+                if data.dropoffLocation then new Location(data.dropoffLocation.lat, data.dropoffLocation.lng, '') else @activeTrip.getDropoffLocation()
+                if driverInitialLocation? then driverInitialLocation else @activeTrip.getDriverInitialLocation()
             )
         for listener in @listeners
             if typeof listener.updateActiveTrip is 'function'
