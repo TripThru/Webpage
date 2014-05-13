@@ -24,10 +24,11 @@
 #  <<: *default
 #  database: db/production.sqlite3
 
+
 default: &default
   adapter: postgresql
   encoding: unicode
-  database: Webpage_default
+  database: tripthru_default
   pool: 5
   timeout: 5000
   username: postgres
@@ -36,7 +37,7 @@ default: &default
 development:
   adapter: postgresql
   encoding: unicode
-  database: Webpage_development
+  database: tripthru_dev
   pool: 5
   timeout: 5000
   username: postgres
@@ -45,8 +46,8 @@ development:
 production:
   adapter: postgresql
   encoding: unicode
-  database: Webpage_production
+  database: tripthru
   pool: 5
   timeout: 5000
-  username: postgres
-  password: optimize
+  username: deploy
+  password: Tr1PServ1Ce@p0$tgreSQL

@@ -4,7 +4,7 @@
 
 #developer {
 
-
+  @import 'prism';
 
   body {
     font-family: 'Open Sans', sans-serif;
@@ -394,24 +394,56 @@
       }
 
       .accordion-group {
-        margin-bottom: 10px
-      }
+        margin-bottom: 10px;
 
-      .accordion-heading{
-        background-color: #4687c6;
-        border: 1px solid rgba(128, 128, 128, 0.28);
-        text-align: left ;
+        .accordion-heading{
+          background-color: #4687c6;
+          border: 1px solid rgba(128, 128, 128, 0.28);
+          text-align: left ;
 
-        a {
-          padding-left: 10px;
-          color: #fff;
+          a {
+            padding-left: 10px;
+            color: #fff;
+          }
+        }
+
+        .accordion-body{
+          border: 1px solid rgba(128, 128, 128, 0.28);
+          text-align: left;
+          padding: 10px;
         }
       }
 
-      .accordion-body{
-        border: 1px solid rgba(128, 128, 128, 0.28);
-        text-align: left;
-        padding: 10px;
+      .json-inner-log{
+        .accordion-heading{
+          background-color: #e2e5e8;
+          border: 1px solid rgba(128, 128, 128, 0.28);
+          text-align: left ;
+
+          a {
+            background: transparent url('arrow.png') no-repeat;
+            padding-left: 18px;
+            color: #545455;
+          }
+        }
+
+        .accordion-body{
+          border: 1px solid rgba(128, 128, 128, 0.28);
+          text-align: left;
+          padding: 10px;
+        }
+      }
+
+      .simple-inner-log{
+        .accordion-heading{
+          background-color: #e2e5e8;
+          border: 1px solid rgba(128, 128, 128, 0.28);
+          text-align: left ;
+          a {
+            padding-left: 18px;
+            color: #545455;
+          }
+        }
       }
     }
 
@@ -478,6 +510,17 @@
           padding: 10px;
 
           font-size: 10px;
+        }
+
+        pre {
+          width: 97%;
+          font-size: 13px;
+          border: 1px solid #DEDEDE;
+          background: #fff !important;
+        }
+
+        code {
+          background: #fff;
         }
       }
 

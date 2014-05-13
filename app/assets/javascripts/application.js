@@ -22,4 +22,5 @@
 //= require jquery-readyselector.js
 //= require justgage
 //= require raphael.2.1.0.min
+//= require json.formatter.js
 //= require_tree .
