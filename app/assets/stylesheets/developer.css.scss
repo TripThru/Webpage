@@ -5,6 +5,7 @@
 #developer {
 
   @import 'prism';
+  @import 'users';
 
   body {
     font-family: 'Open Sans', sans-serif;
@@ -142,6 +143,8 @@
     padding: 0;
     margin-top: 26px;
     text-align: center;
+    margin-left: 10px;
+    margin-right: 10px;
   }
 
 
@@ -217,6 +220,7 @@
 
     .container{
       padding: 0;
+      margin-top: -20px;
       width: 100%;
     }
 
@@ -247,11 +251,33 @@
 
     #statistics-gauges-container{
       display:inline-block;
-      .dashboard-statistics-gauge {
-        width: 90px;
-        height: 60px;
+      padding-top: 0;
+      margin-top: 0;
+      margin-bottom: 0;
+      height: 130px;
+
+      .title{
+        padding: 0;
+        margin: 20px 0 -5px 0;
+        font-size: 12px;
+      }
+      .dashboard-statistics-pie-chart{
         float: left;
-        margin-bottom: 5px;
+        margin-top: -5px;
+        height: 100px;
+        width: 120px;
+
+        svg{
+          margin: 0 auto;
+          padding: 0;
+          height: 100px;
+          width: 120px;
+        }
+
+        .chart{
+          height: 100px;
+          width: 120px;
+        }
       }
     }
 
@@ -259,7 +285,7 @@
       margin-top: -40px;
 
       #trip-list{
-        height: 540px;
+        height: 640px;
         overflow: hidden;
 
         #active-trips-chart{
@@ -271,7 +297,7 @@
           margin-top: 10px;
 
           #trips{
-            height: 90.5%;
+            height: 93.5%;
             overflow-y:scroll;
 
             .trip {
@@ -326,15 +352,29 @@
     }
 
     #tracking-panel{
-      height: 530px;
+      height: 630px;
       overflow-y: scroll;
 
       .panel {
         margin-bottom: 10px;
       }
 
+      .col-md-3{
+        height: 100%;
+        padding: 0 10px 0 0;
+        .panel-body{
+          height: 100%;
+        }
+      }
+      .col-md-9 {
+        height: 100%;
+        padding: 0 0 0 10px;
+      }
+
       #tracking-map-container {
-        height: 300px;
+        height: 580px;
+        width: 98%;
+        margin: 0 auto;
 
         .map_container {
           height: 98%;
@@ -346,17 +386,18 @@
         }
 
         #map-canvas {
-          width: 93%;
+          width: 100%;
           height: 98%;
-          margin: 0 auto;
+
         }
       }
 
       #tracking-trip-info{
-        height: 130px;
+        height: 98%;
+        overflow-x: scroll;
 
         h1{
-          font-size: 24px;
+          font-size: 22px;
           padding: 0;
           margin-bottom: 5px;
 
@@ -445,6 +486,18 @@
           }
         }
       }
+
+
+      pre {
+        width: 97%;
+        font-size: 13px;
+        border: 1px solid #DEDEDE;
+        background: #fff !important;
+      }
+
+      code {
+        background: #fff;
+      }
     }
 
 
@@ -466,8 +519,16 @@
         width: 100%;
       }
 
-      #tracking-panel{
 
+      #tracking-panel{
+        .col-md-3{
+          height: 35%;
+          padding: 0 0 5px 0;
+        }
+        .col-md-9 {
+          height: 63%;
+          padding: 5px 0 0 0;
+        }
         #tracking-trip-info{
 
           h1{
@@ -492,6 +553,28 @@
             }
           }
         }
+
+        #tracking-map-container {
+          height: 350px;
+          width: 98%;
+
+          .map_container {
+            height: 99%;
+            width: 98%;
+            background: #FFF;
+            margin-top: 10px;
+            float: left;
+            border: 1px solid #DEDEDE;
+          }
+
+          #map-canvas {
+            width: 100%;
+            height: 98%;
+          }
+        }
+
+
+
       }
 
       #activity-log-panel{
@@ -513,14 +596,39 @@
         }
 
         pre {
-          width: 97%;
-          font-size: 13px;
-          border: 1px solid #DEDEDE;
-          background: #fff !important;
+          font-size: 9px;
         }
+      }
 
-        code {
-          background: #fff;
+      #statistics-gauges-container{
+        display:inline-block;
+        padding-top: 0;
+        margin-top: 0;
+        margin-bottom: 10px;
+        height: 25%;
+
+        .title{
+          padding: 0;
+          margin: 20px 0 -15px 0;
+          font-size: 10px;
+        }
+        .dashboard-statistics-pie-chart{
+          float: left;
+          margin-top: -5px;
+          height: 100px;
+          width: 90px;
+
+          svg{
+            margin: 0 auto;
+            padding: 0;
+            height: 100px;
+            width: 90px;
+          }
+
+          .chart{
+            height: 100px;
+            width: 90px;
+          }
         }
       }
 
@@ -529,11 +637,6 @@
     .panel{
       width: 100%;
       height: 100%;
-    }
-  }
-  #users{
-    .jumbotron {
-      background-color: #dddddd;
     }
   }
 }

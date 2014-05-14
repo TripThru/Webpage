@@ -8,11 +8,7 @@ class SessionsController < ApplicationController
     user_login = User.find_by_UserName(username)
       if !user_login.nil? and user_login.authenticate(password)
         sign_in user_login
-        if user_login.Role == 'Admin'
-          redirect_to users_users_path
-        else
-          redirect_to developer_dashboard_path
-        end
+        redirect_to developer_dashboard_path
       else
         @message = 'Invalid username/password combination'
         render 'new'

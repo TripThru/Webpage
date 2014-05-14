@@ -371,179 +371,233 @@ class TripTracker
         setTripInfoBool = false
 
 class StatisticsDashboard
-    containerId = null
-    passengerRatingGauge = null
-    driverRatingGauge = null
-    timeWithPassengerGauge = null
-    mileageWithPassengerGauge = null
-    timeEnrouteGauge = null
-    mileageEnrouteGauge = null
-    timeIdleGauge = null
-    totalTripsGauge = null
-    completedGauge = null
-    cancelledGauge = null
-    rejectedGauge = null
-    latenessGauge = null
-    withinServiceGoalGauge = null
 
-    constructor: (containerId) ->
-        $('#' + containerId).html('
-            <div class="dashboard-statistics-gauge" id="passenger-rating-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="drivers-rating-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="time-with-passenger-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="mileage-with-passenger-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="time-enroute-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="mileage-enroute-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="time-idle-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="total-trips-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="cancelled-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="completed-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="rejected-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="lateness-gauge"></div>
-            <div class="dashboard-statistics-gauge" id="within-service-goal-gauge"></div>
-        ')
-        passengerRatingGauge = new JustGage({
-            id: 'passenger-rating-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Passenger'
+    constructor: (@containerId) ->
+        @timePieChartId = 'time-pie-chart'
+        @tripsPieChartId = 'trips-pie-chart'
+        @mileagePieChartId = 'mileage-pie-chart'
+        @tripsLastHourPieChartId = 'trips-last-hour-pie-chart'
+        @ratingsPieChartId = 'ratings-pie-chart'
+        @servicePieChartId = 'service-pie-chart'
+
+        $('#' + @containerId).html('
+            <div class="dashboard-statistics-bar-chart" id="ratings-bar-chart">
+            <div class="dashboard-statistics-bar-chart" id="service-bar-chart"></div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Time</div>
+                <div class="pie-chart" id="' + @timePieChartId + '"></div>
+            </div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Trips</div>
+                <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
+            </div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Mileage</div>
+                <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+            </div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Trips last hour</div>
+                <div class="pie-chart" id="' + @tripsLastHourPieChartId + '"></div>
+            </div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Ratings</div>
+                <div class="pie-chart" id="' + @ratingsPieChartId + '"></div>
+            </div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Service</div>
+                <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+            </div>
+                ')
+
+        Morris.Donut({
+            element: @timePieChartId
+            data: [
+                {label: "Enroute", value: 1}
+                {label: "Passenger", value: 1}
+                {label: "Idle", value: 1}
+            ]
+            backgroundColor: '#ccc',
+            labelColor: '#060',
+            colors: [
+                '#0BA462',
+                '#39B580',
+                '#67C69D',
+                '#95D7BB'
+            ],
+            formatter: (x) -> x + "%"
         })
-        driverRatingGauge = new JustGage({
-            id: 'drivers-rating-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Driver'
+        Morris.Donut({
+            element: @tripsPieChartId,
+            data: [
+                {label: "Completed", value: 1}
+                {label: "Rejected", value: 1}
+                {label: "Cancelled", value: 1}
+            ]
+            colors: [
+                '#0BA462'
+                '#DADD0F'
+                '#DD1D18'
+            ]
+            formatter: (x) -> x + "%"
         })
-        timeWithPassengerGauge = new JustGage({
-            id: 'time-with-passenger-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Time passenger'
+        Morris.Donut({
+            element: @mileagePieChartId,
+            data: [
+                {label: "Enroute", value: 1}
+                {label: "Passenger", value: 1}
+            ]
+            colors: [
+                '#0BA462'
+                '#DDD609'
+            ]
+            formatter: (x) -> x + "%"
         })
-        mileageWithPassengerGauge = new JustGage({
-            id: 'mileage-with-passenger-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Mileage passenger'
+        Morris.Donut({
+            element: @tripsLastHourPieChartId,
+            data: [
+                {label: "Trips", value: 1}
+            ]
+            colors: [
+                '#0BA462'
+            ]
         })
-        timeEnrouteGauge = new JustGage({
-            id: 'time-enroute-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Time enroute'
+        Morris.Donut({
+            element: @ratingsPieChartId,
+            data: [
+                {label: "Passengers", value: 1}
+                {label: "Drivers", value: 1}
+            ]
+            colors: [
+                '#0BA462'
+            ]
         })
-        mileageEnrouteGauge = new JustGage({
-            id: 'mileage-enroute-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Mileage enroute'
-        })
-        timeIdleGauge = new JustGage({
-            id: 'time-idle-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Time idle'
-        })
-        totalTripsGauge = new JustGage({
-            id: 'total-trips-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Time passenger'
-        })
-        cancelledGauge = new JustGage({
-            id: 'cancelled-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Cancelled'
-        })
-        completedGauge = new JustGage({
-            id: 'completed-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Completed'
-        })
-        rejectedGauge = new JustGage({
-            id: 'rejected-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Rejected'
-        })
-        latenessGauge = new JustGage({
-            id: 'lateness-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Lateness'
-        })
-        withinServiceGoalGauge = new JustGage({
-            id: 'within-service-goal-gauge'
-            value: 0
-            min: 0
-            max: 100
-            label: '%'
-            title: 'Within goal'
+        Morris.Donut({
+            element: @servicePieChartId,
+            data: [
+                {label: "Within goal", value: 1}
+                {label: "Lateness", value: 1}
+            ]
+            colors: [
+                '#3C6ADD'
+                '#DD1D18'
+            ]
         })
 
-    updateStats: (stats) ->
-        update(80, 90, 55, 32, 70, 80, 15, 80, 10, 80, 10, 15, 95)
+    updateStats: (stats) =>
+        @update(80, 90, 55, 32, 70, 80, 15, 80, 10, 80, 10, 15, 95)
 
-    update = (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,
-                timeIdle, totalTrips, cancelled, completed, rejected, lateness, withinServiceGoal) ->
+    update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,
+                timeIdle, totalTrips, cancelled, completed, rejected, lateness, withinServiceGoal) =>
 
-        passengerRatingGauge.refresh(passengerRating)
-        driverRatingGauge.refresh(driverRating)
-        timeWithPassengerGauge.refresh(timeWithPassenger)
-        mileageWithPassengerGauge.refresh(mileageWithPassenger)
-        timeEnrouteGauge.refresh(timeEnroute)
-        mileageEnrouteGauge.refresh(mileageEnroute)
-        timeIdleGauge.refresh(timeIdle)
-        totalTripsGauge.refresh(totalTrips)
-        cancelledGauge.refresh(cancelled)
-        completedGauge.refresh(completed)
-        rejectedGauge.refresh(rejected)
-        latenessGauge.refresh(lateness)
-        withinServiceGoalGauge.refresh(withinServiceGoal)
+        Morris.Donut({
+            element: @timePieChartId
+            data: [
+                {label: "Enroute", value: timeEnroute}
+                {label: "Passenger", value: timeWithPassenger}
+                {label: "Idle", value: timeIdle}
+            ]
+            colors: [
+                '#0BA462'
+                '#2922DD'
+                '#DD1D18'
+            ]
+            formatter: (x) -> x + "%"
+        })
+        Morris.Donut({
+            element: @tripsPieChartId,
+            data: [
+                {label: "Completed", value: completed}
+                {label: "Rejected", value: rejected}
+                {label: "Cancelled", value: cancelled}
+            ]
+            colors: [
+                '#0BA462'
+                '#DADD0F'
+                '#DD1D18'
+            ]
+            formatter: (x) -> x + "%"
+        })
+        Morris.Donut({
+            element: @mileagePieChartId,
+            data: [
+                {label: "Enroute", value: mileageEnroute}
+                {label: "Passenger", value: mileageWithPassenger}
+            ]
+            colors: [
+                '#0BA462'
+                '#3C6ADD'
+            ]
+            formatter: (x) -> x + "%"
+        })
+        Morris.Donut({
+            element: @tripsLastHourPieChartId,
+            data: [
+                {label: "Trips", value: totalTrips}
+            ]
+            colors: [
+                '#0BA462'
+            ]
+        })
+        Morris.Donut({
+            element: @ratingsPieChartId,
+            data: [
+                {label: "Passengers", value: passengerRating}
+                {label: "Drivers", value: driverRating}
+            ]
+            colors: [
+                '#3C6ADD'
+                '#0BA462'
+            ]
+        })
+        Morris.Donut({
+            element: @servicePieChartId,
+            data: [
+                {label: "Within goal", value: withinServiceGoal}
+                {label: "Lateness", value: lateness}
+            ]
+            colors: [
+                '#0BA462'
+                '#DD1D18'
+            ]
+        })
 
 class ActivityLog
 
     constructor: (@containerId) ->
+        @tripId = ''
+        @latestAddedLogDate = null
 
-    updateLog: (logs) =>
-        if logs?
-            logsString = ''
-            i = 0
-            for log in logs.reverse()
-                logsString += @getLogTag(i, log)
-                i++
-            $('#' + @containerId).html(logsString)
-        Prism.highlightAll();
+    updateLog: (logList, currentTripId) =>
+        if logList? and logList.length > 0
+            logList = logList.reverse()
+            newLatest = logList[0].time
+            logs = []
+            if !@latestAddedLogDate? or @tripId != currentTripId
+                logs = logList
+                $('#' + @containerId).html('')
+            else
+                for log in logList
+                    if Date.parse(log.time) > Date.parse(@latestAddedLogDate)
+                        logs.push log
+                    else
+                        break
+
+            if logs.length > 0
+                i = 0
+                for log in logs.reverse()
+                    [id, logString] = @getLogTag(i, log)
+                    $('#' + @containerId).prepend(logString)
+                    $('#' + id).slideDown();
+                    i++
+                Prism.highlightAll();@latestAddedLogDate = logList[logList.length-1].time
+
+            @tripId = currentTripId
+            @latestAddedLogDate = newLatest
 
     getLogTag: (id, log) =>
+        id =  id + 'parent-accordion'
         logString = '
-                <div class="accordion-group">
+                <div style="display: none" class="accordion-group" id="' + id + '">
                     <div class="accordion-heading">
                         <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion">
                             ' + log.time.split('.')[0] + ' | ' + log.messages[0].text +  '
@@ -637,6 +691,8 @@ class ActivityLog
                     </div>
                 </div>
               '
+
+        return [id, logString]
 
 
 class DashboardManager
@@ -757,9 +813,10 @@ class DashboardManager
 
     updateLogs: (data) =>
         if data?
+            tripId = if @activeTrip? then @activeTrip.getId() else null
             for listener in @listeners
                 if typeof listener.updateLog is 'function'
-                    listener.updateLog(data.logList)
+                    listener.updateLog(data.logList, tripId)
             @updatingLogs = false
 
 `

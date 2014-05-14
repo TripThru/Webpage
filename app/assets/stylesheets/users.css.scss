@@ -6,4 +6,26 @@
 // Jumbotron
 // --------------------------------------------------
 
+#users {
+  .jumbotron {
+    background-color: #dddddd;
+  }
 
+  #new-user-button{
+    margin-bottom: 10px;
+  }
+
+  .container{
+    width: 100%;
+  }
+
+  .table-responsive
+  {
+    overflow-x: auto;
+  }
+
+  .panel {
+    font-size: 12px;
+  }
+
+}

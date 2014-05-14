@@ -23,4 +23,5 @@
 //= require justgage
 //= require raphael.2.1.0.min
 //= require json.formatter.js
+//= require morris-0.4.1.min.js
 //= require_tree .

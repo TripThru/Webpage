@@ -41,7 +41,7 @@ class UsersController < ApplicationController
 
   def users
     if roleUser == 'Admin'
-      @users = User.where.not(:UserName => userNameuser)
+      @users = User.all
     else
       redirect_to new_session_path
     end
