@@ -345,7 +345,7 @@
 
       #tracking-panel {
         height: 630px;
-        overflow-y: scroll;
+        overflow-y: hidden;
 
         .panel {
           margin-bottom: 10px;
@@ -361,6 +361,7 @@
           width: 98%;
           margin: 0 auto;
 
+
           .map_container {
             height: 98%;
             width: 98%;
@@ -375,13 +376,25 @@
             height: 98%;
 
           }
+
+          img{
+            margin: 25% auto;
+            width: 128px;
+            height: 128px;
+          }
         }
 
         #tracking-trip-info {
-          height: 130px;
+          min-height: 130px;
           max-height: 300px;
           overflow: hidden;
           text-align: left;
+
+          img {
+            margin: 0 47%;
+            width: 64px;
+            height: 64px;
+          }
 
           h1 {
             font-size: 22px;
@@ -439,6 +452,12 @@
 
     #activity-log-panel{
       min-height: 300px;
+
+      img{
+        margin: 0 auto;
+        width: 128px;
+        height: 128px;
+      }
 
       #activity-log{
         .panel-heading a:after {

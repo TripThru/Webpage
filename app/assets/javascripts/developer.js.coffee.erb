@@ -3,17 +3,13 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 class TripThru
-    this.baseUrl = ''
-    this.access_token = ''
 
-    constructor: (url, token) ->
-        if not url? or not token?
+    constructor: (@baseUrl, @accessToken) ->
+        if not @baseUrl? or not @accessToken?
             console.error('Wrong parameters')
-        this.baseUrl = url
-        this.access_token = token
 
-    getStats: (_callback) ->
-        $.get(this.baseUrl + 'stats?format=json&access_token=' + this.access_token, (data) ->
+    getStats: (_callback) =>
+        $.get(@baseUrl + 'stats?format=json&access_token=' + @accessToken, (data) =>
             if data.result == 'OK'
                 _callback(data)
             else
@@ -24,9 +20,9 @@ class TripThru
         )
         return
 
-    getLog: (tripId, _callback) ->
+    getLog: (tripId, _callback) =>
         id = if tripId? then '&tripId=' + tripId else ''
-        $.get(this.baseUrl + 'log?format=json&access_token=' + this.access_token + id, (data) ->
+        $.get(@baseUrl + 'log?format=json&access_token=' + @accessToken + id, (data) =>
             if data.result == 'OK'
                 _callback(data)
             else
@@ -37,8 +33,8 @@ class TripThru
         )
         return
 
-    getTrips: (status, _callback) ->
-        $.get(this.baseUrl + 'trips?format=json&access_token=' + this.access_token, (data) ->
+    getTrips: (status, _callback) =>
+        $.get(@baseUrl + 'trips?format=json&access_token=' + @accessToken, (data) =>
             if data.result == 'OK'
                 _callback(data)
             else
@@ -49,8 +45,8 @@ class TripThru
         )
         return
 
-    getTripStatus: (tripId, _callback) ->
-        $.get(this.baseUrl + 'tripstatus?format=json&access_token=' + this.access_token + '&tripid=' + tripId, (data) ->
+    getTripStatus: (tripId, _callback) =>
+        $.get(@baseUrl + 'tripstatus?format=json&access_token=' + @accessToken + '&tripid=' + tripId, (data) =>
             if data.result == 'OK'
                 _callback(data)
             else
@@ -63,11 +59,9 @@ class TripThru
 
 
 class ActiveTripsChart
-  chart = null
-  activeTripsCount = []
 
   constructor: (chartContainer) ->
-    chart = new JustGage({
+    @chart = new JustGage({
         id: chartContainer
         value: 0
         min: 0
@@ -75,33 +69,28 @@ class ActiveTripsChart
         label: 'trips'
         relativeGaugeSize: true
     })
+    @activeTripsCount = []
+    @max = 0
 
-  updateStats: (stats) ->
-      update(stats.activeTrips, stats.activeTrips)
+  updateStats: (stats) =>
+      @update(stats.activeTrips, stats.activeTrips)
 
-  update = (activeTrips, selectedTypeActiveTrips) ->
+  update: (activeTrips, selectedTypeActiveTrips) =>
       if not activeTrips? or not selectedTypeActiveTrips?
           console.error('Wrong parameters')
           return
 
-      activeTripsCount.push activeTrips
-      max = Math.max.apply(Math, activeTripsCount)
-      max = if max < 10 then 10 else Math.ceil(max * 1.4)
+      @max = if activeTrips > @max then activeTrips else @max
+      upperLimit = if @max < 10 then 10 else Math.ceil(@max * 1.4)
 
-      chart.refresh(selectedTypeActiveTrips, max)
+      @chart.refresh(selectedTypeActiveTrips, upperLimit)
 
 class Location
-    this.lat = null
-    this.lng = null
-    this.address = ''
 
-    constructor: (latitude, longitude, _address) ->
-        this.lat = latitude
-        this.lng = longitude
-        this.address = _address
+    constructor: (@lat, @lng, @address) ->
 
     getAddress: () ->
-        return this.address
+        @address
 
 class Trip
 
@@ -143,31 +132,32 @@ class Trip
 
 
 class TripList
-    containerId = null
 
-    constructor: (renderToContainerId) ->
-        containerId = renderToContainerId
+    constructor: (@containerId) ->
 
-    updateTrips: (tripsById) ->
-        for id, trip of tripsById
-            if !$('#' + trip.getContainerId()).length
-                addTrip(trip)
-
-    updateActiveTrip: (trip) ->
+    tripChanged: (trip) =>
         if not trip?
-            $('#' + containerId + '>div.active').removeClass('active')
+            $('#' + @containerId + '>div.active').removeClass('active')
         else
             if not $('#' + trip.getContainerId()).hasClass('active')
-                $('#' + containerId + '>div.active').removeClass('active')
+                $('#' + @containerId + '>div.active').removeClass('active')
                 $("#" + trip.getContainerId()).addClass("active")
 
-    addTrip = (trip) ->
+    updateTrips: (tripsById) =>
+        for id, trip of tripsById
+            if !$('#' + trip.getContainerId()).length
+                @addTrip(trip)
+
+    updateActiveTrip: (trip) =>
+
+
+    addTrip: (trip) =>
         tripContainerId = trip.getContainerId()
-        tripTag = getTripTag(trip)
-        $('#' + containerId).prepend tripTag
+        tripTag = @getTripTag(trip)
+        $('#' + @containerId).prepend tripTag
         $('#' + tripContainerId).slideDown()
 
-    getTripTag = (trip) ->
+    getTripTag: (trip) =>
         '
             <div class="well trip" id="' + trip.getContainerId() + '" style="display:none;">
                 <h1>' + trip.getId() + '</h1>
@@ -178,21 +168,35 @@ class TripList
         '
 
 class TripTracker
-    tripInfoContainerId = null
-    mapContainerId = null
+    
+    constructor: (@tripInfoContainerId, @mapContainer) ->
+        @passengerMarker = null
+        @destinationMarker = null
+        @driverMarker = null
+        @initialMarker = null
+        @map = null
+        @mapOptions = null
+        @directionsDisplay = null
+        @directionsDisplay2 = null
+        @driverPreviousLocation = null
+        @setTripInfoBool = false
+        @tripId = null
 
+    tripChanged: (trip) =>
+        #if trip? and !@tripId?
+        #    $('#' + @mapContainer).html('#<%= image_tag('loading.gif') %>')
+        @tripId = null
+        @updateTripInfo(trip)
 
-    constructor: (tripInfoContainer, mapContainer) ->
-        tripInfoContainerId = tripInfoContainer
-        mapContainerId = mapContainer
-
-    updateActiveTrip: (trip) ->
-        updateTripInfo(trip)
-        updateMap(trip)
-
-    updateTripInfo = (trip) ->
+    updateActiveTrip: (trip) =>
+        @updateTripInfo(trip)
+        @updateMap(trip)
         if trip?
-            $('#' + tripInfoContainerId).hide().html(
+            @tripId = trip.getId()
+
+    updateTripInfo: (trip) =>
+        if trip?
+            $('#' + @tripInfoContainerId).html(
                 '<div>
                     <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
                     <p><span>Passenger:</span>' + trip.getPassengerName() + '</p>
@@ -204,35 +208,27 @@ class TripTracker
                         ' @' + if trip.getDriverLocation()? then  + trip.getDriverLocation().getAddress() else ''  + '</p>
                  </div>
                 '
-            ).fadeIn()
+            )
+        else if !@tripId?
+            $('#' + @tripInfoContainerId).fadeOut(1000).html('<h1>Select a trip</h1>').fadeIn(1000)
 
-    passengerMarker = null
-    destinationMarker = null
-    driverMarker = null
-    initialMarker = null
-    map = null
-    mapOptions = null
-    directionsDisplay = null
-    directionsDisplay2 = null
-    driverPreviousLocation = null
-    setTripInfoBool = false
-    tripId = null
-
-    updateMap = (trip) ->
-        return  if setTripInfoBool is true
-        setTripInfoBool = true
-        if not trip? or tripId isnt trip.getId()
-            passengerMarker.setMap null  if passengerMarker?
-            driverMarker.setMap null  if driverMarker?
-            destinationMarker.setMap null  if destinationMarker?
-            initialMarker.setMap null  if initialMarker?
-            driverPreviousLocation = null
-            tripId = (if trip? then trip.getId() else "")
+    updateMap: (trip) =>
+        #if trip? and trip.getId() != @tripId
+        #    $('#' + @mapContainer).html('<div id="map-canvas" class="tracking-map"></div>')
+        return  if @setTripInfoBool is true or !trip? or !trip.driverLocation?
+        @setTripInfoBool = true
+        if not trip? or @tripId isnt trip.getId()
+            @passengerMarker.setMap null  if @passengerMarker?
+            @driverMarker.setMap null  if @driverMarker?
+            @destinationMarker.setMap null  if @destinationMarker?
+            @initialMarker.setMap null  if @initialMarker?
+            @driverPreviousLocation = null
+            @tripId = (if trip? then trip.getId() else "")
         unless trip?
-            setTripInfoBool = false
+            @setTripInfoBool = false
             return
-        if not driverPreviousLocation? or trip.driverLocation.lat isnt driverPreviousLocation.lat or trip.driverLocation.lng isnt driverPreviousLocation.lng
-            driverPreviousLocation = trip.driverLocation
+        if not @driverPreviousLocation? or trip.driverLocation.lat isnt @driverPreviousLocation.lat or trip.driverLocation.lng isnt @driverPreviousLocation.lng
+            @driverPreviousLocation = trip.driverLocation
             pickupLocation = trip.pickupLocation
             driverLocation = trip.driverLocation
             dropoffLocation = trip.dropoffLocation
@@ -244,57 +240,57 @@ class TripTracker
                 initialLocation = null
                 if dropoffLocation
                     destinationLocation = new google.maps.LatLng(dropoffLocation.lat, dropoffLocation.lng)
-                    if destinationMarker?
-                        destinationMarker.setMap map
-                        destinationMarker.setPosition destinationLocation
+                    if @destinationMarker?
+                        @destinationMarker.setMap @map
+                        @destinationMarker.setPosition destinationLocation
                 if pickupLocation
                     passengerLocation = new google.maps.LatLng(pickupLocation.lat, pickupLocation.lng)
-                    if passengerMarker?
-                        passengerMarker.setMap map
-                        passengerMarker.setPosition passengerLocation
+                    if @passengerMarker?
+                        @passengerMarker.setMap @map
+                        @passengerMarker.setPosition passengerLocation
                 if driverLocation
                     driverCurrentLocation = new google.maps.LatLng(driverLocation.lat, driverLocation.lng)
-                    if driverMarker?
-                        driverMarker.setMap map
-                        driverMarker.setPosition driverCurrentLocation
+                    if @driverMarker?
+                        @driverMarker.setMap @map
+                        @driverMarker.setPosition driverCurrentLocation
                 if driverInitialLocation
                     initialLocation = new google.maps.LatLng(driverInitialLocation.lat, driverInitialLocation.lng)
-                    if initialMarker?
-                        initialMarker.setMap map
-                        initialMarker.setPosition driverInitialLocation
-                unless map?
-                    mapOptions =
+                    if @initialMarker?
+                        @initialMarker.setMap @map
+                        @initialMarker.setPosition driverInitialLocation
+                unless @map?
+                    @mapOptions =
                         center: (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
                         zoom: 15
                         mapTypeControl: false
                         mapTypeId: google.maps.MapTypeId.ROADMAP
 
-                    map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions)
-                if passengerLocation? and not passengerMarker?
-                    passengerMarker = new google.maps.Marker(
+                    @map = new google.maps.Map(document.getElementById("map-canvas"), @mapOptions)
+                if passengerLocation? and not @passengerMarker?
+                    @passengerMarker = new google.maps.Marker(
                         position: passengerLocation
-                        map: map
+                        map: @map
                         icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
                         title: "Pickup"
                     )
-                if initialLocation? and not initialMarker?
-                    initialMarker = new google.maps.Marker(
+                if initialLocation? and not @initialMarker?
+                    @initialMarker = new google.maps.Marker(
                         position: driverInitialLocation
-                        map: map
+                        map: @map
                         icon: "http://www.mricons.com/store/png/113267_25418_16_flag_icon.png"
                         title: "Initial"
                     )
-                if driverLocation? and not driverMarker?
-                    driverMarker = new google.maps.Marker(
+                if driverLocation? and not @driverMarker?
+                    @driverMarker = new google.maps.Marker(
                         position: driverCurrentLocation
-                        map: map
+                        map: @map
                         icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
                         title: "Driver"
                     )
-                if destinationLocation? and not destinationMarker?
-                    destinationMarker = new google.maps.Marker(
+                if destinationLocation? and not @destinationMarker?
+                    @destinationMarker = new google.maps.Marker(
                         position: dropoffLocation
-                        map: map
+                        map: @map
                         icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
                         title: "Destination"
                     )
@@ -341,34 +337,34 @@ class TripTracker
                     directionsService = new google.maps.DirectionsService()
                     directionsService2 = new google.maps.DirectionsService()
                     boleanFirst = true
-                    if directionsDisplay?
-                        directionsDisplay.setMap null
-                        directionsDisplay = null
-                    if directionsDisplay2?
-                        directionsDisplay2.setMap null
-                        directionsDisplay2 = null
-                    routes.forEach (route) ->
+                    if @directionsDisplay?
+                        @directionsDisplay.setMap null
+                        @directionsDisplay = null
+                    if @directionsDisplay2?
+                        @directionsDisplay2.setMap null
+                        @directionsDisplay2 = null
+                    routes.forEach (route) =>
                         request =
                             origin: route.origin
                             destination: route.destination
                             travelMode: google.maps.TravelMode.DRIVING
 
                         if boleanFirst
-                            directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
-                            directionsDisplay.setMap map
+                            @directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
+                            @directionsDisplay.setMap @map
                         else
-                            directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
-                            directionsDisplay2.setMap map
+                            @directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
+                            @directionsDisplay2.setMap @map
                         if boleanFirst
-                            directionsService.route request, (result, status) ->
-                                directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and directionsDisplay?
+                            directionsService.route request, (result, status) =>
+                                @directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay?
 
                             boleanFirst = false
                         else
-                            directionsService2.route request, (result, status) ->
-                                directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and directionsDisplay2?
-                map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
-        setTripInfoBool = false
+                            directionsService2.route request, (result, status) =>
+                                @directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay2?
+                @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+        @setTripInfoBool = false
 
 class StatisticsDashboard
 
@@ -379,6 +375,20 @@ class StatisticsDashboard
         @tripsLastHourPieChartId = 'trips-last-hour-pie-chart'
         @ratingsPieChartId = 'ratings-pie-chart'
         @servicePieChartId = 'service-pie-chart'
+        @lastValues =
+            passengerRating: 0
+            driverRating: 0
+            timeWithPassenger: 0
+            mileageWithPassenger: 0
+            timeEnroute: 0
+            mileageEnroute: 0
+            timeIdle: 0
+            totalTrips: 0
+            cancelled: 0
+            completed: 0
+            rejected: 0
+            lateness: 0
+            withinServiceGoal: 0
 
         $('#' + @containerId).html('
             <div  class="dashboard-statistics-pie-chart" >
@@ -487,83 +497,124 @@ class StatisticsDashboard
     update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,
                 timeIdle, totalTrips, cancelled, completed, rejected, lateness, withinServiceGoal) =>
 
-        Morris.Donut({
-            element: @timePieChartId
-            data: [
-                {label: "Enroute", value: timeEnroute}
-                {label: "Passenger", value: timeWithPassenger}
-                {label: "Idle", value: timeIdle}
-            ]
-            colors: [
-                '#0BA462'
-                '#2922DD'
-                '#DD1D18'
-            ]
-            formatter: (x) -> x + "%"
-        })
-        Morris.Donut({
-            element: @tripsPieChartId,
-            data: [
-                {label: "Completed", value: completed}
-                {label: "Rejected", value: rejected}
-                {label: "Cancelled", value: cancelled}
-            ]
-            colors: [
-                '#0BA462'
-                '#DADD0F'
-                '#DD1D18'
-            ]
-            formatter: (x) -> x + "%"
-        })
-        Morris.Donut({
-            element: @mileagePieChartId,
-            data: [
-                {label: "Enroute", value: mileageEnroute}
-                {label: "Passenger", value: mileageWithPassenger}
-            ]
-            colors: [
-                '#0BA462'
-                '#3C6ADD'
-            ]
-            formatter: (x) -> x + "%"
-        })
-        Morris.Donut({
-            element: @tripsLastHourPieChartId,
-            data: [
-                {label: "Trips", value: totalTrips}
-            ]
-            colors: [
-                '#0BA462'
-            ]
-        })
-        Morris.Donut({
-            element: @ratingsPieChartId,
-            data: [
-                {label: "Passengers", value: passengerRating}
-                {label: "Drivers", value: driverRating}
-            ]
-            colors: [
-                '#3C6ADD'
-                '#0BA462'
-            ]
-        })
-        Morris.Donut({
-            element: @servicePieChartId,
-            data: [
-                {label: "Within goal", value: withinServiceGoal}
-                {label: "Lateness", value: lateness}
-            ]
-            colors: [
-                '#0BA462'
-                '#DD1D18'
-            ]
-        })
+        if @lastValues.timeEnroute != timeEnroute or
+                @lastValues.timeWithPassenger != timeWithPassenger or
+                @lastValues.timeIdle != timeIdle
+
+            @lastValues.timeEnroute = timeEnroute
+            @lastValues.timeWithPassenger = timeWithPassenger
+            @lastValues.timeIdle = timeIdle
+            Morris.Donut({
+                element: @timePieChartId
+                data: [
+                    {label: "Enroute", value: timeEnroute}
+                    {label: "Passenger", value: timeWithPassenger}
+                    {label: "Idle", value: timeIdle}
+                ]
+                colors: [
+                    '#0BA462'
+                    '#2922DD'
+                    '#DD1D18'
+                ]
+                formatter: (x) -> x + "%"
+            })
+
+        if @lastValues.completed != completed or
+                @lastValues.cancelled != cancelled or
+                @lastValues.rejected != rejected
+
+            @lastValues.completed = completed
+            @lastValues.cancelled = cancelled
+            @lastValues.rejected = rejected
+            Morris.Donut({
+                element: @tripsPieChartId,
+                data: [
+                    {label: "Completed", value: completed}
+                    {label: "Rejected", value: rejected}
+                    {label: "Cancelled", value: cancelled}
+                ]
+                colors: [
+                    '#0BA462'
+                    '#DADD0F'
+                    '#DD1D18'
+                ]
+                formatter: (x) -> x + "%"
+            })
+
+        if @lastValues.mileageEnroute != mileageEnroute or
+                @lastValues.mileageWithPassenger != mileageWithPassenger
+
+            @lastValues.mileageEnroute = mileageEnroute
+            @lastValues.mileageWithPassenger = mileageWithPassenger
+            Morris.Donut({
+                element: @mileagePieChartId,
+                data: [
+                    {label: "Enroute", value: mileageEnroute}
+                    {label: "Passenger", value: mileageWithPassenger}
+                ]
+                colors: [
+                    '#0BA462'
+                    '#3C6ADD'
+                ]
+                formatter: (x) -> x + "%"
+            })
+
+        if @lastValues.totalTrips != totalTrips
+            @lastValues.totalTrips = totalTrips
+            Morris.Donut({
+                element: @tripsLastHourPieChartId,
+                data: [
+                    {label: "Trips", value: totalTrips}
+                ]
+                colors: [
+                    '#0BA462'
+                ]
+            })
+
+        if @lastValues.passengerRating != passengerRating or
+                @lastValues.driverRating != driverRating
+
+            @lastValues.passengerRating = passengerRating
+            @lastValues.driverRating = driverRating
+            Morris.Donut({
+                element: @ratingsPieChartId,
+                data: [
+                    {label: "Passengers", value: passengerRating}
+                    {label: "Drivers", value: driverRating}
+                ]
+                colors: [
+                    '#3C6ADD'
+                    '#0BA462'
+                ]
+                formatter: (x) -> x + "%"
+            })
+
+        if @lastValues.withinServiceGoal != withinServiceGoal or
+                @lastValues.lateness != lateness
+
+            @lastValues.withinServiceGoal = withinServiceGoal
+            @lastValues.lateness = lateness
+            Morris.Donut({
+                element: @servicePieChartId,
+                data: [
+                    {label: "Within goal", value: withinServiceGoal}
+                    {label: "Lateness", value: lateness}
+                ]
+                colors: [
+                    '#0BA462'
+                    '#DD1D18'
+                ]
+                formatter: (x) -> x + "%"
+            })
 
 class ActivityLog
 
     constructor: (@containerId) ->
         @tripId = ''
         @latestAddedLogDate = null
+        
+    tripChanged: (trip) =>
+        $('#' + @containerId).html('<%= image_tag('loading.gif') %>')
 
     updateLog: (logList, currentTripId) =>
         if logList? and logList.length > 0
@@ -734,7 +785,10 @@ class DashboardManager
         if data?
             for listener in @listeners
                 if typeof listener.updateStats is 'function'
-                    listener.updateStats(data)
+                    try
+                        listener.updateStats(data)
+                    catch error
+                        console.error listener + ' updateStats failed: ' + error
         @updatingStats = false
 
     updateTrips: (data) =>
@@ -744,7 +798,10 @@ class DashboardManager
 
             for listener in @listeners
                 if typeof listener.updateTrips is 'function'
-                    listener.updateTrips(@tripsById)
+                    try
+                        listener.updateTrips(@tripsById)
+                    catch error
+                        console.error listener + ' updateTrips failed: ' + error
         @updatingTrips = false
 
     processTrip: (newTrip) =>
@@ -780,6 +837,14 @@ class DashboardManager
             @activeTrip = trip
         else
             @activeTrip = null
+
+        for listener in @listeners
+            if typeof listener.tripChanged is 'function'
+                try
+                    listener.tripChanged(@activeTrip)
+                catch error
+                    console.error listener + ' tripChanged failed: ' + error
+            
         @update()
 
 
@@ -805,7 +870,10 @@ class DashboardManager
             )
         for listener in @listeners
             if typeof listener.updateActiveTrip is 'function'
-                listener.updateActiveTrip(@activeTrip)
+                try
+                    listener.updateActiveTrip(@activeTrip)
+                catch error
+                    console.error listener.toString() + ' updateLogs failed: ' + error
 
         @updatingActiveTrip = false
 
@@ -814,7 +882,10 @@ class DashboardManager
             tripId = if @activeTrip? then @activeTrip.getId() else null
             for listener in @listeners
                 if typeof listener.updateLog is 'function'
-                    listener.updateLog(data.logList, tripId)
+                    try
+                        listener.updateLog(data.logList, tripId)
+                    catch error
+                        console.error listener + ' updateLogs failed: ' + error
             @updatingLogs = false
 
 `
