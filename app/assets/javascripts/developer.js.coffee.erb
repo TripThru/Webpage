@@ -86,7 +86,7 @@ class ActiveTripsChart
 
       activeTripsCount.push activeTrips
       max = Math.max.apply(Math, activeTripsCount)
-      max = if max < 10 then 10 else max * 1.4
+      max = if max < 10 then 10 else Math.ceil(max * 1.4)
 
       chart.refresh(selectedTypeActiveTrips, max)
 
@@ -381,8 +381,6 @@ class StatisticsDashboard
         @servicePieChartId = 'service-pie-chart'
 
         $('#' + @containerId).html('
-            <div class="dashboard-statistics-bar-chart" id="ratings-bar-chart">
-            <div class="dashboard-statistics-bar-chart" id="service-bar-chart"></div>
             <div  class="dashboard-statistics-pie-chart" >
                 <div class="title">Time</div>
                 <div class="pie-chart" id="' + @timePieChartId + '"></div>
@@ -830,7 +828,7 @@ $(document).ready(function(){
 
 $('.developer.dashboard').ready ->
     dashboardManager = new DashboardManager(
-        new TripThru('http://192.168.0.135/TripThru.TripThruGateway/', $('#access_token').val())
+        new TripThru('http://107.170.240.134/TripThru.TripThruGateway/', $('#access_token').val())
         'trip-status-selector'
         [
             new ActiveTripsChart('active-trips-chart')

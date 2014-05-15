@@ -1,85 +1,93 @@
 <div id="dashboard">
-    <div class="page-header">
-      <h3>Dashboard</h3>
-    </div>
-
-    <div class="container">
-      <div class="col-md-12">
-        <div id="statistics-gauges-container"></div>
-      </div>
-        <div>
-            <div class="col-md-4">
-              <div class="panel panel-default">
+  <div class="container">
+    <div id="trips-main-panel" class="col-md-12 col-sm-12 col-xs-12">
+      <div class="row">
+          <div class="col-md-2 col-md-push-10 col-sm-12 col-xs-12">
+            <div class="panel panel-default">
+              <div class="panel-heading text-center ">
+                <h3 class="panel-title">Statistics</h3>
+              </div>
+              <div class="panel-body" id="tracking-panel">
+                <div id="statistics-gauges-container"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-10 col-md-pull-2 col-sm-12 hidden-xs">
+              <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="panel panel-default">
                   <div class="panel-heading text-center ">
                     <h3 class="panel-title">Active trips</h3>
                   </div>
                   <div class="panel-body" id="trips-list-panel">
                     <div id="trip-list">
-                        <div id='active-trips-chart'></div>
-                         <select id='trip-status-selector' class="selectpicker">
-                           <option value="All" selected="selected">All</option>
-                           <option value="Queued">Queued</option>
-                           <option value="Dispatched">Dispatched</option>
-                           <option value="Confirmed">Confirmed</option>
-                           <option value="Enroute">Enroute</option>
-                           <option value="ArrivedAndWaiting">ArrivedAndWaiting</option>
-                           <option value="PickedUp">Picked up</option>
-                           <option value="DroppedOff">DroppedOff</option>
-                           <option value="Cancelled">Cancelled</option>
-                           <option value="Rejected">Rejected</option>
-                           <option value="Complete">Complete</option>
-                        </select>
-                        <div id="trips-wrapper">
-                          <div class="panel panel-default" id="trips">
-                            <div class="panel-body" id="trips-panel">
-                            </div>
+                      <div id='active-trips-chart'></div>
+                      <select id='trip-status-selector' class="selectpicker">
+                        <option value="All" selected="selected">All</option>
+                        <option value="Queued">Queued</option>
+                        <option value="Dispatched">Dispatched</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Enroute">Enroute</option>
+                        <option value="ArrivedAndWaiting">ArrivedAndWaiting</option>
+                        <option value="PickedUp">Picked up</option>
+                        <option value="DroppedOff">DroppedOff</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Complete">Complete</option>
+                      </select>
+
+                      <div id="trips-wrapper">
+                        <div class="panel panel-default" id="trips">
+                          <div class="panel-body" id="trips-panel">
                           </div>
                         </div>
+                      </div>
                     </div>
                   </div>
+                </div>
               </div>
-            </div>
-            <div class="col-md-8" >
-              <div class="panel panel-default">
-                <div class="panel-heading text-center ">
-                  <h3 class="panel-title">Trip information</h3>
-                </div>
-                <div class="panel-body" id="tracking-panel">
-                  <div class="col-md-3">
-                    <div class="panel panel-default">
-                      <div class="panel-body">
-                        <div id="tracking-trip-info">
+              <div class="col-md-8 col-sm-8 col-xs-12">
+                <div class="panel panel-default">
+                  <div class="panel-heading text-center ">
+                    <h3 class="panel-title">Trip information</h3>
+                  </div>
+                  <div class="panel-body" id="tracking-panel">
+                    <div class="col-md-12">
+                      <div class="panel panel-default">
+                        <div class="panel-body">
+                          <div id="tracking-trip-info">
 
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="col-md-9">
-                    <div class="panel panel-default">
-                      <div class="panel-body">
-                        <div id="tracking-map-container">
-                          <div id="map-canvas" class="tracking-map"></div>
+                    <div class="col-md-12">
+                      <div class="panel panel-default">
+                        <div class="panel-body">
+                          <div id="tracking-map-container">
+                            <div id="map-canvas" class="tracking-map"></div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-               </div>
-            </div>
-        </div>
-      <div>
-        <div class="col-md-12">
-          <div class="panel panel-default">
-            <div class="panel-heading text-center">
-              <h3 class="panel-title">Activity log</h3>
-            </div>
-            <div class="panel-body" id="activity-log-panel">
+              </div>
+          </div>
+      </div>
+      <div class="row" id="bottom-row">
+          <div class="col-md-12 col-sm-12 hidden-xs" id="activity-column">
+            <div class="panel panel-default">
+              <div class="panel-heading text-center">
+                <h3 class="panel-title">Activity log</h3>
+              </div>
+              <div class="panel-body" id="activity-log-panel">
                 <div id="activity-log">
 
                 </div>
+              </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
+  </div>
 </div>
