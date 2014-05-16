@@ -134,6 +134,7 @@ class Trip
 class TripList
 
     constructor: (@containerId) ->
+        @tripsInListById = {}
 
     tripChanged: (trip) =>
         if not trip?
@@ -145,17 +146,24 @@ class TripList
 
     updateTrips: (tripsById) =>
         for id, trip of tripsById
-            if !$('#' + trip.getContainerId()).length
+            if id not of @tripsInListById
                 @addTrip(trip)
+
+        for id, trip of @tripsInListById
+            if id not of tripsById
+                @removeTrip(trip)
 
     updateActiveTrip: (trip) =>
 
 
     addTrip: (trip) =>
-        tripContainerId = trip.getContainerId()
-        tripTag = @getTripTag(trip)
-        $('#' + @containerId).prepend tripTag
-        $('#' + tripContainerId).slideDown()
+        @tripsInListById[trip.getId()] = trip
+        $('#' + @containerId).prepend @getTripTag(trip)
+        $('#' + trip.getContainerId()).slideDown()
+
+    removeTrip: (trip) =>
+        delete @tripsInListById[trip.getId()]
+        $('#' + trip.getContainerId()).fadeOut()
 
     getTripTag: (trip) =>
         '
@@ -183,8 +191,6 @@ class TripTracker
         @tripId = null
 
     tripChanged: (trip) =>
-        #if trip? and !@tripId?
-        #    $('#' + @mapContainer).html('#<%= image_tag('loading.gif') %>')
         @tripId = null
         @updateTripInfo(trip)
 
@@ -199,7 +205,7 @@ class TripTracker
             $('#' + @tripInfoContainerId).html(
                 '<div>
                     <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
-                    <p><span>Passenger:</span>' + trip.getPassengerName() + '</p>
+                    <p><span>Passenger: </span>' + trip.getPassengerName() + '</p>
                     <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
                     <p><span>Pickup: </span>' + trip.getPickupLocation().getAddress() + '</p>
                     <p><span>Dropoff: </span>' + trip.getDropoffLocation().getAddress() + '</p>
@@ -209,12 +215,10 @@ class TripTracker
                  </div>
                 '
             )
-        else if !@tripId?
+        else
             $('#' + @tripInfoContainerId).fadeOut(1000).html('<h1>Select a trip</h1>').fadeIn(1000)
 
     updateMap: (trip) =>
-        #if trip? and trip.getId() != @tripId
-        #    $('#' + @mapContainer).html('<div id="map-canvas" class="tracking-map"></div>')
         return  if @setTripInfoBool is true or !trip? or !trip.driverLocation?
         @setTripInfoBool = true
         if not trip? or @tripId isnt trip.getId()
@@ -756,7 +760,7 @@ class DashboardManager
         @updatingLogs = false
 
         $('#' + @statusSelectorContainerId).change =>
-            @selectedStatus = $('#' + @statusSelectorContainerId + ' option: selected').val()
+            @selectedStatus = $('#' + @statusSelectorContainerId + ' option:selected').val()
             @update()
 
     update: =>
@@ -779,7 +783,7 @@ class DashboardManager
         if not @updatingLogs
             @updatingLogs = true
             tripId = if @activeTrip? then @activeTrip.getId() else null
-            @gateway.getLog tripId, @updateLogs
+            @gateway.getLog(tripId, @updateLogs)
 
     updateStats: (data) =>
         if data?
@@ -793,8 +797,15 @@ class DashboardManager
 
     updateTrips: (data) =>
         if data?
+            tripsIds = []
             for newTrip in data.trips
-                @processTrip(newTrip)
+                tripsIds.push newTrip.id
+                if newTrip.id not of @tripsById
+                    @processTrip(newTrip)
+
+            for id, trip of @tripsById
+                if id not in tripsIds
+                    delete @tripsById[id]
 
             for listener in @listeners
                 if typeof listener.updateTrips is 'function'
@@ -805,35 +816,33 @@ class DashboardManager
         @updatingTrips = false
 
     processTrip: (newTrip) =>
-        newTrips = []
-        if newTrip.id not of @tripsById
-            driverLocation =
-                if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, '') else null
-            driverInitialLocation =
-                if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, '') else null
-            trip = new Trip(
-                    newTrip.id
-                    newTrip.passengerName
-                    newTrip.pickupTime
-                    new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, '')
-                    newTrip.originatingPartnerName
-                    newTrip.servicingPartnerName
-                    newTrip.status
-                    newTrip.eta
-                    newTrip.price
-                    newTrip.driverName
-                    driverLocation
-                    new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, '')
-                    driverInitialLocation
-            )
-            @tripsById[trip.getId()] = trip
-            newTrips.push trip
-            $(document).off('click', '#' + trip.getContainerId()).on 'click', '#' + trip.getContainerId(),  =>
-                @toggleActiveTrip(trip.getId())
+        driverLocation =
+            if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, '') else null
+        driverInitialLocation =
+            if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, '') else null
+        trip = new Trip(
+                newTrip.id
+                newTrip.passengerName
+                newTrip.pickupTime
+                new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, '')
+                newTrip.originatingPartnerName
+                newTrip.servicingPartnerName
+                newTrip.status
+                newTrip.eta
+                newTrip.price
+                newTrip.driverName
+                driverLocation
+                new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, '')
+                driverInitialLocation
+        )
+        @tripsById[trip.getId()] = trip
+        $(document).off('click', '#' + trip.getContainerId()).on 'click', '#' + trip.getContainerId(),  =>
+            @toggleActiveTrip(newTrip.id)
+
 
     toggleActiveTrip: (tripId) =>
         trip = @tripsById[tripId]
-        if not @activeTrip? or @activeTrip.id != trip.id
+        if not @activeTrip? or !trip? or @activeTrip.id != trip.id
             @activeTrip = trip
         else
             @activeTrip = null
@@ -886,7 +895,7 @@ class DashboardManager
                         listener.updateLog(data.logList, tripId)
                     catch error
                         console.error listener + ' updateLogs failed: ' + error
-            @updatingLogs = false
+        @updatingLogs = false
 
 `
 $(document).ready(function(){
