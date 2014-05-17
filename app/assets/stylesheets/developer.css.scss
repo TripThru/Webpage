@@ -288,6 +288,12 @@
             height: 70%;
             margin-top: 10px;
 
+            img {
+              width: 64px;
+              height: 64px;
+              margin-left: 30%;
+            }
+
             #trips {
               height: 93.5%;
               overflow-y: scroll;
@@ -424,12 +430,13 @@
       #statistics-gauges-container{
         margin-top: -5px;
 
-        .title{
-          padding: 0;
-          margin: 5px 0 -10px 0;
-          font-size: 12px;
-        }
         .dashboard-statistics-pie-chart{
+          .title{
+            padding: 0;
+            margin: 15px 0 -10px 0;
+            font-size: 12px;
+          }
+
           height: 95px;
           width: 120px;
           margin: 0 auto;
@@ -445,6 +452,26 @@
           .chart{
             height: 95px;
             width: 120px;
+          }
+        }
+
+        .dashboard-statistics-rating{
+          .title{
+            padding: 0;
+            margin: 15px 0 0 0;
+            font-size: 12px;
+          }
+
+          .flexible-stars {
+
+            i {display: inline-block}
+            [class^="sprite-"] {
+              background: url(http://static.titovanton.com/static/titovanton//pic/csg-513e9341220f7.png) no-repeat top left;
+            }
+
+            .sprite-gold-star{ background-position: 0 0; width: 29px; height: 28px; }
+            .sprite-half-star{ background-position: 0 -78px; width: 29px; height: 28px; }
+            .sprite-silver-star{ background-position: 0 -156px; width: 29px; height: 28px; }
           }
         }
       }
@@ -617,16 +644,17 @@
           margin-bottom: 10px;
           width: 100px;
 
-          .title{
-            padding: 0;
-            margin: 0 0 -8px 0;
-            font-size: 14px;
-          }
           .dashboard-statistics-pie-chart{
+
+            .title{
+              padding: 0;
+              margin: 10px 0 px 0;
+              font-size: 14px;
+            }
             float: left;
             height: 120px;
             width: 130px;
-            margin: 18px auto 0;
+            margin: 18px 0 20px -10px;
 
             svg{
               margin: 0 auto;
@@ -638,6 +666,32 @@
             .chart{
               height: 120px;
               width: 130px;
+            }
+          }
+
+          #dashboard-ratings-container{
+            margin: 10px 0 0 -40px;
+            width: 200px;
+            float: left;
+          }
+
+          .dashboard-statistics-rating{
+            .title{
+              padding: 0;
+              margin: 30px 0 0 0;
+              font-size: 14px;
+            }
+
+            .flexible-stars {
+
+              i {display: inline-block}
+              [class^="sprite-"] {
+                background: url(http://static.titovanton.com/static/titovanton//pic/csg-513e9341220f7.png) no-repeat top left;
+              }
+
+              .sprite-gold-star{ background-position: 0 0; width: 29px; height: 28px; }
+              .sprite-half-star{ background-position: 0 -78px; width: 29px; height: 28px; }
+              .sprite-silver-star{ background-position: 0 -156px; width: 29px; height: 28px; }
             }
           }
         }
@@ -669,7 +723,6 @@
         }
 
         #trips-list-panel {
-
           #trip-list {
             #trips-wrapper {
               #trips {
@@ -720,21 +773,22 @@
         #statistics-gauges-container{
           display:inline-block;
           padding-top: 0;
-          margin-top: 0;
+          margin-top: -10px;
           margin-bottom: 10px;
-
-          .title{
-            padding: 0;
-            margin: 10px 0 -5px 0;
-            font-size: 12px;
-          }
           .dashboard-statistics-pie-chart{
             float: left;
             height: 110px;
             width: 110px;
+            margin: 0 20px 0 0;
+
+            .title{
+              padding: 0;
+              margin: 10px 10px -5px 0;
+              font-size: 12px;
+            }
 
             svg{
-              margin: 0 auto;
+              margin: 0 0 0 0;
               padding: 0;
               height: 110px;
               width: 110px;
@@ -743,6 +797,34 @@
             .chart{
               height: 110px;
               width: 110px;
+            }
+          }
+
+          #dashboard-ratings-container{
+            margin: 0 0 0 0;
+            width: 160px;
+            float: left;
+          }
+
+          .dashboard-statistics-rating{
+            .title{
+              padding: 0;
+              margin: 10px 0 0 0;
+              font-size: 12px;
+            }
+
+            float: left;
+
+            .flexible-stars {
+
+              i {display: inline-block}
+              [class^="sprite-"] {
+                background: url(http://static.titovanton.com/static/titovanton//pic/csg-513e9341220f7.png) no-repeat top left;
+              }
+
+              .sprite-gold-star{ background-position: 0 0; width: 29px; height: 28px; }
+              .sprite-half-star{ background-position: 0 -78px; width: 29px; height: 28px; }
+              .sprite-silver-star{ background-position: 0 -156px; width: 29px; height: 28px; }
             }
           }
         }
@@ -833,6 +915,28 @@
             .chart{
               height: 100px;
               width: 90px;
+            }
+          }
+
+          .dashboard-statistics-rating{
+            .title{
+              padding: 0;
+              margin: 5px 0 0 0;
+              font-size: 12px;
+            }
+
+            float: left;
+
+            .flexible-stars {
+
+              i {display: inline-block}
+              [class^="sprite-"] {
+                background: url(http://static.titovanton.com/static/titovanton//pic/csg-513e9341220f7.png) no-repeat top left;
+              }
+
+              .sprite-gold-star{ background-position: 0 0; width: 29px; height: 28px; }
+              .sprite-half-star{ background-position: 0 -78px; width: 29px; height: 28px; }
+              .sprite-silver-star{ background-position: 0 -156px; width: 29px; height: 28px; }
             }
           }
         }
