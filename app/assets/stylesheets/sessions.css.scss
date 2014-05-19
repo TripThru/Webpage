@@ -28,3 +28,40 @@
     }
   }
 }
+
+@media (max-width: 991px) {
+#sessions {
+    #login_container {
+
+      .container {
+        width: 80%;
+      }
+
+      .login {
+      }
+
+      .login_dialog {
+        width: 500px;
+      }
+    }
+}
+}
+
+@media (max-width: 767px) {
+#sessions {
+  #login_container {
+
+    .container {
+      width: 100%;
+    }
+
+    .login {
+    }
+
+    .login_dialog {
+      width: 80%;
+      max-width: 500px;
+    }
+  }
+}
+}

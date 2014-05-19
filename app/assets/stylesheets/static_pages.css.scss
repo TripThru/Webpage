@@ -1,6 +1,18 @@
 #static_pages_home {
   #sec1 {
     text-shadow: black 0.1em 0.1em 0.2em;
+    color: #fff;
+
+    p {
+      color: #ffffff;
+    }
+  }
+
+  #sec2{
+    color: #ffffff;
+    p {
+      color: #ffffff;
+    }
   }
 
   #sec3 {
@@ -78,3 +90,44 @@
     }
   }
 }
+
+@media (max-width: 991px) {
+  #static_pages_faq{
+    .faq {
+      .container {
+
+        width: 80%;
+      }
+    }
+  }
+
+  #static_pages_about{
+    .about_section {
+      .container {
+
+        width: 80%;
+      }
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  #static_pages_faq{
+    .faq {
+      .container {
+
+        width: 100%;
+      }
+    }
+  }
+
+  #static_pages_about{
+    .about_section {
+      .container {
+
+        width: 100%;
+      }
+    }
+  }
+}
+
