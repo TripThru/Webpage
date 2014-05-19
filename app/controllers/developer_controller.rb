@@ -25,6 +25,14 @@ class DeveloperController < ApplicationController
     end
   end
 
+  def api
+    if userAccessToken
+      render 'api'
+    else
+      redirect_to signin_path
+    end
+  end
+
   def settings
     if userAccessToken
       render 'settings'

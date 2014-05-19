@@ -325,8 +325,8 @@
                   background-color: rgb(30, 140, 24);
                   color: #fff;
 
-                  h1 {
-                    color: #fff;
+                  h1, p {
+                    color: #fff ;
                   }
                 }
               }
@@ -335,7 +335,7 @@
                 background-color: rgb(30, 140, 24);
                 color: #fff;
 
-                h1 {
+                h1, p {
                   color: #fff;
                 }
               }
@@ -971,5 +971,25 @@
       width: 100%;
       height: 100%;
     }
+  }
+
+  #swagger {
+    .heading{
+      h2{
+        font-size: 18px;
+      }
+      h3{
+        font-size: 16px;
+      }
+      h4{
+        font-size: 12px;
+      }
+      height: 35px;
+    }
+
+    width: 98%;
+    margin: 20px 0 0 auto;
+    padding: 0;
+
   }
 }

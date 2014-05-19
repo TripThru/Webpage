@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   get 'developer/dashboard', to: 'developer#dashboard'
   get 'developer/settings', to: 'developer#settings'
   get 'developer/statistics', to: 'developer#statistics'
+  get 'developer/api', to: 'developer#api'
 
   root 'static_pages#home'
   get '/home', to: 'static_pages#home'

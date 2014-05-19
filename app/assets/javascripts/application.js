@@ -25,4 +25,13 @@
 //= require json.formatter.js
 //= require morris-0.4.1.min.js
 //= require jquery.flexible.stars.js
+//= require swagger/underscore-min.js
+//= require swagger/backbone-min.js
+//= require swagger/handlebars-1.0.rc.1.js
+//= require swagger/highlight.7.3.pack.js
+//= require swagger/swagger.js
+//= require swagger/swagger-ui.min.js
+//= require swagger/jquery.slideto.min.js
+//= require swagger/jquery.wiggle.min.js
+//= require swagger/jquery.ba-bbq.min.js
 //= require_tree .
