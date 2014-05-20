@@ -1,0 +1,21 @@
+<div id="statistics">
+  <div id="chart-container">
+    <div id="selectors-container">
+        <select id="data-selector" class="selectpicker pull-left">
+          <option value="Time" selected="selected">Time</option>
+          <option value="Mileage">Mileage</option>
+          <option value="Service">Service</option>
+          <option value="Ratings">Ratings</option>
+        </select>
+        <div class="input-daterange input-group pull-left" id="datepicker">
+          <input type="text" class="input-sm form-control" name="start" />
+          <span class="input-group-addon">to</span>
+          <input type="text" class="input-sm form-control" name="end" />
+        </div>
+    </div>
+    <br/>
+    <div id="time-series-container">
+        <div id="time-series-chart"></div>
+    </div>
+  </div>
+</div>

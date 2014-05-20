@@ -31,7 +31,7 @@
 //= require swagger/highlight.7.3.pack.js
 //= require swagger/swagger.js
 //= require swagger/swagger-ui.min.js
-//= require swagger/jquery.slideto.min.js
-//= require swagger/jquery.wiggle.min.js
-//= require swagger/jquery.ba-bbq.min.js
+//= require d3.min.js
+//= require c3.min.js
+//= require bootstrap-datepicker
 //= require_tree .
