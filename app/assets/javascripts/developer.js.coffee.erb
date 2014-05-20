@@ -49,7 +49,13 @@ class TripThru
     getTripStatus: (tripId, _callback) =>
         $.get(@baseUrl + 'tripstatus?format=json&access_token=' + @accessToken + '&tripid=' + tripId, (data) =>
             if data.result == 'OK'
-                _callback(data)
+                $.get(@baseUrl + 'routetrip?format=json&access_token=' + @accessToken + '&tripid=' + tripId, (trip) =>
+                    data.historyEnrouteList = trip.historyEnrouteList
+                    data.historyPickUpList = trip.historyPickUpList
+                    _callback(data)
+                ).error( ->
+                    _callback(null)
+                )
             else
                 _callback(null)
 
@@ -61,30 +67,30 @@ class TripThru
 
 class ActiveTripsChart
 
-  constructor: (chartContainer) ->
-    @chart = new JustGage({
-        id: chartContainer
-        value: 0
-        min: 0
-        max: 10
-        label: 'trips'
-        relativeGaugeSize: true
-    })
-    @activeTripsCount = []
-    @max = 0
+    constructor: (chartContainer) ->
+        @chart = new JustGage({
+            id: chartContainer
+            value: 0
+            min: 0
+            max: 10
+            label: 'trips'
+            relativeGaugeSize: true
+        })
+        @activeTripsCount = []
+        @max = 0
 
-  updateStats: (stats) =>
-      @update(stats.activeTrips, stats.activeTrips)
+    updateStats: (stats) =>
+        @update(stats.activeTrips, stats.activeTrips)
 
-  update: (activeTrips, selectedTypeActiveTrips) =>
-      if not activeTrips? or not selectedTypeActiveTrips?
-          console.error('Wrong parameters')
-          return
+    update: (activeTrips, selectedTypeActiveTrips) =>
+        if not activeTrips? or not selectedTypeActiveTrips?
+            console.error('Wrong parameters')
+            return
 
-      @max = if activeTrips > @max then activeTrips else @max
-      upperLimit = if @max < 10 then 10 else Math.ceil(@max * 1.4)
+        @max = if activeTrips > @max then activeTrips else @max
+        upperLimit = if @max < 10 then 10 else Math.ceil(@max * 1.4)
 
-      @chart.refresh(selectedTypeActiveTrips, upperLimit)
+        @chart.refresh(selectedTypeActiveTrips, upperLimit)
 
 class Location
 
@@ -101,10 +107,10 @@ class Location
 class Trip
 
     constructor: (@id, @passengerName, @pickupTime, @pickupLocation, @origin, @servicing, @status, @ETA,
-                    @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation) ->
+                  @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation) ->
         @containerId = id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
 
-    update: (@status, @driverName, @driverLocation, @driverInitialLocation) ->
+    update: (@status, @driverName, @driverLocation, @driverInitialLocation, @historyEnrouteList, @historyPickUpList) ->
 
     getContainerId: () =>
         @containerId
@@ -134,6 +140,10 @@ class Trip
         @dropoffLocation
     getDriverInitialLocation: () ->
         @driverInitialLocation
+    getHistoryEnrouteList: () ->
+        @historyEnrouteList
+    getHistoryPickUpList: () ->
+        @historyPickUpList
 
 
 class TripList
@@ -182,18 +192,19 @@ class TripList
         delete @tripsInListById[trip.getId()]
         $('#' + trip.getContainerId()).slideUp()
 
+
     getTripTag: (trip) =>
         '
-            <div class="well trip" id="' + trip.getContainerId() + '" style="display:none;">
-                <h1>' + trip.getId() + '</h1>
-                <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
-                <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
-                <p><span>Pickup:</span> <i>' + trip.getPickupLocation().getAddress() + '</i></p>
-            </div>
-        '
+                    <div class="well trip" id="' + trip.getContainerId() + '" style="display:none;">
+                        <h1>' + trip.getId() + '</h1>
+                        <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
+                        <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
+                        <p><span>Pickup:</span> <i>' + trip.getPickupLocation().getAddress() + '</i></p>
+                    </div>
+                '
 
 class TripTracker
-    
+
     constructor: (@tripInfoContainerId, @mapContainer) ->
         @passengerMarker = null
         @destinationMarker = null
@@ -203,6 +214,9 @@ class TripTracker
         @mapOptions = null
         @directionsDisplay = null
         @directionsDisplay2 = null
+        @directionsDisplay3 = null
+        @directionsDisplay4 = null
+        @turn = true
         @driverPreviousLocation = null
         @setTripInfoBool = false
         @tripId = null
@@ -220,17 +234,17 @@ class TripTracker
     updateTripInfo: (trip) =>
         if trip?
             $('#' + @tripInfoContainerId).html(
-                '<div>
-                    <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
-                    <p><span>Passenger: </span>' + trip.getPassengerName() + '</p>
-                    <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
-                    <p><span>Pickup: </span>' + trip.getPickupLocation().getAddress() + '</p>
-                    <p><span>Dropoff: </span>' + trip.getDropoffLocation().getAddress() + '</p>
-                    <p><span>Servicing: </span>' + trip.getServicing() + '</p>
-                    <p><span>Driver: </span>' + trip.getDriverName() +
-                        ' @ ' + if trip.getDriverLocation()? then  + trip.getDriverLocation().getAddress() else ''  + '</p>
-                 </div>
-                '
+                            '<div>
+                                                <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
+                                        <p><span>Passenger: </span>' + trip.getPassengerName() + '</p>
+                                        <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
+                                        <p><span>Pickup: </span>' + trip.getPickupLocation().getAddress() + '</p>
+                                        <p><span>Dropoff: </span>' + trip.getDropoffLocation().getAddress() + '</p>
+                                        <p><span>Servicing: </span>' + trip.getServicing() + '</p>
+                                        <p><span>Driver: </span>' + trip.getDriverName() +
+                            ' @ ' + if trip.getDriverLocation()? then  + trip.getDriverLocation().getAddress() else ''  + '</p>
+                                     </div>
+                                    '
             )
         else
             $('#' + @tripInfoContainerId).fadeOut(1000).html('<h1>Select a trip</h1>').fadeIn(1000)
@@ -245,6 +259,18 @@ class TripTracker
             @initialMarker.setMap null  if @initialMarker?
             @driverPreviousLocation = null
             @tripId = (if trip? then trip.getId() else "")
+            if @directionsDisplay?
+                @directionsDisplay.setMap null
+                @directionsDisplay = null
+            if @directionsDisplay2?
+                @directionsDisplay2.setMap null
+                @directionsDisplay2 = null
+            if @directionsDisplay3?
+                @directionsDisplay3.setMap null
+                @directionsDisplay3 = null
+            if @directionsDisplay4?
+                @directionsDisplay4.setMap null
+                @directionsDisplay4 = null
         unless trip?
             @setTripInfoBool = false
             return
@@ -344,46 +370,64 @@ class TripTracker
                         suppressMarkers: true
                         polylineOptions:
                             strokeColor: "#8B0000"
-                            strokeOpacity: 0.8
+                            strokeOpacity: 1
                             strokeWeight: 5
-
                     rendererOptions2 =
                         preserveViewport: true
                         suppressMarkers: true
                         polylineOptions:
                             strokeColor: "#008000"
-                            strokeOpacity: 0.8
+                            strokeOpacity: 1
                             strokeWeight: 5
-
                     directionsService = new google.maps.DirectionsService()
                     directionsService2 = new google.maps.DirectionsService()
                     boleanFirst = true
-                    if @directionsDisplay?
-                        @directionsDisplay.setMap null
-                        @directionsDisplay = null
-                    if @directionsDisplay2?
-                        @directionsDisplay2.setMap null
-                        @directionsDisplay2 = null
                     routes.forEach (route) =>
                         request =
                             origin: route.origin
                             destination: route.destination
                             travelMode: google.maps.TravelMode.DRIVING
-
                         if boleanFirst
-                            @directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
-                            @directionsDisplay.setMap @map
+                            if @turn
+                                @directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
+                                @directionsDisplay.setMap @map
+                            else
+                                @directionsDisplay3 = new google.maps.DirectionsRenderer(rendererOptions)
+                                @directionsDisplay3.setMap @map
                         else
-                            @directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
-                            @directionsDisplay2.setMap @map
+                            if @turn
+                                @directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
+                                @directionsDisplay2.setMap @map
+                            else
+                                @directionsDisplay4 = new google.maps.DirectionsRenderer(rendererOptions2)
+                                @directionsDisplay4.setMap @map
                         if boleanFirst
                             directionsService.route request, (result, status) =>
-                                @directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay?
-
+                                if @turn
+                                    @directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay?
+                                    if @directionsDisplay3?
+                                        @directionsDisplay3.setMap null
+                                        @directionsDisplay3 = null
+                                else
+                                    @directionsDisplay3.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay3?
+                                    if @directionsDisplay?
+                                        @directionsDisplay.setMap null
+                                        @directionsDisplay = null
                             boleanFirst = false
                         else
                             directionsService2.route request, (result, status) =>
-                                @directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay2?
+                                if @turn
+                                    @directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay2?
+                                    if @directionsDisplay4?
+                                        @directionsDisplay4.setMap null
+                                        @directionsDisplay4 = null
+                                    @turn = false
+                                else
+                                    @directionsDisplay4.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay4?
+                                    if @directionsDisplay2?
+                                        @directionsDisplay2.setMap null
+                                        @directionsDisplay2 = null
+                                    @turn = true
                 @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
         @setTripInfoBool = false
 
@@ -413,35 +457,35 @@ class StatisticsDashboard
             withinServiceGoal: -1
 
         $('#' + @containerId).html('
-            <div  class="dashboard-statistics-pie-chart" >
-                <div class="title" id="' + @tripsPieChartTitleId + '">0 Trips</div>
-                <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
-            </div>
-            <div  class="dashboard-statistics-pie-chart" >
-                <div class="title">Time</div>
-                <div class="pie-chart" id="' + @timePieChartId + '"></div>
-            </div>
-            <div  class="dashboard-statistics-pie-chart" >
-                <div class="title">Mileage</div>
-                <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
-            </div>
-            <div  class="dashboard-statistics-pie-chart" >
-                <div class="title">Service</div>
-                <div class="pie-chart" id="' + @servicePieChartId + '"></div>
-            </div>
-            <div id="dashboard-ratings-container">
-                <div  class="dashboard-statistics-rating" >
-                    <div class="title">Drivers</div>
-                    <div class="flexible-stars" data-isLocked="yes"
-                     data-init="0"  id="' + @driversRatingChartId + '"></div>
-                </div>
-                <div  class="dashboard-statistics-rating" >
-                    <div class="title">Passengers</div>
-                    <div class="flexible-stars" data-isLocked="yes"
-                        data-init="0"  id="' + @passengersRatingChartId + '"></div>
-                </div>
-            </div>
-       ')
+                    <div  class="dashboard-statistics-pie-chart" >
+                        <div class="title" id="' + @tripsPieChartTitleId + '">0 Trips</div>
+                        <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
+                    </div>
+                    <div  class="dashboard-statistics-pie-chart" >
+                        <div class="title">Time</div>
+                        <div class="pie-chart" id="' + @timePieChartId + '"></div>
+                    </div>
+                    <div  class="dashboard-statistics-pie-chart" >
+                        <div class="title">Mileage</div>
+                        <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+                    </div>
+                    <div  class="dashboard-statistics-pie-chart" >
+                        <div class="title">Service</div>
+                        <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                    </div>
+                    <div id="dashboard-ratings-container">
+                        <div  class="dashboard-statistics-rating" >
+                            <div class="title">Drivers</div>
+                            <div class="flexible-stars" data-isLocked="yes"
+                             data-init="0"  id="' + @driversRatingChartId + '"></div>
+                        </div>
+                        <div  class="dashboard-statistics-rating" >
+                            <div class="title">Passengers</div>
+                            <div class="flexible-stars" data-isLocked="yes"
+                                data-init="0"  id="' + @passengersRatingChartId + '"></div>
+                        </div>
+                    </div>
+               ')
 
         @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
@@ -449,7 +493,7 @@ class StatisticsDashboard
         @update(80, 90, 55, 32, 70, 80, 15, 80, 10, 80, 10, 15, 95)
 
     update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,
-                timeIdle, totalTrips, cancelled, completed, rejected, lateness, withinServiceGoal) =>
+             timeIdle, totalTrips, cancelled, completed, rejected, lateness, withinServiceGoal) =>
 
         if @lastValues.timeEnroute != timeEnroute or
                 @lastValues.timeWithPassenger != timeWithPassenger or
@@ -556,7 +600,7 @@ class ActivityLog
     constructor: (@containerId) ->
         @tripId = ''
         @latestAddedLogDate = null
-        
+
     tripChanged: (trip) =>
         $('#' + @containerId).html('<%= image_tag('loading.gif') %>')
 
@@ -590,32 +634,32 @@ class ActivityLog
     getLogTag: (id, log) =>
         id =  id + 'parent-accordion'
         logString = '
-                <div style="display: none" class="accordion-group" id="' + id + '">
-                    <div class="accordion-heading">
-                        <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion">
-                            ' + log.time.split('.')[0] + ' | ' + log.messages[0].text +  '
-                        </a>
-                    </div>
-                    <div id="' + id + '-accordion" class="accordion-body collapse">
-                        <div class="accordion-inner">
-                '
+                        <div style="display: none" class="accordion-group" id="' + id + '">
+                            <div class="accordion-heading">
+                                <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion">
+                                    ' + log.time.split('.')[0] + ' | ' + log.messages[0].text +  '
+                                </a>
+                            </div>
+                            <div id="' + id + '-accordion" class="accordion-body collapse">
+                                <div class="accordion-inner">
+                        '
 
         if log.request?
             logString += '
-                            <div class="accordion-group json-inner-log">
-                                <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-request">
-                                        Request
-                                    </a>
-                                </div>
-                                <div id="' + id + '-accordion-request" class="accordion-body collapse">
-                                    <div class="accordion-inner">
-                                        <pre><code class="language-javascript">' + FormatJSON(JSON.parse(log.request)) + '</code></pre>
-                                    </div>
-                                </div>
-                            </div>
+                                        <div class="accordion-group json-inner-log">
+                                            <div class="accordion-heading">
+                                                <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-request">
+                                                    Request
+                                                </a>
+                                            </div>
+                                            <div id="' + id + '-accordion-request" class="accordion-body collapse">
+                                                <div class="accordion-inner">
+                                                    <pre><code class="language-javascript">' + FormatJSON(JSON.parse(log.request)) + '</code></pre>
+                                                </div>
+                                            </div>
+                                        </div>
 
-        '
+                    '
 
         i = 1
         while(i < log.messages.length - 1)
@@ -630,15 +674,15 @@ class ActivityLog
                         log.messages[i + 1].json
 
                 logString += '
-                            <div class="accordion-group json-inner-log">
-                                <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-' + i + '">
-                                        ' + message.text + '
-                                    </a>
-                                </div>
-                                <div id="' + id + '-accordion-' + i + '" class="accordion-body collapse">
-                                    <div class="accordion-inner">
-                                        <pre><code class="language-javascript">'
+                                            <div class="accordion-group json-inner-log">
+                                                <div class="accordion-heading">
+                                                    <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-' + i + '">
+                                                        ' + message.text + '
+                                                    </a>
+                                                </div>
+                                                <div id="' + id + '-accordion-' + i + '" class="accordion-body collapse">
+                                                    <div class="accordion-inner">
+                                                        <pre><code class="language-javascript">'
 
                 logString +=                'Request:\n' + FormatJSON(JSON.parse(message.json))
 
@@ -647,43 +691,43 @@ class ActivityLog
                     i++
 
                 logString += '          </code></pre>
-                                    </div>
-                                </div>
-                            </div>'
+                                                    </div>
+                                                </div>
+                                            </div>'
             else
                 logString +='<div class="accordion-group simple-inner-log">
-                                <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-' + i + '">
-                                        ' + message.text + '
-                                    </a>
-                                </div>
-                             </div>
-                                '
+                                                <div class="accordion-heading">
+                                                    <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-' + i + '">
+                                                        ' + message.text + '
+                                                    </a>
+                                                </div>
+                                             </div>
+                                                '
 
             logString += ' </div>'
             i++
 
         if log.response?
             logString += '
-                            <div class="accordion-group json-inner-log">
-                                <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-response">
-                                        Response
-                                    </a>
-                                </div>
-                                <div id="' + id + '-accordion-response" class="accordion-body collapse">
-                                    <div class="accordion-inner">
-                                        <pre><code class="language-javascript">' + FormatJSON(JSON.parse(log.response)) + '</code></pre>
-                                    </div>
-                                </div>
-                            </div>
+                                        <div class="accordion-group json-inner-log">
+                                            <div class="accordion-heading">
+                                                <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-response">
+                                                    Response
+                                                </a>
+                                            </div>
+                                            <div id="' + id + '-accordion-response" class="accordion-body collapse">
+                                                <div class="accordion-inner">
+                                                    <pre><code class="language-javascript">' + FormatJSON(JSON.parse(log.response)) + '</code></pre>
+                                                </div>
+                                            </div>
+                                        </div>
 
-        '
+                    '
         logString +=
             '           </div>
-                    </div>
-                </div>
-              '
+                                </div>
+                            </div>
+                          '
 
         return [id, logString]
 
@@ -794,7 +838,7 @@ class DashboardManager
                     listener.tripChanged(@activeTrip)
                 catch error
                     console.error listener + ' tripChanged failed: ' + error
-            
+
         @update()
 
 
@@ -802,26 +846,28 @@ class DashboardManager
         if data?
             if !@activeTrip? or (data.driverLocation? and !@activeTrip.getDriverLocation()?) or
                     (data.driverLocation? and
-                    @activeTrip.getDriverLocation()? and
-                    data.driverLocation.lat != @activeTrip.getDriverLocation().lat and
-                    data.driverLocation.lng != @activeTrip.getDriverLocation().lng)
+                            @activeTrip.getDriverLocation()? and
+                            data.driverLocation.lat != @activeTrip.getDriverLocation().lat and
+                            data.driverLocation.lng != @activeTrip.getDriverLocation().lng)
 
                 driverLocation = new Location(data.driverLocation.lat, data.driverLocation.lng, '')
             else
                 driverLocation = @activeTrip.getDriverLocation()
 
             if !@activeTrip? or
-                    (data.driverInitialLocation and !@activeTrip.getDriverInitialLocation()?)
+                    (data.historyEnrouteList and data.historyEnrouteList[0] and !@activeTrip.getDriverInitialLocation()?)
 
-                driverInitialLocation = new Location(data.driverInitialLocation.lat, data.driverInitialLocation.lng, '')
+                driverInitialLocation = new Location(data.historyEnrouteList[0].lat, data.historyEnrouteList[0].lng, '')
             else
                 driverInitialLocation = @activeTrip.getDriverInitialLocation()
 
             @activeTrip.update(
-                if data.status? then data.status else @activeTrip.getStatus()
-                data.driverName
-                driverLocation
-                driverInitialLocation
+                    if data.status? then data.status else @activeTrip.getStatus()
+                    data.driverName
+                    driverLocation
+                    driverInitialLocation
+                    data.historyEnrouteList
+                    data.historyPickUpList
             )
         for listener in @listeners
             if typeof listener.updateActiveTrip is 'function'
@@ -863,15 +909,15 @@ $(document).ready(function(){
 
 $('.developer.dashboard').ready ->
     dashboardManager = new DashboardManager(
-        new TripThru('http://107.170.240.134/TripThru.TripThruGateway/', $('#access_token').val())
-        'trip-status-selector'
-        [
-            new ActiveTripsChart('active-trips-chart')
-            new TripList('trips-panel')
-            new StatisticsDashboard('statistics-gauges-container')
-            new TripTracker('tracking-trip-info', 'tracking-map-container')
-            new ActivityLog('activity-log')
-        ]
+            new TripThru('http://107.170.240.134/TripThru.TripThruGateway/', $('#access_token').val())
+            'trip-status-selector'
+            [
+                new ActiveTripsChart('active-trips-chart')
+                new TripList('trips-panel')
+                new StatisticsDashboard('statistics-gauges-container')
+                new TripTracker('tracking-trip-info', 'tracking-map-container')
+                new ActivityLog('activity-log')
+            ]
     )
 
     update = ->
