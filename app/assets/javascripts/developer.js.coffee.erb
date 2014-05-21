@@ -65,6 +65,8 @@ class TripThru
         return
 
 
+########## DASHBOARD #########
+
 class ActiveTripsChart
 
     constructor: (chartContainer) ->
@@ -435,7 +437,7 @@ class TripTracker
 
 class StatisticsDashboard
 
-    constructor: (@containerId) ->
+    constructor: (@statisticsContainerId, @ratingsContainerId) ->
         @timePieChartId = 'time-pie-chart'
         @tripsPieChartId = 'trips-pie-chart'
         @tripsPieChartTitleId = @tripsPieChartId + '-title'
@@ -458,36 +460,39 @@ class StatisticsDashboard
             lateness: -1
             withinServiceGoal: -1
 
-        $('#' + @containerId).html('
-                    <div  class="dashboard-statistics-pie-chart" >
-                        <div class="title" id="' + @tripsPieChartTitleId + '">0 Trips</div>
-                        <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
-                    </div>
-                    <div  class="dashboard-statistics-pie-chart" >
-                        <div class="title">Time</div>
-                        <div class="pie-chart" id="' + @timePieChartId + '"></div>
-                    </div>
-                    <div  class="dashboard-statistics-pie-chart" >
-                        <div class="title">Mileage</div>
-                        <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
-                    </div>
-                    <div  class="dashboard-statistics-pie-chart" >
-                        <div class="title">Service</div>
-                        <div class="pie-chart" id="' + @servicePieChartId + '"></div>
-                    </div>
-                    <div id="dashboard-ratings-container">
-                        <div  class="dashboard-statistics-rating" >
-                            <div class="title">Drivers</div>
-                            <div class="flexible-stars" data-isLocked="yes"
-                             data-init="0"  id="' + @driversRatingChartId + '"></div>
-                        </div>
-                        <div  class="dashboard-statistics-rating" >
-                            <div class="title">Passengers</div>
-                            <div class="flexible-stars" data-isLocked="yes"
-                                data-init="0"  id="' + @passengersRatingChartId + '"></div>
-                        </div>
-                    </div>
-               ')
+        $('#' + @statisticsContainerId).html('
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title" id="' + @tripsPieChartTitleId + '">0 Trips</div>
+                <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
+            </div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Time</div>
+                <div class="pie-chart" id="' + @timePieChartId + '"></div>
+            </div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Mileage</div>
+                <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+            </div>
+            <div  class="dashboard-statistics-pie-chart" >
+                <div class="title">Service</div>
+                <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+            </div>
+        ')
+
+        $('#' + @ratingsContainerId).html('
+            <div id="dashboard-ratings-container">
+                <div  class="dashboard-statistics-rating" >
+                    <div class="title">Drivers</div>
+                    <div class="flexible-stars" data-isLocked="yes"
+                     data-init="0"  id="' + @driversRatingChartId + '"></div>
+                </div>
+                <div  class="dashboard-statistics-rating" >
+                    <div class="title">Passengers</div>
+                    <div class="flexible-stars" data-isLocked="yes"
+                        data-init="0"  id="' + @passengersRatingChartId + '"></div>
+                </div>
+            </div>
+        ')
 
         @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
@@ -916,7 +921,7 @@ $('.developer.dashboard').ready ->
             [
                 new ActiveTripsChart('active-trips-chart')
                 new TripList('trips-panel')
-                new StatisticsDashboard('statistics-gauges-container')
+                new StatisticsDashboard('statistics-gauges-container', 'ratings-container')
                 new TripTracker('tracking-trip-info', 'tracking-map-container')
                 new ActivityLog('activity-log')
             ]
@@ -931,6 +936,8 @@ $('.developer.dashboard').ready ->
     , 10000
 
     return
+
+########## API #########
 
 $('.developer.api').ready ->
     window.swaggerUi = new SwaggerUi({
@@ -953,6 +960,8 @@ $('.developer.api').ready ->
     })
     window.swaggerUi.load()
 
+
+########## STATISTICS #########
 
 class TimeSeries
 
