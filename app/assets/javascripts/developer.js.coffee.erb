@@ -172,13 +172,15 @@ class TripList
         if @statusChanged
             @statusChanged = false
             $('#' + @containerId).html('')
-        for id, trip of tripsById
-            if id not of @tripsInListById
+            for id, trip of tripsById
                 @addTrip(trip)
-
-        for id, trip of @tripsInListById
-            if id not of tripsById
-                @removeTrip(trip)
+        else
+            for id, trip of tripsById
+                if id not of @tripsInListById
+                    @addTrip(trip)
+            for id, trip of @tripsInListById
+                if id not of tripsById
+                    @removeTrip(trip)
 
     updateActiveTrip: (trip) =>
 
