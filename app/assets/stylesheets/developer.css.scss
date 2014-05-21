@@ -392,8 +392,9 @@
 
         #tracking-trip-info {
           min-height: 130px;
-          max-height: 300px;
-          overflow: hidden;
+          height: 130px;
+          overflow-y: hidden;
+          overflow-x: scroll;
           text-align: left;
 
           img {

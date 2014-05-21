@@ -95,13 +95,20 @@ class ActiveTripsChart
         @chart.refresh(selectedTypeActiveTrips, upperLimit)
 
 class Location
+    addressById = {}
 
     constructor: (@lat, @lng, @address) ->
-        $.ajax
-            url: "http://maps.googleapis.com/maps/api/geocode/json?latlng=" + @lat + "," + @lng + "&sensor=false"
-            dataType: 'json'
-            success: (data) =>
-                @address = data.results[0].formatted_address
+        id = '<' + @lat + ',' + @lng + '>'
+        if id of addressById
+            @address = addressById[id]
+        else
+            $.ajax
+                url: "http://maps.googleapis.com/maps/api/geocode/json?latlng=" + @lat + "," + @lng + "&sensor=false"
+                dataType: 'json'
+                success: (data) =>
+                    id = '<' + @lat + ',' + @lng + '>'
+                    @address = data.results[0].formatted_address
+                    addressById[id] = @address
 
     getAddress: () =>
         @address
@@ -152,6 +159,7 @@ class TripList
 
     constructor: (@containerId) ->
         @tripsInListById = {}
+        @pendingUpdateTripsIds = []
         @currentStatus = null
         @statusChanged = false
 
@@ -183,14 +191,23 @@ class TripList
             for id, trip of @tripsInListById
                 if id not of tripsById
                     @removeTrip(trip)
+                else
+                    @updateTrip(trip)
 
     updateActiveTrip: (trip) =>
 
-
     addTrip: (trip) =>
+        if !trip.getPickupLocation().getAddress()?
+            @pendingUpdateTripsIds.push trip.getId()
+
         @tripsInListById[trip.getId()] = trip
         $('#' + @containerId).prepend @getTripTag(trip)
         $('#' + trip.getContainerId()).slideDown()
+
+    updateTrip: (trip) =>
+        if trip.getId() in @pendingUpdateTripsIds and trip.getPickupLocation().getAddress()?
+            $('#' + trip.getContainerId()).find('.triplist-trip-pickup').fadeOut().html(trip.getPickupLocation().getAddress()).fadeIn()
+            @pendingUpdateTripsIds.splice($.inArray(trip.getId(), @pendingUpdateTripsIds), 1);
 
     removeTrip: (trip) =>
         delete @tripsInListById[trip.getId()]
@@ -198,14 +215,16 @@ class TripList
 
 
     getTripTag: (trip) =>
+        tripPickupLocation = trip.getPickupLocation().getAddress()
+        pickupLocation = if tripPickupLocation then tripPickupLocation else 'loading...'
         '
-                    <div class="well trip" id="' + trip.getContainerId() + '" style="display:none;">
-                        <h1>' + trip.getId() + '</h1>
-                        <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
-                        <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
-                        <p><span>Pickup:</span> <i>' + trip.getPickupLocation().getAddress() + '</i></p>
-                    </div>
-                '
+            <div class="well trip" id="' + trip.getContainerId() + '" style="display:none;">
+                <h1>' + trip.getId() + '</h1>
+                <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
+                <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
+                <p><span>Pickup:</span> <i class="triplist-trip-pickup">' + pickupLocation + '</i></p>
+            </div>
+        '
 
 class TripTracker
 
@@ -227,6 +246,7 @@ class TripTracker
 
     tripChanged: (trip) =>
         @tripId = null
+        @driverPreviousLocation = null
         @updateTripInfo(trip)
 
     updateActiveTrip: (trip) =>
@@ -237,18 +257,29 @@ class TripTracker
 
     updateTripInfo: (trip) =>
         if trip?
+            tripPickupLocation = trip.getPickupLocation().getAddress()
+            tripDropoffLocation = trip.getDropoffLocation().getAddress()
+            tripDriverName = trip.getDriverName()
+            tripDriverLocation = if trip.getDriverLocation()? then trip.getDriverLocation().getAddress() else null
+            if !tripDriverLocation? and @driverPreviousLocation?
+                tripDriverLocation = @driverPreviousLocation.getAddress()
+
+            pickupLocation = if tripPickupLocation? then tripPickupLocation else 'loading...'
+            dropoffLocation = if tripDropoffLocation? then tripDropoffLocation else 'loading...'
+            driverLocation = if tripDriverLocation? then ' @ ' + tripDriverLocation else ''
+            driver = if tripDriverName? then tripDriverName + driverLocation else ''
+
             $('#' + @tripInfoContainerId).html(
-                            '<div>
-                                                <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
-                                        <p><span>Passenger: </span>' + trip.getPassengerName() + '</p>
-                                        <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
-                                        <p><span>Pickup: </span>' + trip.getPickupLocation().getAddress() + '</p>
-                                        <p><span>Dropoff: </span>' + trip.getDropoffLocation().getAddress() + '</p>
-                                        <p><span>Servicing: </span>' + trip.getServicing() + '</p>
-                                        <p><span>Driver: </span>' + trip.getDriverName() +
-                            ' @ ' + if trip.getDriverLocation()? then  + trip.getDriverLocation().getAddress() else ''  + '</p>
-                                     </div>
-                                    '
+                '<div>
+                    <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
+                    <p><span>Passenger: </span>' + trip.getPassengerName() + '</p>
+                    <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
+                    <p><span>Pickup: </span>' + pickupLocation + '</p>
+                    <p><span>Dropoff: </span>' + dropoffLocation + '</p>
+                    <p><span>Servicing: </span>' + trip.getServicing() + '</p>
+                    <p><span>Driver: </span>' + driver + '</p>
+                 </div>
+                '
             )
         else
             $('#' + @tripInfoContainerId).fadeOut(1000).html('<h1>Select a trip</h1>').fadeIn(1000)
@@ -809,14 +840,14 @@ class DashboardManager
 
     processTrip: (newTrip) =>
         driverLocation =
-            if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, '') else null
+            if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, null) else null
         driverInitialLocation =
-            if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, '') else null
+            if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, null) else null
         trip = new Trip(
                 newTrip.id
                 newTrip.passengerName
                 newTrip.pickupTime
-                new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, '')
+                new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, null)
                 newTrip.originatingPartnerName
                 newTrip.servicingPartnerName
                 newTrip.status
@@ -824,7 +855,7 @@ class DashboardManager
                 newTrip.price
                 newTrip.driverName
                 driverLocation
-                new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, '')
+                new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, null)
                 driverInitialLocation
         )
         @tripsById[trip.getId()] = trip
@@ -857,14 +888,14 @@ class DashboardManager
                             data.driverLocation.lat != @activeTrip.getDriverLocation().lat and
                             data.driverLocation.lng != @activeTrip.getDriverLocation().lng)
 
-                driverLocation = new Location(data.driverLocation.lat, data.driverLocation.lng, '')
+                driverLocation = new Location(data.driverLocation.lat, data.driverLocation.lng, null)
             else
                 driverLocation = @activeTrip.getDriverLocation()
 
             if !@activeTrip? or
                     (data.historyEnrouteList and data.historyEnrouteList[0] and !@activeTrip.getDriverInitialLocation()?)
 
-                driverInitialLocation = new Location(data.historyEnrouteList[0].lat, data.historyEnrouteList[0].lng, '')
+                driverInitialLocation = new Location(data.historyEnrouteList[0].lat, data.historyEnrouteList[0].lng, null)
             else
                 driverInitialLocation = @activeTrip.getDriverInitialLocation()
 
