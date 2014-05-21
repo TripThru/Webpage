@@ -466,7 +466,7 @@
 
             i {display: inline-block}
             [class^="sprite-"] {
-              background: url(http://static.titovanton.com/static/titovanton//pic/csg-513e9341220f7.png) no-repeat top left;
+              background: url(rating-stars.png) no-repeat top left;
             }
 
             .sprite-gold-star{ background-position: 0 0; width: 29px; height: 28px; }
@@ -681,18 +681,6 @@
               margin: 30px 0 0 0;
               font-size: 14px;
             }
-
-            .flexible-stars {
-
-              i {display: inline-block}
-              [class^="sprite-"] {
-                background: url(http://static.titovanton.com/static/titovanton//pic/csg-513e9341220f7.png) no-repeat top left;
-              }
-
-              .sprite-gold-star{ background-position: 0 0; width: 29px; height: 28px; }
-              .sprite-half-star{ background-position: 0 -78px; width: 29px; height: 28px; }
-              .sprite-silver-star{ background-position: 0 -156px; width: 29px; height: 28px; }
-            }
           }
         }
       }
@@ -814,18 +802,6 @@
             }
 
             float: left;
-
-            .flexible-stars {
-
-              i {display: inline-block}
-              [class^="sprite-"] {
-                background: url(http://static.titovanton.com/static/titovanton//pic/csg-513e9341220f7.png) no-repeat top left;
-              }
-
-              .sprite-gold-star{ background-position: 0 0; width: 29px; height: 28px; }
-              .sprite-half-star{ background-position: 0 -78px; width: 29px; height: 28px; }
-              .sprite-silver-star{ background-position: 0 -156px; width: 29px; height: 28px; }
-            }
           }
         }
       }
@@ -894,17 +870,17 @@
           margin-top: 0;
           margin-bottom: 10px;
 
-          .title{
-            padding: 0;
-            margin: 20px 0 -15px 0;
-            font-size: 10px;
-          }
+
           .dashboard-statistics-pie-chart{
             float: left;
             margin: -5px -5px 0 -5px;
             height: 100px;
             width: 90px;
-
+            .title{
+              padding: 0;
+              margin: 20px 0 -15px 0;
+              font-size: 10px;
+            }
             svg{
               margin: 0 auto;
               padding: 0;
@@ -926,18 +902,6 @@
             }
 
             float: left;
-
-            .flexible-stars {
-
-              i {display: inline-block}
-              [class^="sprite-"] {
-                background: url(http://static.titovanton.com/static/titovanton//pic/csg-513e9341220f7.png) no-repeat top left;
-              }
-
-              .sprite-gold-star{ background-position: 0 0; width: 29px; height: 28px; }
-              .sprite-half-star{ background-position: 0 -78px; width: 29px; height: 28px; }
-              .sprite-silver-star{ background-position: 0 -156px; width: 29px; height: 28px; }
-            }
           }
         }
       }
@@ -991,5 +955,96 @@
     margin: 20px 0 0 auto;
     padding: 0;
 
+  }
+
+  #statistics {
+    #chart-container {
+      width: 100%;
+      margin: 40px auto 0;
+
+      #time-series-container {
+        margin: 20px 0 0 0;
+        #time-series-chart {
+          width: 98%;
+          margin: 0 auto;
+        }
+      }
+
+      h2{
+        margin: -10px 0 0 50px;
+      }
+
+      #selectors-container {
+        margin: 0 auto;
+        #filters-container {
+          margin: 0 0 0 10px;
+          float: left;
+
+          .filter-button {
+            height: 28px;
+            width: 70px;
+            background-color: #ededed;
+            -webkit-border-radius: 0px;
+            -moz-border-radius: 0px;
+            border-radius: 0px;
+            text-indent: 0;
+            border: 1px solid #dcdcdc;
+            color: #888888;
+            text-decoration: none;
+            text-align: center;
+
+            &:hover {
+              background-color: rgb(239, 109, 14);
+              color: #ffffff;
+            }
+            &:active {
+              position: relative;
+              top: 1px;
+            }
+          }
+
+          .active {
+            background-color: rgb(239, 109, 14);
+            color: #ffffff;
+          }
+        }
+
+        #datepicker {
+          margin: 0 0 0 2.5%;
+          float: left;
+          input {
+            height: 28px;
+            width: 130px;
+          }
+          .input-group-addon {
+            line-height: 0;
+          }
+        }
+      }
+    }
+
+    @media (max-width: 767px) {
+      #chart-container {
+        h2{
+          margin: 0 auto;
+        }
+        #selectors-container {
+          #datepicker {
+            margin-bottom: 10px;
+            input {
+              width: 90px;
+            }
+          }
+
+          #filters-container {
+            margin: 0 0 10px 5px;
+            .filter-button{
+              font-size: 12px;
+              width: 60px;
+            }
+          }
+        }
+      }
+    }
   }
 }

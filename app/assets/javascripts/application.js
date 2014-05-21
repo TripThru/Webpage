@@ -18,7 +18,6 @@
 //= require bootstrap
 //= require jquery.flipCounter.1.2.pack
 //= require prism
-//= require bootstrap
 //= require jquery-readyselector.js
 //= require justgage
 //= require raphael.2.1.0.min
@@ -31,7 +30,7 @@
 //= require swagger/highlight.7.3.pack.js
 //= require swagger/swagger.js
 //= require swagger/swagger-ui.min.js
-//= require swagger/jquery.slideto.min.js
-//= require swagger/jquery.wiggle.min.js
-//= require swagger/jquery.ba-bbq.min.js
+//= require d3.min.js
+//= require c3.min.js
+//= require bootstrap-datepicker
 //= require_tree .
