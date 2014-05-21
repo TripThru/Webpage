@@ -18,7 +18,6 @@
 //= require bootstrap
 //= require jquery.flipCounter.1.2.pack
 //= require prism
-//= require bootstrap
 //= require jquery-readyselector.js
 //= require justgage
 //= require raphael.2.1.0.min

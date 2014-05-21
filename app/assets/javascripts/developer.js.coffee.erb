@@ -906,11 +906,11 @@ $('.developer.api').ready ->
     window.swaggerUi.load()
 
 
-class TimeSeriesChart
+class TimeSeries
 
-    constructor: (@containerId) ->
-        @chart = c3.generate(
-            bindto: '#' + @containerId
+    constructor: (@historicChartContainerId, @forecastChartContainerId) ->
+        @historicChart = c3.generate(
+            bindto: '#' + @historicChartContainerId
             data:
                 x: 'x'
                 columns: [
@@ -926,17 +926,67 @@ class TimeSeriesChart
                         format: '%Y-%m-%d'
         )
 
+        @forecastChart = c3.generate(
+            bindto: '#' + @forecastChartContainerId
+            data:
+                x: 'x'
+                columns: [
+                    ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06']
+                    ['data1', 30, 200, 100, 400, 150, 250]
+                    ['data2', 130, 340, 200, 500, 250, 350]
+                    ['data2', 130, 340, 200, 500, 250, 350]
+                ]
+            axis:
+                x:
+                    type: 'timeseries'
+                    tick:
+                        format: '%Y-%m-%d'
+        )
+
+        @timeSeriesSelected = true
+        @mileageSeriesSelected = false
+        @serviceSeriesSelected = false
+        @ratingsSeriesSelected = false
+
+        $('#time-filter-button').click =>
+            $('#time-filter-button').toggleClass('active')
+            @timeSeriesSelected = not @timeSeriesSelected
+            @update()
+
+        $('#mileage-filter-button').click =>
+            $('#mileage-filter-button').toggleClass('active')
+            @mileageSeriesSelected = not @mileageSeriesSelected
+            @update()
+
+        $('#service-filter-button').click =>
+            $('#service-filter-button').toggleClass('active')
+            @serviceSeriesSelected = not @serviceSeriesSelected
+            @update()
+
+        $('#ratings-filter-button').click =>
+            $('#ratings-filter-button').toggleClass('active')
+            @ratingsSeriesSelected = not @ratingsSeriesSelected
+            @update()
+
+        $('#time-filter-button').toggleClass('active')
+
+        @update()
+
+    update: () =>
+
+
+
 
 $('.developer.statistics').ready ->
-    timeSeriesChart = new TimeSeriesChart('time-series-chart')
-    $('#datepicker').datepicker({
-        format: "yyyy/mm/dd",
-        startDate: "2012-01-01",
-        endDate: "2015-01-01",
-        todayBtn: "linked",
-        autoclose: true,
+    timeSeries = new TimeSeries('historic-chart', 'forecast-chart')
+    $('#datepicker').datepicker(
+        format: "yyyy/mm/dd"
+        startDate: "2012-01-01"
+        endDate: "2015-01-01"
+        todayBtn: "linked"
+        autoclose: true
         todayHighlight: true
-    });
+    );
 
 
 

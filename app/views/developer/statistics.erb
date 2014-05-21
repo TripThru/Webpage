@@ -1,21 +1,27 @@
 <div id="statistics">
-  <div id="chart-container">
-    <div id="selectors-container">
-        <select id="data-selector" class="selectpicker pull-left">
-          <option value="Time" selected="selected">Time</option>
-          <option value="Mileage">Mileage</option>
-          <option value="Service">Service</option>
-          <option value="Ratings">Ratings</option>
-        </select>
-        <div class="input-daterange input-group pull-left" id="datepicker">
-          <input type="text" class="input-sm form-control" name="start" />
-          <span class="input-group-addon">to</span>
-          <input type="text" class="input-sm form-control" name="end" />
-        </div>
+
+  <div id="chart-container" class="container">
+    <div id="selectors-container" class="row">
+      <div class="input-daterange input-group" id="datepicker">
+        <input type="text" class="input-sm form-control" name="start"/>
+        <span class="input-group-addon">to</span>
+        <input type="text" class="input-sm form-control" name="end"/>
+      </div>
+      <div id="filters-container">
+        <input type="submit" class="filter-button" id="time-filter-button" value="Time"/>
+        <input type="submit" class="filter-button" id="mileage-filter-button" value="Mileage"/>
+        <input type="submit" class="filter-button" id="service-filter-button" value="Service"/>
+        <input type="submit" class="filter-button" id="ratings-filter-button" value="Ratings"/>
+      </div>
     </div>
     <br/>
-    <div id="time-series-container">
-        <div id="time-series-chart"></div>
+    <div id="time-series-container" class="row">
+      <h2>Historic</h2>
+      <br/>
+      <div id="historic-chart"></div>
+      <h2>Forecasted</h2>
+      <br/>
+      <div id="forecast-chart"></div>
     </div>
   </div>
 </div>
