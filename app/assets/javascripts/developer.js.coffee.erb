@@ -101,7 +101,7 @@ class Location
             success: (data) =>
                 @address = data.results[0].formatted_address
 
-    getAddress: () ->
+    getAddress: () =>
         @address
 
 class Trip
@@ -110,39 +110,39 @@ class Trip
                   @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation) ->
         @containerId = id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
 
-    update: (@status, @driverName, @driverLocation, @driverInitialLocation, @historyEnrouteList, @historyPickUpList) ->
+    update: (@status, @driverName, @driverLocation, @driverInitialLocation, @historyEnrouteList, @historyPickUpList) =>
 
     getContainerId: () =>
         @containerId
     getId: () =>
         @id
-    getPassengerName: () ->
+    getPassengerName: () =>
         @passengerName
-    getPickupTime: () ->
+    getPickupTime: () =>
         @pickupTime
-    getPickupLocation: () ->
+    getPickupLocation: () =>
         @pickupLocation
-    getOrigin: () ->
+    getOrigin: () =>
         @origin
-    getServicing: () ->
+    getServicing: () =>
         @servicing
-    getStatus: () ->
+    getStatus: () =>
         @status
-    getETA: () ->
+    getETA: () =>
         @ETA
-    getFare: () ->
+    getFare: () =>
         @fare
-    getDriverName: () ->
+    getDriverName: () =>
         @driverName
-    getDriverLocation: () ->
+    getDriverLocation: () =>
         @driverLocation
-    getDropoffLocation: () ->
+    getDropoffLocation: () =>
         @dropoffLocation
-    getDriverInitialLocation: () ->
+    getDriverInitialLocation: () =>
         @driverInitialLocation
-    getHistoryEnrouteList: () ->
+    getHistoryEnrouteList: () =>
         @historyEnrouteList
-    getHistoryPickUpList: () ->
+    getHistoryPickUpList: () =>
         @historyPickUpList
 
 
