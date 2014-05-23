@@ -98,20 +98,38 @@ class Location
     addressById = {}
 
     constructor: (@lat, @lng, @address) ->
-        id = '<' + @lat + ',' + @lng + '>'
-        if id of addressById
-            @address = addressById[id]
+        @id = '<' + @lat + ',' + @lng + '>'
+        @gettingAddress = false
+        if @id of addressById
+            @address = addressById[@id]
         else
+            @setAddress()
+
+    getAddress: () =>
+        if @id of addressById
+            addressById[@id]
+        else
+            @setAddress()
+            null
+
+    setAddress: () =>
+        if not @gettingAddress
+            @gettingAddress = true
             $.ajax
                 url: "http://maps.googleapis.com/maps/api/geocode/json?latlng=" + @lat + "," + @lng + "&sensor=false"
                 dataType: 'json'
                 success: (data) =>
-                    id = '<' + @lat + ',' + @lng + '>'
-                    @address = data.results[0].formatted_address
-                    addressById[id] = @address
+                    if data.results? and data.results.length > 0
+                        if @id not of addressById
+                            addressById[@id] = data.results[0].formatted_address
+                    else
+                        setTimeout(() =>
+                            @setAddress()
+                        ,1000)
+                    @gettingAddress = false
+                error: () =>
+                    @gettingAddress = false
 
-    getAddress: () =>
-        @address
 
 class Trip
 
