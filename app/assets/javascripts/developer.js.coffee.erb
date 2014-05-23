@@ -118,6 +118,8 @@ class Trip
     constructor: (@id, @passengerName, @pickupTime, @pickupLocation, @origin, @servicing, @status, @ETA,
                   @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation) ->
         @containerId = id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
+        @passengerRating = (Math.random() * 2.5) + 2.5
+        @driverRating = (Math.random() * 2.5) + 2.5
 
     update: (@status, @driverName, @driverLocation, @driverInitialLocation, @historyEnrouteList, @historyPickUpList) =>
 
@@ -127,6 +129,8 @@ class Trip
         @id
     getPassengerName: () =>
         @passengerName
+    getPassengerRating: () =>
+        @passengerRating
     getPickupTime: () =>
         @pickupTime
     getPickupLocation: () =>
@@ -145,6 +149,8 @@ class Trip
         @driverName
     getDriverLocation: () =>
         @driverLocation
+    getDriverRating: () =>
+        @driverRating
     getDropoffLocation: () =>
         @dropoffLocation
     getDriverInitialLocation: () =>
@@ -300,13 +306,14 @@ class TripTracker
 
             $('#' + @passengerRatingChartId).html('')
             $('#' + @passengerRatingChartId).flexibleStars({
-                init: (Math.random() * (3 - 5) + 3)
+                init: trip.getPassengerRating()
             })
 
-            $('#' + @driverRatingChartId).html('')
-            $('#' + @driverRatingChartId).flexibleStars({
-                init: (Math.random() * (3 - 5) + 3)
-            })
+            if trip.getDriverName()?
+                $('#' + @driverRatingChartId).html('')
+                $('#' + @driverRatingChartId).flexibleStars({
+                    init: trip.getDriverRating()
+                })
         else
             $('#' + @tripInfoContainerId).fadeOut(1000).html('<h1>Select a trip</h1>').fadeIn(1000)
 
