@@ -857,7 +857,7 @@
                 float: left;
                 height: 110px;
                 width: 110px;
-                margin: 0 20px 0 0;
+                margin: 0 18px 0 0;
 
                 .title {
                   padding: 0;
@@ -1094,12 +1094,24 @@
       #selectors-container {
         margin: 0 auto;
         #filters-container {
-          margin: 0 0 0 10px;
-          float: left;
+          float: right;
+          .panel{
+            display: inline-block;
+          }
+          .panel-heading{
+            height: 18px;
+            padding: 0;
+
+            .panel-title{
+              font-size: 13px;
+            }
+          }
+          .panel-body{
+            height: 50px;
+            padding: 10px 10px 0 10px;
+          }
 
           .filter-button {
-            height: 28px;
-            width: 70px;
             background-color: #ededed;
             -webkit-border-radius: 0px;
             -moz-border-radius: 0px;
@@ -1109,6 +1121,8 @@
             color: #888888;
             text-decoration: none;
             text-align: center;
+            font-size: 12px;
+            height: 28px;
 
             &:hover {
               background-color: rgb(239, 109, 14);
@@ -1127,14 +1141,39 @@
         }
 
         #datepicker {
-          margin: 0 0 0 2.5%;
+          margin: 0 0 10px 2.5%;
           float: left;
           input {
             height: 28px;
-            width: 130px;
+            width: 90px;
           }
           .input-group-addon {
             line-height: 0;
+          }
+        }
+      }
+    }
+
+    @media (max-width: 991px) {
+      #chart-container {
+        h2{
+          margin: 0 auto;
+        }
+
+        #selectors-container {
+          #datepicker {
+            margin: 0 10px 10px 0;
+            input {
+              width: 90px;
+            }
+          }
+
+          #filters-container {
+            margin: 0 0 10px 0;
+            float: left;
+            .filter-button{
+              font-size: 12px;
+            }
           }
         }
       }
@@ -1154,10 +1193,19 @@
           }
 
           #filters-container {
-            margin: 0 0 10px 5px;
+            margin: 0 0 10px 0;
+            .panel{
+              width: 100%;
+            }
+
+            .panel-body{
+              width: 100%;
+            }
+
             .filter-button{
-              font-size: 12px;
-              width: 60px;
+              width: 85px;
+              float: left;
+              margin-left: 2%;
             }
           }
         }

@@ -8,19 +8,55 @@
         <input type="text" class="input-sm form-control" name="end"/>
       </div>
       <div id="filters-container">
-        <input type="submit" class="filter-button" id="time-filter-button" value="Time"/>
-        <input type="submit" class="filter-button" id="mileage-filter-button" value="Mileage"/>
-        <input type="submit" class="filter-button" id="service-filter-button" value="Service"/>
-        <input type="submit" class="filter-button" id="ratings-filter-button" value="Ratings"/>
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Time</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="time-enroute-filter-button" value="Enroute"/>
+            <input type="submit" class="filter-button" id="time-idle-filter-button" value="Idle"/>
+            <input type="submit" class="filter-button" id="time-occupied-filter-button" value="Occupied"/>
+          </div>
+        </div>
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Mileage</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="mileage-enroute-filter-button" value="Enroute"/>
+            <input type="submit" class="filter-button" id="mileage-occupied-filter-button" value="Occupied"/>
+          </div>
+        </div>
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Service</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="service-goal-filter-button" value="Goal"/>
+            <input type="submit" class="filter-button" id="service-lateness-filter-button" value="Lateness"/>
+          </div>
+        </div>
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Ratings</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="ratings-passengers-filter-button" value="Passenger"/>
+            <input type="submit" class="filter-button" id="ratings-drivers-filter-button" value="Driver"/>
+          </div>
+        </div>
       </div>
     </div>
     <br/>
+
     <div id="time-series-container" class="row">
       <h2>Historic</h2>
       <br/>
+
       <div id="historic-chart"></div>
       <h2>Forecasted</h2>
       <br/>
+
       <div id="forecast-chart"></div>
     </div>
   </div>

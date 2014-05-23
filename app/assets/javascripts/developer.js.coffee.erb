@@ -595,7 +595,7 @@ class StatisticsDashboard
                 element: @timePieChartId
                 data: [
                     {label: "Enroute", value: timeEnroute}
-                    {label: "Passenger", value: timeWithPassenger}
+                    {label: "Occupied", value: timeWithPassenger}
                     {label: "Idle", value: timeIdle}
                 ]
                 colors: [
@@ -637,7 +637,7 @@ class StatisticsDashboard
                 element: @mileagePieChartId,
                 data: [
                     {label: "Enroute", value: mileageEnroute}
-                    {label: "Passenger", value: mileageWithPassenger}
+                    {label: "Occupied", value: mileageWithPassenger}
                 ]
                 colors: [
                     '#3C6ADD'
@@ -1082,32 +1082,64 @@ class TimeSeries
                         format: '%Y-%m-%d'
         )
 
-        @timeSeriesSelected = true
-        @mileageSeriesSelected = false
-        @serviceSeriesSelected = false
-        @ratingsSeriesSelected = false
+        @timeEnrouteSelected = true
+        @timeOccupiedSelected = true
+        @timeIdleSelected = true
+        @mileageEnrouteSelected = false
+        @mileageOccupiedSelected = false
+        @serviceGoalSelected = false
+        @serviceLatenessSelected = false
+        @ratingDriversSelected = false
+        @ratingPassengersSelected = false
 
-        $('#time-filter-button').click =>
-            $('#time-filter-button').toggleClass('active')
-            @timeSeriesSelected = not @timeSeriesSelected
+        $('#time-enorute-filter-button').click =>
+            $('#time-enroute-filter-button').toggleClass('active')
+            @timeEnrouteSelected = not @timeEnrouteSelected
             @update()
 
-        $('#mileage-filter-button').click =>
-            $('#mileage-filter-button').toggleClass('active')
-            @mileageSeriesSelected = not @mileageSeriesSelected
+        $('#time-occupied-filter-button').click =>
+            $('#time-occupied-filter-button').toggleClass('active')
+            @timeOccupiedSelected = not @timeOccupiedSelected
             @update()
 
-        $('#service-filter-button').click =>
-            $('#service-filter-button').toggleClass('active')
-            @serviceSeriesSelected = not @serviceSeriesSelected
+        $('#time-idle-filter-button').click =>
+            $('#time-idle-filter-button').toggleClass('active')
+            @timeIdleSelected = not @timeIdleSelected
             @update()
 
-        $('#ratings-filter-button').click =>
-            $('#ratings-filter-button').toggleClass('active')
-            @ratingsSeriesSelected = not @ratingsSeriesSelected
+        $('#mileage-enroute-filter-button').click =>
+            $('#mileage-enroute-filter-button').toggleClass('active')
+            @mileageEnrouteSelected = not @mileageEnrouteSelected
             @update()
 
-        $('#time-filter-button').toggleClass('active')
+        $('#mileage-occupied-filter-button').click =>
+            $('#mileage-occupied-filter-button').toggleClass('active')
+            @mileageOccupiedSelected = not @mileageOccupiedSelected
+            @update()
+
+        $('#service-goal-filter-button').click =>
+            $('#service-goal-filter-button').toggleClass('active')
+            @serviceGoalSelected = not @serviceGoalSelected
+            @update()
+
+        $('#service-lateness-filter-button').click =>
+            $('#service-lateness-filter-button').toggleClass('active')
+            @serviceLatenessSelected = not @serviceLatenessSelected
+            @update()
+
+        $('#ratings-drivers-filter-button').click =>
+            $('#ratings-drivers-filter-button').toggleClass('active')
+            @ratingDriversSelected = not @ratingDriversSelected
+            @update()
+
+        $('#ratings-passengers-filter-button').click =>
+            $('#ratings-passengersfilter-button').toggleClass('active')
+            @ratingsPassengersSelected = not @ratingPassengersSelected
+            @update()
+
+        $('#time-enroute-filter-button').toggleClass('active')
+        $('#time-idle-filter-button').toggleClass('active')
+        $('#time-occupied-filter-button').toggleClass('active')
 
         @update()
 
