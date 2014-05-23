@@ -393,8 +393,8 @@
         #tracking-trip-info {
           min-height: 130px;
           height: 130px;
-          overflow-y: hidden;
-          overflow-x: scroll;
+          overflow-y: scroll;
+          overflow-x: hidden;
           text-align: left;
 
           img {
@@ -415,7 +415,7 @@
             }
           }
 
-          p {
+          div {
             padding: 0;
             margin: 0;
             font-size: 12px;
@@ -423,7 +423,46 @@
             span {
               font-weight: bold;
             }
+
+            p{
+              display: inline-block;
+              padding: 0;
+              margin: 0;
+              font-size: 12px;
+            }
+
+            .rating-container {
+              display: inline-block;
+              vertical-align:middle;
+              .flexible-stars {
+                display: inline-block;
+                i {
+                  display: inline-block
+                }
+                [class^="sprite-"] {
+                  background: url(rating-stars-small.png) no-repeat top left;
+                }
+
+                .sprite-gold-star {
+                  background-position: 0 0;
+                  width: 14.5px;
+                  height: 14px;
+                }
+                .sprite-half-star {
+                  background-position: 0 -39px;
+                  width: 14.5px;
+                  height: 14px;
+                }
+                .sprite-silver-star {
+                  background-position: 0 -78px;
+                  width: 14.5px;
+                  height: 14px;
+                }
+              }
+            }
           }
+
+
         }
       }
 
@@ -481,7 +520,7 @@
                   display: inline-block
                 }
                 [class^="sprite-"] {
-                  background: url(rating-stars.png) no-repeat top left;
+                  background: url(rating-stars-big.png) no-repeat top left;
                 }
 
                 .sprite-gold-star {

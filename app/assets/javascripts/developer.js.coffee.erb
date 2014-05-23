@@ -244,6 +244,9 @@ class TripTracker
         @setTripInfoBool = false
         @tripId = null
 
+        @passengerRatingChartId = 'passenger-rating'
+        @driverRatingChartId = 'driver-rating'
+
     tripChanged: (trip) =>
         @tripId = null
         @driverPreviousLocation = null
@@ -271,16 +274,39 @@ class TripTracker
 
             $('#' + @tripInfoContainerId).html(
                 '<div>
-                    <p><h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1></p>
-                    <p><span>Passenger: </span>' + trip.getPassengerName() + '</p>
-                    <p><span>Time: </span>' + trip.getPickupTime().split('.')[0] + '</p>
-                    <p><span>Pickup: </span>' + pickupLocation + '</p>
-                    <p><span>Dropoff: </span>' + dropoffLocation + '</p>
-                    <p><span>Servicing: </span>' + trip.getServicing() + '</p>
-                    <p><span>Driver: </span>' + driver + '</p>
+                    <h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1>
+                    <div><span>Passenger: </span><p>' + trip.getPassengerName() + '  </p>
+                       <div class="rating-container">
+                            <div class="flexible-stars" data-isLocked="yes"
+                                    data-init="0" id="' + @passengerRatingChartId + '"></div>
+                       </div>
+                    </div>
+                    <div><span>Time: </span><p>' + trip.getPickupTime().split('.')[0] + '</p></div>
+                    <div><span>Pickup: </span><p>' + pickupLocation + '</p></div>
+                    <div><span>Dropoff: </span><p>' + dropoffLocation + '</p></div>
+                    <div>
+                      <span>Origin: </span><p>' + trip.getOrigin() + ' - </p>
+                      <span>Servicing: </span><p>' + trip.getServicing() + '</p>
+                    </div>
+                    <div><span>Driver: </span><p>' + driver + '  </p>
+                        <div class="rating-container">
+                          <div class="flexible-stars" data-isLocked="yes"
+                                     data-init="0" id="' + @driverRatingChartId + '"></div>
+                        </div>
+                    </div>
                  </div>
                 '
             )
+
+            $('#' + @passengerRatingChartId).html('')
+            $('#' + @passengerRatingChartId).flexibleStars({
+                init: (Math.random() * (3 - 5) + 3)
+            })
+
+            $('#' + @driverRatingChartId).html('')
+            $('#' + @driverRatingChartId).flexibleStars({
+                init: (Math.random() * (3 - 5) + 3)
+            })
         else
             $('#' + @tripInfoContainerId).fadeOut(1000).html('<h1>Select a trip</h1>').fadeIn(1000)
 
