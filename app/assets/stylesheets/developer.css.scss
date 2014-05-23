@@ -363,13 +363,13 @@
         }
 
         #tracking-map-container {
-          height: 400px;
+          height: 395px;
           width: 98%;
           margin: 0 auto;
 
 
           .map_container {
-            height: 98%;
+            height: 100%;
             width: 98%;
             background: #FFF;
             margin-top: 10px;
@@ -391,8 +391,8 @@
         }
 
         #tracking-trip-info {
-          min-height: 130px;
-          height: 130px;
+          min-height: 135px;
+          height: 135px;
           overflow-y: scroll;
           overflow-x: hidden;
           text-align: left;

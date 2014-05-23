@@ -315,7 +315,7 @@ class TripTracker
                     init: trip.getDriverRating()
                 })
         else
-            $('#' + @tripInfoContainerId).fadeOut(1000).html('<h1>Select a trip</h1>').fadeIn(1000)
+            $('#' + @tripInfoContainerId).html('<h1>Select a trip</h1>')
 
     updateMap: (trip) =>
         return  if @setTripInfoBool is true or !trip? or !trip.driverLocation?
