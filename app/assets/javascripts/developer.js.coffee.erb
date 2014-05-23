@@ -1045,18 +1045,87 @@ $('.developer.api').ready ->
 
 ########## STATISTICS #########
 
+class GatewayMockStatistics
+
+    constructor: () ->
+
+    getStats: (startDate, endDate, _callback) =>
+
+        values =
+            passengerRating: -1
+            driverRating: -1
+            timeWithPassenger: -1
+            mileageWithPassenger: -1
+            timeEnroute: -1
+            mileageEnroute: -1
+            timeIdle: -1
+            totalTrips: -1
+            cancelled: -1
+            completed: -1
+            rejected: -1
+            lateness: -1
+            withinServiceGoal: -1
+
+    treatAsUTC: (date) =>
+        result = new Date(date)
+        result.setMinutes(result.getMinutes() - result.getTimezoneOffset())
+        result
+
+    daysBetween: (startDate, endDate) =>
+        millisecondsPerDay = 24 * 60 * 60 * 1000
+        return (treatAsUTC(endDate) - treatAsUTC(startDate)) / millisecondsPerDay
+
 class TimeSeries
 
-    constructor: (@historicChartContainerId, @forecastChartContainerId) ->
+    constructor: (@gateway, @historicChartContainerId, @forecastChartContainerId) ->
+        @startDate = new Date()
+        @endDate = new Date()
+
+        @timeEnrouteSelected = true
+        @timeOccupiedSelected = true
+        @timeIdleSelected = true
+        @mileageEnrouteSelected = false
+        @mileageOccupiedSelected = false
+        @serviceGoalSelected = false
+        @serviceLatenessSelected = false
+        @ratingDriversSelected = false
+        @ratingPassengersSelected = false
+
+        @timeEnroute =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeOccupied =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeIdle =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageEnroute =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageOccupied =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceGoal =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceLateness =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingDrivers =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingPassengers = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+
+        @timeEnrouteF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeOccupiedF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeIdleF =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageEnrouteF =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageOccupiedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceGoalF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceLatenessF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingDriversF =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingPassengersF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+
+
         @historicChart = c3.generate(
             bindto: '#' + @historicChartContainerId
             data:
                 x: 'x'
                 columns: [
-                    ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06']
-                    ['data1', 30, 200, 100, 400, 150, 250]
-                    ['data2', 130, 340, 200, 500, 250, 350]
-                    ['data2', 130, 340, 200, 500, 250, 350]
+                    ['x', '2013-01-01T00:00:00','2013-01-01T01:00:00','2013-01-01T02:00:00','2013-01-01T03:00:00',
+                     '2013-01-01T04:00:00','2013-01-01T05:00:00','2013-01-01T06:00:00','2013-01-01T07:00:00',
+                     '2013-01-01T08:00:00','2013-01-01T09:00:00','2013-01-01T10:00:00','2013-01-01T11:00:00',
+                     '2013-01-01T12:00:00','2013-01-01T13:00:00','2013-01-01T14:00:00','2013-01-01T15:00:00',
+                     '2013-01-01T16:00:00','2013-01-01T17:00:00','2013-01-01T18:00:00','2013-01-01T19:00:00',
+                     '2013-01-01T20:00:00','2013-01-01T21:00:00','2013-01-01T22:00:00','2013-01-01T23:00:00']
+                    $.map(['Time enroute', @timeEnroute], (n) -> n)
+                    $.map(['Time idle', @timeIdle], (n) -> n)
+                    $.map(['Time occupied', @timeOccupied], (n) -> n)
                 ]
             axis:
                 x:
@@ -1070,10 +1139,15 @@ class TimeSeries
             data:
                 x: 'x'
                 columns: [
-                    ['x', '2013-01-01', '2013-01-02', '2013-01-03', '2013-01-04', '2013-01-05', '2013-01-06']
-                    ['data1', 30, 200, 100, 400, 150, 250]
-                    ['data2', 130, 340, 200, 500, 250, 350]
-                    ['data2', 130, 340, 200, 500, 250, 350]
+                    ['x', '2013-01-01T00:00:00','2013-01-01T01:00:00','2013-01-01T02:00:00','2013-01-01T03:00:00',
+                     '2013-01-01T04:00:00','2013-01-01T05:00:00','2013-01-01T06:00:00','2013-01-01T07:00:00',
+                     '2013-01-01T08:00:00','2013-01-01T09:00:00','2013-01-01T10:00:00','2013-01-01T11:00:00',
+                     '2013-01-01T12:00:00','2013-01-01T13:00:00','2013-01-01T14:00:00','2013-01-01T15:00:00',
+                     '2013-01-01T16:00:00','2013-01-01T17:00:00','2013-01-01T18:00:00','2013-01-01T19:00:00',
+                     '2013-01-01T20:00:00','2013-01-01T21:00:00','2013-01-01T22:00:00','2013-01-01T23:00:00']
+                    $.map(['Time enroute', @timeEnrouteF], (n) -> n)
+                    $.map(['Time idle', @timeIdleF], (n) -> n)
+                    $.map(['Time occupied', @timeOccupiedF], (n) -> n)
                 ]
             axis:
                 x:
@@ -1082,74 +1156,83 @@ class TimeSeries
                         format: '%Y-%m-%d'
         )
 
-        @timeEnrouteSelected = true
-        @timeOccupiedSelected = true
-        @timeIdleSelected = true
-        @mileageEnrouteSelected = false
-        @mileageOccupiedSelected = false
-        @serviceGoalSelected = false
-        @serviceLatenessSelected = false
-        @ratingDriversSelected = false
-        @ratingPassengersSelected = false
-
-        $('#time-enorute-filter-button').click =>
+        $('#time-enroute-filter-button').click =>
             $('#time-enroute-filter-button').toggleClass('active')
             @timeEnrouteSelected = not @timeEnrouteSelected
-            @update()
+            @update('Time enroute', @timeEnroute, @timeEnrouteF, @timeEnrouteSelected)
 
         $('#time-occupied-filter-button').click =>
             $('#time-occupied-filter-button').toggleClass('active')
             @timeOccupiedSelected = not @timeOccupiedSelected
-            @update()
+            @update('Time occupied', @timeOccupied, @timeOccupiedF, @timeOccupiedSelected)
 
         $('#time-idle-filter-button').click =>
             $('#time-idle-filter-button').toggleClass('active')
             @timeIdleSelected = not @timeIdleSelected
-            @update()
+            @update('Time idle', @timeIdle, @timeIdleF, @timeIdleSelected)
 
         $('#mileage-enroute-filter-button').click =>
             $('#mileage-enroute-filter-button').toggleClass('active')
             @mileageEnrouteSelected = not @mileageEnrouteSelected
-            @update()
+            @update('Mileage enroute', @mileageEnroute, @mileageEnrouteF, @mileageEnrouteSelected)
 
         $('#mileage-occupied-filter-button').click =>
             $('#mileage-occupied-filter-button').toggleClass('active')
             @mileageOccupiedSelected = not @mileageOccupiedSelected
-            @update()
+            @update('Mileage occupied', @mileageOccupied, @mileageOccupiedF, @mileageOccupiedSelected)
 
         $('#service-goal-filter-button').click =>
             $('#service-goal-filter-button').toggleClass('active')
             @serviceGoalSelected = not @serviceGoalSelected
-            @update()
+            @update('Service goal', @serviceGoal, @serviceGoalF, @serviceGoalSelected)
 
         $('#service-lateness-filter-button').click =>
             $('#service-lateness-filter-button').toggleClass('active')
             @serviceLatenessSelected = not @serviceLatenessSelected
-            @update()
+            @update('Service lateness', @serviceLateness, @serviceLatenessF, @serviceLatenessSelected)
 
         $('#ratings-drivers-filter-button').click =>
             $('#ratings-drivers-filter-button').toggleClass('active')
             @ratingDriversSelected = not @ratingDriversSelected
-            @update()
+            @update('Rating drivers', @ratingDrivers, @ratingDriversF, @ratingDriversSelected)
 
         $('#ratings-passengers-filter-button').click =>
-            $('#ratings-passengersfilter-button').toggleClass('active')
-            @ratingsPassengersSelected = not @ratingPassengersSelected
-            @update()
+            $('#ratings-passengers-filter-button').toggleClass('active')
+            @ratingPassengersSelected = not @ratingPassengersSelected
+            @update('Rating passengers', @ratingPassengers, @ratingPassengersF, @ratingPassengersSelected)
 
         $('#time-enroute-filter-button').toggleClass('active')
         $('#time-idle-filter-button').toggleClass('active')
         $('#time-occupied-filter-button').toggleClass('active')
 
-        @update()
+    update: (series, historyData, forecastData, load) =>
+        historyColumn = $.map([series, historyData], (n) -> n)
+        forecastColumn = $.map([series, forecastData], (n) -> n)
+        if load
+            @historicChart.load(
+                columns: [
+                    historyColumn
+                ]
+            )
+            @forecastChart.load(
+                columns: [
+                    forecastColumn
+                ]
+            )
+        else
+            @historicChart.unload(
+                [series]
+            )
+            @forecastChart.unload(
+                [series]
+            )
 
-    update: () =>
-
-
+    r: () =>
+        (Math.random() * 30) + 70
 
 
 $('.developer.statistics').ready ->
-    timeSeries = new TimeSeries('historic-chart', 'forecast-chart')
+    timeSeries = new TimeSeries(new GatewayMockStatistics(), 'historic-chart', 'forecast-chart')
     $('#datepicker').datepicker(
         format: "yyyy/mm/dd"
         startDate: "2012-01-01"
