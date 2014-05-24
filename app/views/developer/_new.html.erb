@@ -1,7 +1,7 @@
 <% if edit %>
-    <% urlUser = users_saveUserEdit_path %>
+    <% urlUser = settings_saveUserEdit_path %>
 <% else %>
-    <% urlUser = users_saveUser_path %>
+    <% urlUser = settings_saveUser_path %>
 <% end %>
 <%= form_for(user, url: urlUser) do |f| %>
     <%= f.label :Username %>

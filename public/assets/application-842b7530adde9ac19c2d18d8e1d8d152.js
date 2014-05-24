@@ -163,7 +163,7 @@
     },
 
     // Handles "data-method" on links such as:
-    // <a href="/users/5" data-method="delete" rel="nofollow" data-confirm="Are you sure?">Delete</a>
+    // <a href="/settings/5" data-method="delete" rel="nofollow" data-confirm="Are you sure?">Delete</a>
     handleMethod: function(link) {
       var href = rails.href(link),
         method = link.data('method'),

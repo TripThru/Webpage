@@ -13,7 +13,7 @@
 
 ActiveRecord::Schema.define(version: 20140511085515) do
 
-  create_table "users", force: true do |t|
+  create_table "settings", force: true do |t|
     t.string   "ClientId"
     t.string   "ClientSecret"
     t.string   "UserName"

@@ -1,4 +1,4 @@
-class UsersController < ApplicationController
+class SettingsController < ApplicationController
   layout 'developer'
 
   def index
@@ -29,9 +29,9 @@ class UsersController < ApplicationController
       user.AccessToken=c
       user.save
       if user.valid?
-        redirect_to users_users_path
+        redirect_to settings_users_path
       else
-        redirect_to users_new_path
+        redirect_to settings_new_path
       end
     else
       redirect_to session_path
@@ -66,7 +66,7 @@ class UsersController < ApplicationController
       user.CallbackUrl = params[:user][:CallbackUrl]
       user.TripThruAccessToken = params[:user][:TripThruAccessToken]
       user.save
-      redirect_to users_users_path
+      redirect_to settings_users_path
     else
       redirect_to session_path
     end
@@ -76,10 +76,13 @@ class UsersController < ApplicationController
   def destroy
     if roleUser == 'Admin'
       User.find(params[:id]).delete
-      redirect_to users_users_path
+      redirect_to settings_users_path
     else
       redirect_to session_path
     end
+
+  end
+  def map
 
   end
 end
