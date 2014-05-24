@@ -1081,16 +1081,24 @@ class TimeSeries
         @startDate = new Date()
         @endDate = new Date()
 
-        @timeEnrouteSelected = true
-        @timeOccupiedSelected = true
-        @timeIdleSelected = true
-        @mileageEnrouteSelected = false
-        @mileageOccupiedSelected = false
-        @serviceGoalSelected = false
-        @serviceLatenessSelected = false
-        @ratingDriversSelected = false
+        @tripsCompletedSelected =   true
+        @tripsCancelledSelected =   true
+        @tripsRejectedSelected =    true
+        @tripsErrorSelected =       true
+        @timeEnrouteSelected =      false
+        @timeOccupiedSelected =     false
+        @timeIdleSelected =         false
+        @mileageEnrouteSelected =   false
+        @mileageOccupiedSelected =  false
+        @serviceGoalSelected =      false
+        @serviceLatenessSelected =  false
+        @ratingDriversSelected =    false
         @ratingPassengersSelected = false
 
+        @tripsCompleted = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCancelled = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsRejected =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsError =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
         @timeEnroute =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
         @timeOccupied =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
         @timeIdle =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
@@ -1101,6 +1109,10 @@ class TimeSeries
         @ratingDrivers =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
         @ratingPassengers = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
 
+        @tripsCompletedF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCancelledF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsRejectedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsErrorF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
         @timeEnrouteF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
         @timeOccupiedF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
         @timeIdleF =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
@@ -1123,9 +1135,10 @@ class TimeSeries
                      '2013-01-01T12:00:00','2013-01-01T13:00:00','2013-01-01T14:00:00','2013-01-01T15:00:00',
                      '2013-01-01T16:00:00','2013-01-01T17:00:00','2013-01-01T18:00:00','2013-01-01T19:00:00',
                      '2013-01-01T20:00:00','2013-01-01T21:00:00','2013-01-01T22:00:00','2013-01-01T23:00:00']
-                    $.map(['Time enroute', @timeEnroute], (n) -> n)
-                    $.map(['Time idle', @timeIdle], (n) -> n)
-                    $.map(['Time occupied', @timeOccupied], (n) -> n)
+                    $.map(['Completed trips', @tripsCompleted], (n) -> n)
+                    $.map(['Rejected trips', @tripsRejected], (n) -> n)
+                    $.map(['Cancelled trips', @tripsCancelled], (n) -> n)
+                    $.map(['Error trips', @tripsError], (n) -> n)
                 ]
             axis:
                 x:
@@ -1145,9 +1158,10 @@ class TimeSeries
                      '2013-01-01T12:00:00','2013-01-01T13:00:00','2013-01-01T14:00:00','2013-01-01T15:00:00',
                      '2013-01-01T16:00:00','2013-01-01T17:00:00','2013-01-01T18:00:00','2013-01-01T19:00:00',
                      '2013-01-01T20:00:00','2013-01-01T21:00:00','2013-01-01T22:00:00','2013-01-01T23:00:00']
-                    $.map(['Time enroute', @timeEnrouteF], (n) -> n)
-                    $.map(['Time idle', @timeIdleF], (n) -> n)
-                    $.map(['Time occupied', @timeOccupiedF], (n) -> n)
+                    $.map(['Completed trips', @tripsCompletedF], (n) -> n)
+                    $.map(['Rejected trips', @tripsRejectedF], (n) -> n)
+                    $.map(['Cancelled trips', @tripsCancelledF], (n) -> n)
+                    $.map(['Error trips', @tripsErrorF], (n) -> n)
                 ]
             axis:
                 x:
@@ -1155,6 +1169,26 @@ class TimeSeries
                     tick:
                         format: '%Y-%m-%d'
         )
+
+        $('#trips-completed-filter-button').click =>
+            $('#trips-completed-filter-button').toggleClass('active')
+            @tripsCompletedSelected= not @tripsCompletedSelected
+            @update('Completed trips', @tripsCompleted, @tripsCompletedF, @tripsCompletedSelected)
+
+        $('#trips-rejected-filter-button').click =>
+            $('#trips-rejected-filter-button').toggleClass('active')
+            @tripsRejectedSelected= not @tripsRejectedSelected
+            @update('Rejected trips', @tripsRejected, @tripsRejectedF, @tripsRejectedSelected)
+
+        $('#trips-cancelled-filter-button').click =>
+            $('#trips-cancelled-filter-button').toggleClass('active')
+            @tripsCancelledSelected= not @tripsCancelledSelected
+            @update('Cancelled trips', @tripsCancelled, @tripsCancelledF, @tripsCancelledSelected)
+
+        $('#trips-error-filter-button').click =>
+            $('#trips-error-filter-button').toggleClass('active')
+            @tripsErrorSelected= not @tripsErrorSelected
+            @update('Error trips', @tripsError, @tripsErrorF, @tripsErrorSelected)
 
         $('#time-enroute-filter-button').click =>
             $('#time-enroute-filter-button').toggleClass('active')
@@ -1201,9 +1235,10 @@ class TimeSeries
             @ratingPassengersSelected = not @ratingPassengersSelected
             @update('Rating passengers', @ratingPassengers, @ratingPassengersF, @ratingPassengersSelected)
 
-        $('#time-enroute-filter-button').toggleClass('active')
-        $('#time-idle-filter-button').toggleClass('active')
-        $('#time-occupied-filter-button').toggleClass('active')
+        $('#trips-completed-filter-button').toggleClass('active')
+        $('#trips-rejected-filter-button').toggleClass('active')
+        $('#trips-cancelled-filter-button').toggleClass('active')
+        $('#trips-error-filter-button').toggleClass('active')
 
     update: (series, historyData, forecastData, load) =>
         historyColumn = $.map([series, historyData], (n) -> n)
