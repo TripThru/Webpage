@@ -1257,5 +1257,14 @@
     img{
       display: inline-block;
     }
+
+    .col-md-9{
+      height: 680px;
+
+      #partner-coverage-map{
+        height: 100%;
+        width: 100%;
+      }
+    }
   }
 }
