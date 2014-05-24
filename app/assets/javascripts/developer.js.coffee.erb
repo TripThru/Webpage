@@ -1514,8 +1514,13 @@ class CoverageMap
                     map: map
                     center: citymap[city].center
                     radius: citymap[city].population * 1000
-
+                marker = new google.maps.Marker({
+                    position: citymap[city].center
+                    map: map
+                    title: city
+                })
                 cityCircle = new google.maps.Circle(populationOptions)
+
 
 
 $('.developer.partners').ready ->
