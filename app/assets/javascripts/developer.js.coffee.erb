@@ -1464,7 +1464,7 @@ $('.developer.statistics').ready ->
 
 $('.developer.partners').ready ->
 
-    tripthru = new TripThru('http://54.201.134.194/TripThru.TripThruGateway/', $('#access_token').val())
+    tripthru = new TripThru('http://107.170.240.134/TripThru.TripThruGateway/', $('#access_token').val())
 
     loadMap = (data) ->
         if data?
@@ -1505,8 +1505,13 @@ $('.developer.partners').ready ->
                     map: map
                     center: citymap[city].center
                     radius: citymap[city].population * 1000
-
+                marker = new google.maps.Marker({
+                    position: citymap[city].center
+                    map: map
+                    title: city
+                })
                 cityCircle = new google.maps.Circle(populationOptions)
+
 
     google.maps.event.addDomListener window, "load", tripthru.getPartners(loadMap)
 
