@@ -35,7 +35,7 @@
                     <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.TripThruAccessToken %></td>
                     <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.Role %></td>
                     <td class="active" onclick="loadPage(<%= user.id %>)">Edit</td>
-                    <td class="active"><%= link_to 'Delete', users_destroy_path(@user, :id => user.id), method: :delete, data: {confirm: 'Are you sure?'} %></td>
+                    <td class="active"><%= link_to 'Delete', settings_destroy_path(@user, :id => user.id), method: :delete, data: {confirm: 'Are you sure?'} %></td>
                   </tr>
                   <br/>
               <% end %>
@@ -64,12 +64,14 @@
       </div>
   </div>
 </div>
+
+<input type="hidden" id="access_token" value="<%= userAccessToken %>"/>
 <script type="text/javascript">
     function loadPageNew() {
-        $("#contenthere").load('<%= users_new_path %>');
+        $("#contenthere").load('<%= settings_new_path %>');
     }
     function loadPage(id) {
-        url = "<%= users_edit_path%>" + "?id=" + id;
+        url = "<%= settings_edit_path%>" + "?id=" + id;
         $("#contenthere").load(url);
         $("#myModal").modal("show");
     }
