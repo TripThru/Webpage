@@ -1,5 +1,5 @@
 loadMapPartners = ->
-    $.get('http://107.170.240.134/TripThru.TripThruGateway/' + 'partners?format=json&access_token=' + 'yellow12ondazazxx21', (data) =>
+    $.get('http://107.170.240.134/TripThru.TripThruGateway/' + 'fleets?format=json&access_token=' + 'yellow12ondazazxx21', (data) =>
         if data.result == 'OK'
             mapOptions =
                 zoom: 4

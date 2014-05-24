@@ -1010,7 +1010,7 @@ $(document).ready(function(){
 
 $('.developer.dashboard').ready ->
     dashboardManager = new DashboardManager(
-            new TripThru('http://54.201.134.194/TripThru.TripThruGateway/', $('#access_token').val())
+            new TripThru('http://107.170.240.134/TripThru.TripThruGateway/', $('#access_token').val())
             'trip-status-selector'
             [
                 new ActiveTripsChart('active-trips-chart')
@@ -1462,12 +1462,21 @@ $('.developer.statistics').ready ->
         todayHighlight: true
     );
 
-$('.developer.partners').ready ->
 
-    tripthru = new TripThru('http://54.201.134.194/TripThru.TripThruGateway/', $('#access_token').val())
+########## PARTNERS #########
 
-    loadMap = (data) ->
+class CoverageMap
+
+    constructor: (@gateway, @containerId) ->
+        @fleets = null
+        $('#' + @containerId).html('<%= image_tag('loading.gif', height: 128, width: 128) %>')
+        google.maps.event.addDomListener window, "load", @gateway.getPartners(@init)
+
+    init: (data) =>
         if data?
+            $('#' + @containerId).html('')
+            @fleets = data.fleets
+
             mapOptions =
                 zoom: 4
                 center: new google.maps.LatLng(37.09024, -95.712891)
@@ -1476,13 +1485,13 @@ $('.developer.partners').ready ->
             colors = [ "#006600", "#0D6B00", "#1A7000", "#267500", "#337A00", "#408000", "#4C8500", "#598A00", "#668F00", "#739400", "#809900", "#8C9E00", "#99A300", "#A6A800", "#B2AD00", "#BFB200", "#CCB800", "#D9BD00", "#E6C200", "#F2C700", "#FFCC00", "#FCC200", "#FAB800", "#F7AD00", "#F5A300", "#F29900", "#F08F00", "#ED8500", "#EB7A00", "#E87000", "#E66600", "#E35C00", "#E05200", "#DE4700", "#DB3D00", "#D93300", "#D62900", "#D41F00", "#D11400", "#CF0A00", "#CC0000" ]
             driversTotal = [89,5,37,90,35,18,51,47,31,19,74,10,92,65,65,20,32]
             driver = 0
-            map = new google.maps.Map(document.getElementById("map-canvas2"), mapOptions)
+            map = new google.maps.Map(document.getElementById(@containerId), mapOptions)
 
             citymap = {}
             count = 0
-            data.fleets.forEach (fleet) ->
+            for fleet in @fleets
                 if fleet.fleetName == "TripThru San Francisco"
-                    return
+                    continue
                 driver++
                 citymap[fleet.fleetName]=
                     center: new google.maps.LatLng(fleet.coverage[0].center.lat, fleet.coverage[0].center.lng)
@@ -1508,6 +1517,13 @@ $('.developer.partners').ready ->
 
                 cityCircle = new google.maps.Circle(populationOptions)
 
-    google.maps.event.addDomListener window, "load", tripthru.getPartners(loadMap)
+
+$('.developer.partners').ready ->
+
+    coverageMap = new CoverageMap(
+        new TripThru('http://107.170.240.134/TripThru.TripThruGateway/', $('#access_token').val())
+        'partner-coverage-map'
+    )
+
 
 
