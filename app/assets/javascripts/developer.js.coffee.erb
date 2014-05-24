@@ -1107,34 +1107,35 @@ class TimeSeries
         @ratingDriversSelected =    false
         @ratingPassengersSelected = false
 
-        @tripsCompleted = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsCancelled = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsRejected =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsError =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeEnroute =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeOccupied =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeIdle =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @mileageEnroute =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @mileageOccupied =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @serviceGoal =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @serviceLateness =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @ratingDrivers =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @ratingPassengers = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCompleted = []
+        @tripsCancelled = []
+        @tripsRejected =  []
+        @tripsError =     []
+        @timeEnroute =      []
+        @timeOccupied =     []
+        @timeIdle =         []
+        @mileageEnroute =   []
+        @mileageOccupied =  []
+        @serviceGoal =      []
+        @serviceLateness =  []
+        @ratingDrivers =    []
+        @ratingPassengers = []
 
-        @tripsCompletedF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsCancelledF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsRejectedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsErrorF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeEnrouteF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeOccupiedF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeIdleF =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @mileageEnrouteF =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @mileageOccupiedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @serviceGoalF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @serviceLatenessF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @ratingDriversF =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @ratingPassengersF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCompletedF = []
+        @tripsCancelledF = []
+        @tripsRejectedF =  []
+        @tripsErrorF =     []
+        @timeEnrouteF =      []
+        @timeOccupiedF =     []
+        @timeIdleF =         []
+        @mileageEnrouteF =   []
+        @mileageOccupiedF =  []
+        @serviceGoalF =      []
+        @serviceLatenessF =  []
+        @ratingDriversF =    []
+        @ratingPassengersF = []
 
+        @generateRandomData()
 
         @historicChart = c3.generate(
             bindto: '#' + @historicChartContainerId
@@ -1181,97 +1182,273 @@ class TimeSeries
         $('#trips-completed-filter-button').click =>
             $('#trips-completed-filter-button').toggleClass('active')
             @tripsCompletedSelected= not @tripsCompletedSelected
-            @update('Completed trips', @tripsCompleted, @tripsCompletedF, @tripsCompletedSelected)
+            @update([{
+                name: 'Completed trips'
+                historicData: @tripsCompleted
+                forecastData: @tripsCompletedF
+                load: @tripsCompletedSelected
+            }])
 
         $('#trips-rejected-filter-button').click =>
             $('#trips-rejected-filter-button').toggleClass('active')
             @tripsRejectedSelected= not @tripsRejectedSelected
-            @update('Rejected trips', @tripsRejected, @tripsRejectedF, @tripsRejectedSelected)
+            @update([{
+                name: 'Rejected trips'
+                historicData: @tripsRejectedF
+                forecastData: @tripsCompletedF
+                load: @tripsRejectedSelected
+            }])
 
         $('#trips-cancelled-filter-button').click =>
             $('#trips-cancelled-filter-button').toggleClass('active')
             @tripsCancelledSelected= not @tripsCancelledSelected
-            @update('Cancelled trips', @tripsCancelled, @tripsCancelledF, @tripsCancelledSelected)
+            @update([{
+                name: 'Cancelled trips'
+                historicData: @tripsCancelled
+                forecastData: @tripsCancelledF
+                load: @tripsCancelledSelected
+            }])
 
         $('#trips-error-filter-button').click =>
             $('#trips-error-filter-button').toggleClass('active')
             @tripsErrorSelected= not @tripsErrorSelected
-            @update('Error trips', @tripsError, @tripsErrorF, @tripsErrorSelected)
+            @update([{
+                name: 'Error trips'
+                historicData: @tripsError
+                forecastData: @tripsErrorF
+                load: @tripsErrorSelected
+            }])
 
         $('#time-enroute-filter-button').click =>
             $('#time-enroute-filter-button').toggleClass('active')
             @timeEnrouteSelected = not @timeEnrouteSelected
-            @update('Time enroute', @timeEnroute, @timeEnrouteF, @timeEnrouteSelected)
+            @update([{
+                name: 'Time enroute'
+                historicData: @timeEnroute
+                forecastData: @timeEnrouteF
+                load: @timeEnrouteSelected
+            }])
 
         $('#time-occupied-filter-button').click =>
             $('#time-occupied-filter-button').toggleClass('active')
             @timeOccupiedSelected = not @timeOccupiedSelected
-            @update('Time occupied', @timeOccupied, @timeOccupiedF, @timeOccupiedSelected)
+            @update([{
+                name: 'Time occupied'
+                historicData: @timeOccupied
+                forecastData: @timeOccupiedF
+                load: @timeOccupiedSelected
+            }])
 
         $('#time-idle-filter-button').click =>
             $('#time-idle-filter-button').toggleClass('active')
             @timeIdleSelected = not @timeIdleSelected
-            @update('Time idle', @timeIdle, @timeIdleF, @timeIdleSelected)
+            @update([{
+                name: 'Time idle'
+                historicData: @timeIdle
+                forecastData: @timeIdleF
+                load: @timeIdleSelected
+            }])
 
         $('#mileage-enroute-filter-button').click =>
             $('#mileage-enroute-filter-button').toggleClass('active')
             @mileageEnrouteSelected = not @mileageEnrouteSelected
-            @update('Mileage enroute', @mileageEnroute, @mileageEnrouteF, @mileageEnrouteSelected)
+            @update([{
+                name: 'Mileage enroute'
+                historicData: @mileageEnroute
+                forecastData: @mileageEnrouteF
+                load: @mileageEnrouteSelected
+            }])
 
         $('#mileage-occupied-filter-button').click =>
             $('#mileage-occupied-filter-button').toggleClass('active')
             @mileageOccupiedSelected = not @mileageOccupiedSelected
-            @update('Mileage occupied', @mileageOccupied, @mileageOccupiedF, @mileageOccupiedSelected)
+            @update([{
+                name: 'Mileage occupied'
+                historicData: @mileageOccupied
+                forecastData: @mileageOccupiedF
+                load: @mileageOccupiedSelected
+            }])
 
         $('#service-goal-filter-button').click =>
             $('#service-goal-filter-button').toggleClass('active')
             @serviceGoalSelected = not @serviceGoalSelected
-            @update('Service goal', @serviceGoal, @serviceGoalF, @serviceGoalSelected)
+            @update([{
+                name: 'Service level'
+                historicData: @serviceGoal
+                forecastData: @serviceGoalF
+                load: @serviceGoalSelected
+            }])
 
         $('#service-lateness-filter-button').click =>
             $('#service-lateness-filter-button').toggleClass('active')
             @serviceLatenessSelected = not @serviceLatenessSelected
-            @update('Service lateness', @serviceLateness, @serviceLatenessF, @serviceLatenessSelected)
+            @update([{
+                name: 'Service lateness'
+                historicData: @serviceLateness
+                forecastData: @serviceLatenessF
+                load: @serviceLatenessSelected
+            }])
 
         $('#ratings-drivers-filter-button').click =>
             $('#ratings-drivers-filter-button').toggleClass('active')
             @ratingDriversSelected = not @ratingDriversSelected
-            @update('Rating drivers', @ratingDrivers, @ratingDriversF, @ratingDriversSelected)
+            @update([{
+                name: 'Rating drivers'
+                historicData: @ratingDrivers
+                forecastData: @ratingDriversF
+                load: @ratingDriversSelected
+            }])
 
         $('#ratings-passengers-filter-button').click =>
             $('#ratings-passengers-filter-button').toggleClass('active')
             @ratingPassengersSelected = not @ratingPassengersSelected
-            @update('Rating passengers', @ratingPassengers, @ratingPassengersF, @ratingPassengersSelected)
+            @update([{
+                name: 'Rating passengers'
+                historicData: @ratingPassengers
+                forecastData: @ratingPassengersF
+                load: @ratingPassengersSelected
+            }])
+
+        $('#partners-select').change =>
+            @generateRandomData()
+            @update([
+                {
+                    name: 'Completed trips'
+                    historicData: @tripsCompleted
+                    forecastData: @tripsCompletedF
+                    load: @tripsCompletedSelected
+                },
+                {
+                    name: 'Rejected trips'
+                    historicData: @tripsRejectedF
+                    forecastData: @tripsCompletedF
+                    load: @tripsRejectedSelected
+                },
+                {
+                    name: 'Cancelled trips'
+                    historicData: @tripsCancelled
+                    forecastData: @tripsCancelledF
+                    load: @tripsCancelledSelected
+                },
+                {
+                    name: 'Error trips'
+                    historicData: @tripsError
+                    forecastData: @tripsErrorF
+                    load: @tripsErrorSelected
+                },
+                {
+                    name: 'Time enroute'
+                    historicData: @timeEnroute
+                    forecastData: @timeEnrouteF
+                    load: @timeEnrouteSelected
+                },
+                {
+                    name: 'Time occupied'
+                    historicData: @timeOccupied
+                    forecastData: @timeOccupiedF
+                    load: @timeOccupiedSelected
+                },
+                {
+                    name: 'Time idle'
+                    historicData: @timeIdle
+                    forecastData: @timeIdleF
+                    load: @timeIdleSelected
+                },
+                {
+                    name: 'Mileage enroute'
+                    historicData: @mileageEnroute
+                    forecastData: @mileageEnrouteF
+                    load: @mileageEnrouteSelected
+                },
+                {
+                    name: 'Mileage occupied'
+                    historicData: @mileageOccupied
+                    forecastData: @mileageOccupiedF
+                    load: @mileageOccupiedSelected
+                },
+                {
+                    name: 'Service level'
+                    historicData: @serviceGoal
+                    forecastData: @serviceGoalF
+                    load: @serviceGoalSelected
+                },
+                {
+                    name: 'Service lateness'
+                    historicData: @serviceLateness
+                    forecastData: @serviceLatenessF
+                    load: @serviceLatenessSelected
+                },
+                {
+                    name: 'Rating drivers'
+                    historicData: @ratingDrivers
+                    forecastData: @ratingDriversF
+                    load: @ratingDriversSelected
+                },
+                {
+                    name: 'Rating passengers'
+                    historicData: @ratingPassengers
+                    forecastData: @ratingPassengersF
+                    load: @ratingPassengersSelected
+                }
+
+
+            ])
+
 
         $('#trips-completed-filter-button').toggleClass('active')
         $('#trips-rejected-filter-button').toggleClass('active')
         $('#trips-cancelled-filter-button').toggleClass('active')
         $('#trips-error-filter-button').toggleClass('active')
 
-    update: (series, historyData, forecastData, load) =>
-        historyColumn = $.map([series, historyData], (n) -> n)
-        forecastColumn = $.map([series, forecastData], (n) -> n)
-        if load
-            @historicChart.load(
-                columns: [
-                    historyColumn
-                ]
-            )
-            @forecastChart.load(
-                columns: [
-                    forecastColumn
-                ]
-            )
-        else
-            @historicChart.unload(
-                [series]
-            )
-            @forecastChart.unload(
-                [series]
-            )
+    update: (series) =>
+        historyColumns = []
+        forecastColumns = []
+        seriesNames = []
+        for serie in series
+            if serie.load
+                historyColumns.push $.map([serie.name, serie.historicData], (n) -> n)
+                forecastColumns.push $.map([serie.name, serie.forecastData], (n) -> n)
+            else
+                seriesNames.push serie.name
+        @historicChart.load columns: historyColumns
+        @forecastChart.load columns: forecastColumns
+        @historicChart.unload seriesNames
+        @forecastChart.unload seriesNames
+
+
+
+    generateRandomData: () =>
+        @tripsCompleted = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCancelled = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsRejected =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsError =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeEnroute =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeOccupied =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeIdle =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageEnroute =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageOccupied =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceGoal =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceLateness =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingDrivers =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingPassengers = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+
+        @tripsCompletedF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCancelledF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsRejectedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsErrorF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeEnrouteF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeOccupiedF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeIdleF =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageEnrouteF =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageOccupiedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceGoalF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceLatenessF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingDriversF =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingPassengersF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+
 
     r: () =>
-        (Math.random() * 30) + 70
+        ((Math.random() * 30) + 70).toFixed(1)
 
 
 $('.developer.statistics').ready ->
