@@ -1010,7 +1010,7 @@ $(document).ready(function(){
 
 $('.developer.dashboard').ready ->
     dashboardManager = new DashboardManager(
-            new TripThru('http://192.168.0.135/TripThru.TripThruGateway/', $('#access_token').val())
+            new TripThru('http://54.201.134.194/TripThru.TripThruGateway/', $('#access_token').val())
             'trip-status-selector'
             [
                 new ActiveTripsChart('active-trips-chart')
@@ -1462,17 +1462,12 @@ $('.developer.statistics').ready ->
         todayHighlight: true
     );
 
-ready = ->
-    google.maps.event.addDomListener window, "load", loadMapPartners
+$('.developer.partners').ready ->
 
-$('.developer.partners').ready(ready)
+    tripthru = new TripThru('http://54.201.134.194/TripThru.TripThruGateway/', $('#access_token').val())
 
-$('.developer.partners').on 'page:change', ->
-    google.maps.event.addDomListener window, "load", loadMapPartners
-
-loadMapPartners = ->
-    $.get('http://107.170.240.134/TripThru.TripThruGateway/' + 'partners?format=json&access_token=' + 'yellow12ondazazxx21', (data) =>
-        if data.result == 'OK'
+    loadMap = (data) ->
+        if data?
             mapOptions =
                 zoom: 4
                 center: new google.maps.LatLng(37.09024, -95.712891)
@@ -1513,9 +1508,6 @@ loadMapPartners = ->
 
                 cityCircle = new google.maps.Circle(populationOptions)
 
-    ).error( ->
-    )
-    return
-
+    google.maps.event.addDomListener window, "load", tripthru.getPartners(loadMap)
 
 
