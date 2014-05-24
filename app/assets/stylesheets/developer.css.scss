@@ -1258,12 +1258,34 @@
       display: inline-block;
     }
 
-    .col-md-9{
+    .col-md-10{
       height: 680px;
 
       #partner-coverage-map{
         height: 100%;
         width: 100%;
+      }
+    }
+
+    .col-md-2 {
+      height: 680px;
+      margin: 0 0 0 0;
+      padding: 0;
+
+      .panel{
+        height: 680px;
+        width: 100%;
+      }
+
+      #partner-select-container {
+        margin: 0 0 0 0;
+        height: 100%;
+        width: 100%;
+
+        #partner-select{
+          border: none;
+          height: 100%;
+        }
       }
     }
   }
