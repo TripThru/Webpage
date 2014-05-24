@@ -1109,6 +1109,17 @@
         }
       }
 
+      #map-container{
+        height: 860px;
+        text-align: center;
+        margin: 0 0 0 40px;
+        #heat-map{
+          display: inline-block;
+          height: 100%;
+          width: 100%;
+        }
+      }
+
       h2{
         margin: -10px 0 0 50px;
       }
@@ -1253,10 +1264,6 @@
   }
 
   #partners {
-    text-align: center;
-    img{
-      display: inline-block;
-    }
 
     .col-md-10{
       height: 680px;
@@ -1264,6 +1271,10 @@
       #partner-coverage-map{
         height: 100%;
         width: 100%;
+        text-align: center;
+        img{
+          display: inline-block;
+        }
       }
     }
 

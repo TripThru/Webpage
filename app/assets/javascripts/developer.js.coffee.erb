@@ -76,6 +76,7 @@ class TripThru
         )
         return
 
+tripthruUrl = 'http://107.170.240.134/TripThru.TripThruGateway/'
 
 ########## DASHBOARD #########
 
@@ -1010,7 +1011,7 @@ $(document).ready(function(){
 
 $('.developer.dashboard').ready ->
     dashboardManager = new DashboardManager(
-            new TripThru('http://107.170.240.134/TripThru.TripThruGateway/', $('#access_token').val())
+            new TripThru(tripthruUrl, $('#access_token').val())
             'trip-status-selector'
             [
                 new ActiveTripsChart('active-trips-chart')
@@ -1035,7 +1036,7 @@ $('.developer.dashboard').ready ->
 
 $('.developer.api').ready ->
     window.swaggerUi = new SwaggerUi({
-        discoveryUrl: "http://107.170.240.134/TripThru.TripThruGateway/resources"
+        discoveryUrl: tripthruUrl + 'resources'
         apiKey: ""
         dom_id: "swagger-ui-container"
         supportHeaderParams: false
@@ -1534,10 +1535,121 @@ class CoverageMap
 $('.developer.partners').ready ->
 
     coverageMap = new CoverageMap(
-        new TripThru('http://107.170.240.134/TripThru.TripThruGateway/', $('#access_token').val())
+        new TripThru(tripthruUrl, $('#access_token').val())
         'partner-coverage-map'
         'partner-select'
     )
 
 
+########## STATISTICS HEAT MAPS #########
 
+class StatisticsHeatMap
+
+    constructor: (@gateway, @containerId) ->
+        $('#' + @containerId).html('<%= image_tag('loading.gif', height: 128, width: 128) %>')
+        google.maps.event.addDomListener window, "load", @loadMap(@containerId)
+
+        @map
+        @startDate = new Date()
+        @endDate = new Date()
+
+        @tripsCompletedSelected =   true
+        @tripsCancelledSelected =   true
+        @tripsRejectedSelected =    true
+        @tripsErrorSelected =       true
+        @timeEnrouteSelected =      false
+        @timeOccupiedSelected =     false
+        @timeIdleSelected =         false
+        @mileageEnrouteSelected =   false
+        @mileageOccupiedSelected =  false
+        @serviceGoalSelected =      false
+        @serviceLatenessSelected =  false
+        @ratingDriversSelected =    false
+        @ratingPassengersSelected = false
+
+        @tripsCompleted = []
+        @tripsCancelled = []
+        @tripsRejected =  []
+        @tripsError =     []
+        @timeEnroute =      []
+        @timeOccupied =     []
+        @timeIdle =         []
+        @mileageEnroute =   []
+        @mileageOccupied =  []
+        @serviceGoal =      []
+        @serviceLateness =  []
+        @ratingDrivers =    []
+        @ratingPassengers = []
+
+        @tripsCompletedF = []
+        @tripsCancelledF = []
+        @tripsRejectedF =  []
+        @tripsErrorF =     []
+        @timeEnrouteF =      []
+        @timeOccupiedF =     []
+        @timeIdleF =         []
+        @mileageEnrouteF =   []
+        @mileageOccupiedF =  []
+        @serviceGoalF =      []
+        @serviceLatenessF =  []
+        @ratingDriversF =    []
+        @ratingPassengersF = []
+
+        @generateRandomData()
+
+        $('#trips-completed-filter-button').toggleClass('active')
+        $('#trips-rejected-filter-button').toggleClass('active')
+        $('#trips-cancelled-filter-button').toggleClass('active')
+        $('#trips-error-filter-button').toggleClass('active')
+
+
+    loadMap: (containerId) =>
+        $('#' + @containerId).html('')
+        mapOptions =
+            zoom: 4
+            center: new google.maps.LatLng(37.09024, -95.712891)
+            mapTypeId: google.maps.MapTypeId.TERRAIN
+        @map = new google.maps.Map(document.getElementById(containerId), mapOptions)
+
+    update: (series) =>
+
+    generateRandomData: () =>
+        @tripsCompleted = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCancelled = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsRejected =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsError =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeEnroute =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeOccupied =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeIdle =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageEnroute =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageOccupied =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceGoal =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceLateness =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingDrivers =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingPassengers = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+
+        @tripsCompletedF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCancelledF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsRejectedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsErrorF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeEnrouteF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeOccupiedF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @timeIdleF =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageEnrouteF =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @mileageOccupiedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceGoalF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @serviceLatenessF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingDriversF =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @ratingPassengersF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+
+
+    r: () =>
+        ((Math.random() * 30) + 70).toFixed(1)
+
+
+
+$('.developer.mapstatistics').ready ->
+    new StatisticsHeatMap(
+        new TripThru(tripthruUrl, $('#access_token').val())
+        'heat-map'
+    )

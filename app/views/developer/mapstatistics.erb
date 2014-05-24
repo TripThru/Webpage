@@ -1,0 +1,85 @@
+<div id="statistics">
+
+  <div id="chart-container" class="container">
+    <div id="map-container" class="col-md-9 col-sm-10">
+      <div id="heat-map" class="tracking-map"></div>
+    </div>
+
+    <div id="selectors-container" class="col-md-2 col-sm-2 pull-right">
+      <div class="input-daterange input-group" id="datepicker">
+        <input type="text" class="input-sm form-control" name="start"/>
+        <span class="input-group-addon">to</span>
+        <input type="text" class="input-sm form-control" name="end"/>
+      </div>
+      <div id="filters-container">
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Trips</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="trips-completed-filter-button" value="Completed"/>
+            <input type="submit" class="filter-button" id="trips-rejected-filter-button" value="Rejected"/>
+            <input type="submit" class="filter-button" id="trips-cancelled-filter-button" value="Cancelled"/>
+            <input type="submit" class="filter-button" id="trips-error-filter-button" value="Error"/>
+          </div>
+        </div>
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Time</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="time-enroute-filter-button" value="Enroute"/>
+            <input type="submit" class="filter-button" id="time-idle-filter-button" value="Idle"/>
+            <input type="submit" class="filter-button" id="time-occupied-filter-button" value="Occupied"/>
+          </div>
+        </div>
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Mileage</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="mileage-enroute-filter-button" value="Enroute"/>
+            <input type="submit" class="filter-button" id="mileage-occupied-filter-button" value="Occupied"/>
+          </div>
+        </div>
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Service</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="service-goal-filter-button" value="Level"/>
+            <input type="submit" class="filter-button" id="service-lateness-filter-button" value="Lateness"/>
+          </div>
+        </div>
+        <div class="panel panel-default filter-button-group">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Ratings</h3>
+          </div>
+          <div class="panel-body">
+            <input type="submit" class="filter-button" id="ratings-passengers-filter-button" value="Passenger"/>
+            <input type="submit" class="filter-button" id="ratings-drivers-filter-button" value="Driver"/>
+          </div>
+        </div>
+        <div id="partner-select-container">
+          <div class="panel panel-default filter-button-group">
+            <div class="panel-heading text-center ">
+              <h3 class="panel-title">Partners</h3>
+            </div>
+            <div class="panel-body">
+              <select id="partners-select" multiple="multiple">
+                <option value="All" selected="selected">Tuxor</option>
+                <option value="Queued">Hubai Taxi Corporation</option>
+                <option value="Dispatched">NY Taxi</option>
+                <option value="Confirmed">Los Taxi Blus</option>
+                <option value="Enroute">Tampa Cab</option>
+                <option value="ArrivedAndWaiting">Mellow</option>
+                <option value="PickedUp">Netro</option>
+                <option value="DroppedOff">Miami Cab</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
