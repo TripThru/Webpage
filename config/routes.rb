@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   get 'developer/settings', to: 'developer#settings'
   get 'developer/statistics', to: 'developer#statistics'
   get 'developer/api', to: 'developer#api'
+  get 'developer/partners', to: 'developer#partners'
+  get 'developer/mapstatistics', to: 'developer#mapstatistics'
 
   root 'static_pages#home'
   get '/home', to: 'static_pages#home'

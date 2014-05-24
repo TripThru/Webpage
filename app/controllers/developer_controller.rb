@@ -40,4 +40,20 @@ class DeveloperController < ApplicationController
       redirect_to signin_path
     end
   end
+
+  def partners
+    if userAccessToken
+      render 'partners'
+    else
+      redirect_to signin_path
+    end
+  end
+
+  def mapstatistics
+    if userAccessToken
+      render 'mapstatistics'
+    else
+      redirect_to signin_path
+    end
+  end
 end
