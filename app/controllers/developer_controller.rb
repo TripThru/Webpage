@@ -56,4 +56,12 @@ class DeveloperController < ApplicationController
       redirect_to signin_path
     end
   end
+
+  def money
+    if userAccessToken
+      render 'money'
+    else
+      redirect_to signin_path
+    end
+  end
 end
