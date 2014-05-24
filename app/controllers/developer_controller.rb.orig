@@ -49,6 +49,7 @@ class DeveloperController < ApplicationController
     end
   end
 
+<<<<<<< HEAD
   def mapstatistics
     if userAccessToken
       render 'mapstatistics'
@@ -64,6 +65,7 @@ class DeveloperController < ApplicationController
       redirect_to signin_path
     end
   end
+=======
 
 
 
@@ -99,6 +101,7 @@ class DeveloperController < ApplicationController
     else
       redirect_to session_path
     end
+
   end
 
   def users
@@ -147,4 +150,5 @@ class DeveloperController < ApplicationController
   def map
   end
 
+>>>>>>> heatmap
 end

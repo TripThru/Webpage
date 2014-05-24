@@ -1285,9 +1285,12 @@ $('.developer.statistics').ready ->
         todayHighlight: true
     );
 
+ready = ->
+    google.maps.event.addDomListener window, "load", loadMapPartners
 
+$('.developer.partners').ready(ready)
 
-$('.developer.partners').ready ->
+$('.developer.partners').on 'page:change', ->
     google.maps.event.addDomListener window, "load", loadMapPartners
 
 loadMapPartners = ->
