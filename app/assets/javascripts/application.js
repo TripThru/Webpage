@@ -31,7 +31,6 @@
 //= require swagger/swagger.js
 //= require swagger/swagger-ui.min.js
 //= require d3.min.js
-//= require c3.min.js
 //= require bootstrap-datepicker
-//= require markerwithlabel.js
+//= require highcharts
 //= require_tree .
