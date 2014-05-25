@@ -1108,77 +1108,116 @@ class TimeSeries
         @ratingDriversSelected =    false
         @ratingPassengersSelected = false
 
-        @tripsCompleted = []
-        @tripsCancelled = []
-        @tripsRejected =  []
-        @tripsError =     []
-        @timeEnroute =      []
-        @timeOccupied =     []
-        @timeIdle =         []
-        @mileageEnroute =   []
-        @mileageOccupied =  []
-        @serviceGoal =      []
-        @serviceLateness =  []
-        @ratingDrivers =    []
-        @ratingPassengers = []
+        @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
+        @tripsCancelled = { name: 'Cancelled trips', id: 'Cancelled trips', data: []}
+        @tripsRejected =  { name: 'Rejected trips', id: 'Rejected trips', data: []}
+        @tripsError =     { name: 'Error trips', id: 'Error trips', data: []}
+        @timeEnroute =      { name: 'Time enroute', id: 'Time enroute', data: []}
+        @timeOccupied =     { name: 'Time occupied', id: 'Time occupied', data: []}
+        @timeIdle =         { name: 'Time idle', id: 'Time idle', data: []}
+        @mileageEnroute =   { name: 'Mileage enroute', id: 'Mileage enroute', data: []}
+        @mileageOccupied =  { name: 'Mileage occupied', id: 'Mileage occupied', data: []}
+        @serviceGoal =      { name: 'Service level', id: 'Service level', data: []}
+        @serviceLateness =  { name: 'Service lateness', id: 'Service lateness', data: []}
+        @ratingDrivers =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
+        @ratingPassengers = { name: 'Passengers rating', id: 'Passengers rating', data: []}
 
-        @tripsCompletedF = []
-        @tripsCancelledF = []
-        @tripsRejectedF =  []
-        @tripsErrorF =     []
-        @timeEnrouteF =      []
-        @timeOccupiedF =     []
-        @timeIdleF =         []
-        @mileageEnrouteF =   []
-        @mileageOccupiedF =  []
-        @serviceGoalF =      []
-        @serviceLatenessF =  []
-        @ratingDriversF =    []
-        @ratingPassengersF = []
+        @tripsCompletedF = { name: 'Completed trips', id: 'Completed trips', data: []}
+        @tripsCancelledF = { name: 'Cancelled trips', id: 'Cancelled trips', data: []}
+        @tripsRejectedF =  { name: 'Rejected trips', id: 'Rejected trips', data: []}
+        @tripsErrorF =     { name: 'Error trips', id: 'Error trips', data: []}
+        @timeEnrouteF =      { name: 'Time enroute', id: 'Time enroute', data: []}
+        @timeOccupiedF =     { name: 'Time occupied', id: 'Time occupied', data: []}
+        @timeIdleF =         { name: 'Time idle', id: 'Time idle', data: []}
+        @mileageEnrouteF =   { name: 'Mileage enroute', id: 'Mileage enroute', data: []}
+        @mileageOccupiedF =  { name: 'Mileage occupied', id: 'Mileage occupied', data: []}
+        @serviceGoalF =      { name: 'Service level', id: 'Service level', data: []}
+        @serviceLatenessF =  { name: 'Service lateness', id: 'Service lateness', data: []}
+        @ratingDriversF =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
+        @ratingPassengersF = { name: 'Passengers rating', id: 'Passengers rating', data: []}
 
-        @generateRandomData()
+        dates = [
+            Date.UTC(2014, 5, 25, 0, 0, 0)
+            Date.UTC(2014, 5, 25, 1, 0, 0)
+            Date.UTC(2014, 5, 25, 2, 0, 0)
+            Date.UTC(2014, 5, 25, 3, 0, 0)
+            Date.UTC(2014, 5, 25, 4, 0, 0)
+            Date.UTC(2014, 5, 25, 5, 0, 0)
+            Date.UTC(2014, 5, 25, 6, 0, 0)
+            Date.UTC(2014, 5, 25, 7, 0, 0)
+            Date.UTC(2014, 5, 25, 8, 0, 0)
+            Date.UTC(2014, 5, 25, 9, 0, 0)
+            Date.UTC(2014, 5, 25, 10, 0, 0)
+            Date.UTC(2014, 5, 25, 11, 0, 0)
+            Date.UTC(2014, 5, 25, 12, 0, 0)
+            Date.UTC(2014, 5, 25, 13, 0, 0)
+            Date.UTC(2014, 5, 25, 14, 0, 0)
+            Date.UTC(2014, 5, 25, 15, 0, 0)
+            Date.UTC(2014, 5, 25, 16, 0, 0)
+            Date.UTC(2014, 5, 25, 17, 0, 0)
+            Date.UTC(2014, 5, 25, 18, 0, 0)
+            Date.UTC(2014, 5, 25, 19, 0, 0)
+            Date.UTC(2014, 5, 25, 20, 0, 0)
+            Date.UTC(2014, 5, 25, 21, 0, 0)
+            Date.UTC(2014, 5, 25, 22, 0, 0)
+            Date.UTC(2014, 5, 25, 23, 0, 0)
+        ]
 
-        @historicChart = c3.generate(
-            bindto: '#' + @historicChartContainerId
-            data:
-                x: 'x'
-                columns: [
-                    ['x', '2013-01-01T00:00:00','2013-01-01T01:00:00','2013-01-01T02:00:00','2013-01-01T03:00:00',
-                     '2013-01-01T04:00:00','2013-01-01T05:00:00','2013-01-01T06:00:00','2013-01-01T07:00:00',
-                     '2013-01-01T08:00:00','2013-01-01T09:00:00','2013-01-01T10:00:00','2013-01-01T11:00:00',
-                     '2013-01-01T12:00:00','2013-01-01T13:00:00','2013-01-01T14:00:00','2013-01-01T15:00:00',
-                     '2013-01-01T16:00:00','2013-01-01T17:00:00','2013-01-01T18:00:00','2013-01-01T19:00:00',
-                     '2013-01-01T20:00:00','2013-01-01T21:00:00','2013-01-01T22:00:00','2013-01-01T23:00:00']
-                    $.map(['Completed trips', @tripsCompleted], (n) -> n)
-                    $.map(['Rejected trips', @tripsRejected], (n) -> n)
-                    $.map(['Cancelled trips', @tripsCancelled], (n) -> n)
-                    $.map(['Error trips', @tripsError], (n) -> n)
-                ]
-            axis:
-                x:
-                    type: 'timeseries'
-        )
+        @generateRandomData(dates)
 
-        @forecastChart = c3.generate(
-            bindto: '#' + @forecastChartContainerId
-            data:
-                x: 'x'
-                columns: [
-                    ['x', '2013-01-01T00:00:00','2013-01-01T01:00:00','2013-01-01T02:00:00','2013-01-01T03:00:00',
-                     '2013-01-01T04:00:00','2013-01-01T05:00:00','2013-01-01T06:00:00','2013-01-01T07:00:00',
-                     '2013-01-01T08:00:00','2013-01-01T09:00:00','2013-01-01T10:00:00','2013-01-01T11:00:00',
-                     '2013-01-01T12:00:00','2013-01-01T13:00:00','2013-01-01T14:00:00','2013-01-01T15:00:00',
-                     '2013-01-01T16:00:00','2013-01-01T17:00:00','2013-01-01T18:00:00','2013-01-01T19:00:00',
-                     '2013-01-01T20:00:00','2013-01-01T21:00:00','2013-01-01T22:00:00','2013-01-01T23:00:00']
-                    $.map(['Completed trips', @tripsCompletedF], (n) -> n)
-                    $.map(['Rejected trips', @tripsRejectedF], (n) -> n)
-                    $.map(['Cancelled trips', @tripsCancelledF], (n) -> n)
-                    $.map(['Error trips', @tripsErrorF], (n) -> n)
-                ]
-            axis:
-                x:
-                    type: 'timeseries'
-        )
+        @historicChart = new Highcharts.Chart
+            chart:
+                renderTo: @historicChartContainerId
+                type: 'spline'
+            title:
+                text: ''
+            xAxis:
+                type: 'datetime',
+                dateTimeLabelFormats:
+                    month: '%e. %b',
+                    year: '%b'
+                title:
+                    text: ''
+            yAxis:
+                title:
+                    text: ''
+                max: 100
+            tooltip:
+                headerFormat: '<b>{series.name}</b><br>',
+                pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+            series: [
+                @tripsCompleted,
+                @tripsRejected,
+                @tripsCancelled,
+                @tripsError
+            ]
+
+        @forecastChart = new Highcharts.Chart
+            chart:
+                renderTo: @forecastChartContainerId
+                type: 'spline'
+            title:
+                text: ''
+            xAxis:
+                type: 'datetime',
+                dateTimeLabelFormats:
+                    month: '%e. %b',
+                    year: '%b'
+                title:
+                    text: ''
+            yAxis:
+                title:
+                    text: ''
+                max: 100
+            tooltip:
+                headerFormat: '<b>{series.name}</b><br>',
+                pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+            series: [
+                @tripsCompleted,
+                @tripsRejected,
+                @tripsCancelled,
+                @tripsError
+            ]
 
         $('#trips-completed-filter-button').click =>
             $('#trips-completed-filter-button').toggleClass('active')
@@ -1196,7 +1235,7 @@ class TimeSeries
             @update([{
                 name: 'Rejected trips'
                 historicData: @tripsRejectedF
-                forecastData: @tripsCompletedF
+                forecastData: @tripsRejectedF
                 load: @tripsRejectedSelected
             }])
 
@@ -1311,7 +1350,8 @@ class TimeSeries
             }])
 
         $('#partners-select').change =>
-            @generateRandomData()
+            @generateRandomData(dates)
+            @clearCharts()
             @update([
                 {
                     name: 'Completed trips'
@@ -1322,7 +1362,7 @@ class TimeSeries
                 {
                     name: 'Rejected trips'
                     historicData: @tripsRejectedF
-                    forecastData: @tripsCompletedF
+                    forecastData: @tripsRejectedF
                     load: @tripsRejectedSelected
                 },
                 {
@@ -1402,54 +1442,133 @@ class TimeSeries
         $('#trips-error-filter-button').toggleClass('active')
 
     update: (series) =>
-        historyColumns = []
-        forecastColumns = []
-        seriesNames = []
         for serie in series
             if serie.load
-                historyColumns.push $.map([serie.name, serie.historicData], (n) -> n)
-                forecastColumns.push $.map([serie.name, serie.forecastData], (n) -> n)
+                @historicChart.addSeries(serie.historicData, false, false)
+                @forecastChart.addSeries(serie.forecastData, false, false)
             else
-                seriesNames.push serie.name
-        @historicChart.load columns: historyColumns
-        @forecastChart.load columns: forecastColumns
-        @historicChart.unload seriesNames
-        @forecastChart.unload seriesNames
+                hserie = @historicChart.get(serie.historicData.name)
+                if hserie?
+                    hserie.remove(false)
+                fserie = @forecastChart.get(serie.forecastData.name)
+                if fserie?
+                    fserie.remove(false)
+        @refreshCharts()
+
+    clearCharts: () =>
+        @historicChart = new Highcharts.Chart
+            chart:
+                renderTo: @historicChartContainerId
+                type: 'spline'
+            title:
+                text: ''
+            xAxis:
+                type: 'datetime',
+                dateTimeLabelFormats:
+                    month: '%e. %b',
+                    year: '%b'
+                title:
+                    text: ''
+            yAxis:
+                title:
+                    text: ''
+                max: 100
+            tooltip:
+                headerFormat: '<b>{series.name}</b><br>',
+                pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+            series: [
+
+            ]
+
+        @forecastChart = new Highcharts.Chart
+            chart:
+                renderTo: @forecastChartContainerId
+                type: 'spline'
+            title:
+                text: ''
+            xAxis:
+                type: 'datetime',
+                dateTimeLabelFormats:
+                    month: '%e. %b',
+                    year: '%b'
+                title:
+                    text: ''
+            yAxis:
+                title:
+                    text: ''
+                max: 100
+            tooltip:
+                headerFormat: '<b>{series.name}</b><br>',
+                pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+            series: [
+
+            ]
+
+    refreshCharts: () =>
+        @historicChart.redraw()
+        @forecastChart.redraw()
 
 
+    generateRandomData: (dates) =>
+        @tripsCompleted.data = []
+        @tripsCancelled.data = []
+        @tripsRejected.data = [] 
+        @tripsError.data = []    
+        @timeEnroute.data = []     
+        @timeOccupied.data = []    
+        @timeIdle.data = []        
+        @mileageEnroute.data = []  
+        @mileageOccupied.data = [] 
+        @serviceGoal.data = []     
+        @serviceLateness.data = [] 
+        @ratingDrivers.data = []   
+        @ratingPassengers.data = []
 
-    generateRandomData: () =>
-        @tripsCompleted = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsCancelled = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsRejected =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsError =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeEnroute =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeOccupied =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeIdle =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @mileageEnroute =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @mileageOccupied =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @serviceGoal =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @serviceLateness =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @ratingDrivers =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @ratingPassengers = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
+        @tripsCompletedF.data = []
+        @tripsCancelledF.data = []
+        @tripsRejectedF.data = [] 
+        @tripsErrorF.data = []    
+        @timeEnrouteF.data = []     
+        @timeOccupiedF.data = []    
+        @timeIdleF.data = []        
+        @mileageEnrouteF.data = []  
+        @mileageOccupiedF.data = [] 
+        @serviceGoalF.data = []     
+        @serviceLatenessF.data = [] 
+        @ratingDriversF.data = []   
+        @ratingPassengersF.data = []
+        
+        for date in dates
+            @tripsCompleted.data.push @r(date)
+            @tripsCancelled.data.push @r(date)
+            @tripsRejected.data.push  @r(date)
+            @tripsError.data.push     @r(date)
+            @timeEnroute.data.push      @r(date)
+            @timeOccupied.data.push     @r(date)
+            @timeIdle.data.push         @r(date)
+            @mileageEnroute.data.push   @r(date)
+            @mileageOccupied.data.push  @r(date)
+            @serviceGoal.data.push      @r(date)
+            @serviceLateness.data.push  @r(date)
+            @ratingDrivers.data.push    @r(date)
+            @ratingPassengers.data.push @r(date)
+    
+            @tripsCompletedF.data.push @r(date)
+            @tripsCancelledF.data.push @r(date)
+            @tripsRejectedF.data.push  @r(date)
+            @tripsErrorF.data.push     @r(date)
+            @timeEnrouteF.data.push      @r(date)
+            @timeOccupiedF.data.push     @r(date)
+            @timeIdleF.data.push         @r(date)
+            @mileageEnrouteF.data.push   @r(date)
+            @mileageOccupiedF.data.push  @r(date)
+            @serviceGoalF.data.push      @r(date)
+            @serviceLatenessF.data.push  @r(date)
+            @ratingDriversF.data.push    @r(date)
+            @ratingPassengersF.data.push @r(date)
 
-        @tripsCompletedF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsCancelledF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsRejectedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @tripsErrorF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeEnrouteF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeOccupiedF =     [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @timeIdleF =         [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @mileageEnrouteF =   [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @mileageOccupiedF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @serviceGoalF =      [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @serviceLatenessF =  [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @ratingDriversF =    [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-        @ratingPassengersF = [@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r(),@r()]
-
-
-    r: () =>
-        ((Math.random() * 30) + 70).toFixed(1)
+    r: (date) =>
+        [date, (Math.random() * 30) + 70]
 
 
 $('.developer.statistics').ready ->
