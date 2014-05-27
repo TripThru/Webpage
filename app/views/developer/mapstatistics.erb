@@ -1,16 +1,7 @@
 <div id="statistics">
 
   <div id="chart-container" class="container">
-    <div id="map-container" class="col-md-9 col-sm-10">
-      <div id="heat-map" class="tracking-map"></div>
-    </div>
-
-    <div id="selectors-container" class="col-md-2 col-sm-2 pull-right">
-      <div class="input-daterange input-group" id="datepicker">
-        <input type="text" class="input-sm form-control" name="start"/>
-        <span class="input-group-addon">to</span>
-        <input type="text" class="input-sm form-control" name="end"/>
-      </div>
+    <div class="row">
       <div id="filters-container">
         <div class="panel panel-default filter-button-group">
           <div class="panel-heading text-center ">
@@ -60,15 +51,51 @@
             <input type="submit" class="filter-button" id="ratings-drivers-filter-button" value="Driver"/>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="row">
+      <div id="map-container" class="col-md-9 col-md-push-0 col-sm-10 col-sm-push-2 col-xs-10 col-xs-push-2">
+        <div id="heat-map" class="tracking-map"></div>
+      </div>
+
+      <div id="selectors-container" class="col-md-2 col-md-pull-0 col-sm-2 col-sm-pull-10 col-xs-2 col-xs-pull-10">
+        <div class="input-daterange input-group" id="datepicker">
+          <input type="text" class="input-sm form-control" name="start"/>
+          <span class="input-group-addon">to</span>
+          <input type="text" class="input-sm form-control" name="end"/>
+        </div>
         <div id="partner-select-container">
           <div class="panel panel-default filter-button-group">
             <div class="panel-heading text-center ">
-              <h3 class="panel-title">Partners</h3>
+              <h3 class="panel-title">Network</h3>
             </div>
             <div class="panel-body">
               <select id="partners-select" multiple="multiple">
                 <option value="All" selected="selected">All</option>
-
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="fleet-select-container">
+          <div class="panel panel-default filter-button-group">
+            <div class="panel-heading text-center ">
+              <h3 class="panel-title">Fleet</h3>
+            </div>
+            <div class="panel-body">
+              <select id="fleet-select" multiple="multiple">
+                <option value="All" selected="selected">All</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="driver-select-container">
+          <div class="panel panel-default filter-button-group">
+            <div class="panel-heading text-center ">
+              <h3 class="panel-title">Driver</h3>
+            </div>
+            <div class="panel-body">
+              <select id="driver-select" multiple="multiple">
+                <option value="All" selected="selected">All</option>
               </select>
             </div>
           </div>
