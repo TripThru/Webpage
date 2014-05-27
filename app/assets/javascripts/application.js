@@ -16,7 +16,6 @@
 //= require turbolinks
 //= require jquery.easing.1.3
 //= require bootstrap
-//= require jquery.flipCounter.1.2.pack
 //= require prism
 //= require jquery-readyselector.js
 //= require justgage
@@ -30,7 +29,8 @@
 //= require swagger/highlight.7.3.pack.js
 //= require swagger/swagger.js
 //= require swagger/swagger-ui.min.js
-//= require d3.min.js
 //= require bootstrap-datepicker
 //= require highcharts
+//= require heatmap.js
+//= require heatmap-gmaps.js
 //= require_tree .
