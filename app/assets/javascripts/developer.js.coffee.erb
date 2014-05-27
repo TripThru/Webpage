@@ -322,8 +322,8 @@ class TripTracker
                     <div><span>Pickup: </span><p>' + pickupLocation + '</p></div>
                     <div><span>Dropoff: </span><p>' + dropoffLocation + '</p></div>
                     <div>
-                      <span>Origin: </span><p>' + trip.getOrigin() + ' - </p>
-                      <span>Servicing: </span><p>' + trip.getServicing() + '</p>
+                      <span>Farmed-In: </span><p>' + trip.getOrigin() + ' - </p>
+                      <span>Farmed-Out: </span><p>' + trip.getServicing() + '</p>
                     </div>
                     <div><span>Driver: </span><p>' + driver + '  </p>
                         <div class="rating-container">
@@ -687,7 +687,7 @@ class StatisticsDashboard
             Morris.Donut({
                 element: @servicePieChartId,
                 data: [
-                    {label: "Within goal", value: withinServiceGoal}
+                    {label: "Level", value: withinServiceGoal}
                     {label: "Lateness", value: lateness}
                 ]
                 colors: [
