@@ -285,6 +285,18 @@ class TripTracker
         @passengerRatingChartId = 'passenger-rating'
         @driverRatingChartId = 'driver-rating'
 
+    cleanMap: () =>
+        @passengerMarker.setMap null  if @passengerMarker?
+        @driverMarker.setMap null  if @driverMarker?
+        @destinationMarker.setMap null  if @destinationMarker?
+        @initialMarker.setMap null  if @initialMarker?
+        @directionsDisplay.setMap null if @directionsDisplay?
+        @directionsDisplay2.setMap null if @directionsDisplay2?
+        @directionsDisplay3.setMap null if @directionsDisplay3?
+        @directionsDisplay4.setMap null if @directionsDisplay4?
+        @map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
+        @map.setZoom 4
+
     tripChanged: (trip) =>
         @tripId = null
         @driverPreviousLocation = null
@@ -529,6 +541,7 @@ class TripTracker
                                         @directionsDisplay2 = null
                                     @turn = true
                 @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+                @map.setZoom 15
         @setTripInfoBool = false
 
 class StatisticsDashboard
@@ -883,6 +896,11 @@ class DashboardManager
                         console.error listener + ' updateStats failed: ' + error
         @updatingStats = false
 
+    cleanMap: () =>
+        for listener in @listeners
+            if listener instanceof TripTracker
+                listener.cleanMap()
+
     updateTrips: (data) =>
         if data?
             tripsIds = []
@@ -934,6 +952,7 @@ class DashboardManager
             @activeTrip = trip
         else
             @activeTrip = null
+            @cleanMap()
 
         for listener in @listeners
             if typeof listener.tripChanged is 'function'
@@ -964,14 +983,15 @@ class DashboardManager
             else
                 driverInitialLocation = @activeTrip.getDriverInitialLocation()
 
-            @activeTrip.update(
-                    if data.status? then data.status else @activeTrip.getStatus()
-                    data.driverName
-                    driverLocation
-                    driverInitialLocation
-                    data.historyEnrouteList
-                    data.historyPickUpList
-            )
+            if @activeTrip != null
+                @activeTrip.update(
+                        if data.status? then data.status else @activeTrip.getStatus()
+                        data.driverName
+                        driverLocation
+                        driverInitialLocation
+                        data.historyEnrouteList
+                        data.historyPickUpList
+                )
         for listener in @listeners
             if typeof listener.updateActiveTrip is 'function'
                 try
@@ -983,8 +1003,7 @@ class DashboardManager
 
     updateLogs: (data) =>
         if data?
-            tripId = if @activeTrip? then @activeTrip.getId() else null
-            for listener in @listeners
+            tripId = if @activeTrivners
                 if typeof listener.updateLog is 'function'
                     try
                         listener.updateLog(data.logList, tripId)
@@ -1691,11 +1710,7 @@ class StatisticsHeatMap
             scaleControl: true
             disableDoubleClickZoom: false
         @map = new google.maps.Map(document.getElementById(containerId), mapOptions)
-        @heatmap = new HeatmapOverlay(@map, {
-            "radius": 15,
-            "visible": true,
-            "opacity": 60
-        })
+        @heatmap = new google.maps.visualization.HeatmapLayer()
 
         @selectedStat = 'tripsCompleted'
         $('#trips-completed-filter-button').toggleClass('active')
@@ -1839,24 +1854,28 @@ class StatisticsHeatMap
         @updatingHeatMap = false
 
     drawHeatMap: () =>
-        tripsData =
-            max: 100
-            data: []
+        taxiData = []
         for key of @tripsById
             if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
-                tripsData.data.push {
-                    lat: @tripsById[key].pickupLocation.lat,
-                    lng: @tripsById[key].pickupLocation.lng,
-                    count: @stats[@selectedStat]
+                taxiData.push {
+                    location: new google.maps.LatLng(@tripsById[key].pickupLocation.lat,@tripsById[key].pickupLocation.lng),
+                    weight: @stats[@selectedStat]
                 }
-                tripsData.data.push {
-                    lat: @tripsById[key].dropoffLocation.lat,
-                    lng: @tripsById[key].dropoffLocation.lng,
-                    count: @stats[@selectedStat]
+                taxiData.push {
+                    location: new google.maps.LatLng(@tripsById[key].dropoffLocation.lat,@tripsById[key].dropoffLocation.lng),
+                    weight: @stats[@selectedStat]
                 }
         if @selectedFleet != 'All'
             @map.panTo(new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng))
-        @heatmap.setDataSet(tripsData)
+        @heatmap.setMap null
+        gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
+        @heatmap = new google.maps.visualization.HeatmapLayer({
+            data: taxiData,
+            radius: 20,
+            maxIntensity: 100,
+            gradient: gradient
+        })
+        @heatmap.setMap @map
 
 
     processTrip: (newTrip) =>
