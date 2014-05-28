@@ -1003,7 +1003,8 @@ class DashboardManager
 
     updateLogs: (data) =>
         if data?
-            tripId = if @activeTrivners
+            tripId = if @activeTrip? then @activeTrip.getId() else null
+            for listener in @listeners
                 if typeof listener.updateLog is 'function'
                     try
                         listener.updateLog(data.logList, tripId)
