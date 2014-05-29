@@ -2,6 +2,7 @@
 # All this logic will automatically be available in application.js.
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
+
 class TripThru
 
     constructor: (@baseUrl, @accessToken) ->
@@ -1011,6 +1012,7 @@ $(document).ready(function(){
 `
 
 $('.developer.dashboard').ready ->
+
     dashboardManager = new DashboardManager(
             new TripThru(tripthruUrl, $('#access_token').val())
             'trip-status-selector'
@@ -1908,4 +1910,3 @@ $('.developer.mapstatistics').ready ->
     setInterval =>
         statisticsHeatMap.update()
     , 10000
-

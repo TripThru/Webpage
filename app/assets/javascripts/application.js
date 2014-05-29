@@ -31,6 +31,4 @@
 //= require swagger/swagger-ui.min.js
 //= require bootstrap-datepicker
 //= require highcharts
-//= require heatmap.js
-//= require heatmap-gmaps.js
 //= require_tree .

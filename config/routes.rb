@@ -37,8 +37,7 @@ Rails.application.routes.draw do
   resources :settings
 
   resources :mongo_db, only: []
-  get 'mongo_db/trip'
-  get 'mongo_db/paramstest'
+  get 'mongo_db/trips'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
