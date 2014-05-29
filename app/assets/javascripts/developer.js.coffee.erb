@@ -1116,7 +1116,9 @@ class TimeSeries
     constructor: (@gateway, @historicChartContainerId, @forecastChartContainerId) ->
         @startDate = new Date()
         @endDate = new Date()
+        @data = null
 
+        @realtime = true
         @tripsCompletedSelected =   true
         @tripsCancelledSelected =   true
         @tripsRejectedSelected =    true
@@ -1159,7 +1161,7 @@ class TimeSeries
         @ratingDriversF =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
         @ratingPassengersF = { name: 'Passengers rating', id: 'Passengers rating', data: []}
 
-        dates = [
+        @dates = [
             Date.UTC(2014, 5, 25, 0, 0, 0)
             Date.UTC(2014, 5, 25, 1, 0, 0)
             Date.UTC(2014, 5, 25, 2, 0, 0)
@@ -1186,7 +1188,7 @@ class TimeSeries
             Date.UTC(2014, 5, 25, 23, 0, 0)
         ]
 
-        @generateRandomData(dates)
+        @generateRandomData(@dates)
 
         @historicChart = new Highcharts.Chart
             chart:
@@ -1197,22 +1199,17 @@ class TimeSeries
             xAxis:
                 type: 'datetime',
                 dateTimeLabelFormats:
-                    month: '%e. %b',
-                    year: '%b'
+                    hour: '%I %p',
+                    minute: '%I:%M %p'
                 title:
                     text: ''
             yAxis:
                 title:
                     text: ''
-                max: 100
             tooltip:
                 headerFormat: '<b>{series.name}</b><br>',
-                pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+                pointFormat: '{point.x:%I:%M %p}: {point.y:.2f}'
             series: [
-                @tripsCompleted,
-                @tripsRejected,
-                @tripsCancelled,
-                @tripsError
             ]
 
         @forecastChart = new Highcharts.Chart
@@ -1224,23 +1221,32 @@ class TimeSeries
             xAxis:
                 type: 'datetime',
                 dateTimeLabelFormats:
-                    month: '%e. %b',
-                    year: '%b'
+                    hour: '%I %p',
+                    minute: '%I:%M %p'
                 title:
                     text: ''
             yAxis:
                 title:
                     text: ''
-                max: 100
             tooltip:
                 headerFormat: '<b>{series.name}</b><br>',
-                pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+                pointFormat: '{point.x:%I:%M %p}: {point.y:.2f}'
             series: [
-                @tripsCompleted,
-                @tripsRejected,
-                @tripsCancelled,
-                @tripsError
             ]
+
+        @updateRealTime()
+
+        $('#realtime-button').click =>
+            if $('#realtime-button').hasClass('active')
+                @realtime = false
+                $('#datepicker>input').attr("disabled", false)
+                @populate()
+            else
+                @realtime = true
+                $('#datepicker>input').attr("disabled", true)
+                @clearCharts()
+                @updateRealTime()
+            $('#realtime-button').toggleClass('active')
 
         $('#trips-completed-filter-button').click =>
             $('#trips-completed-filter-button').toggleClass('active')
@@ -1373,10 +1379,58 @@ class TimeSeries
             }])
 
         $('#partners-select').change =>
-            @generateRandomData(dates)
-            @clearCharts()
-            @update([
-                {
+            if not @realtime
+                @populate()
+
+
+        $('#trips-completed-filter-button').toggleClass('active')
+        $('#trips-rejected-filter-button').toggleClass('active')
+        $('#trips-cancelled-filter-button').toggleClass('active')
+        $('#trips-error-filter-button').toggleClass('active')
+        $('#realtime-button').toggleClass('active')
+        $('#datepicker>input').attr("disabled", true)
+
+        setInterval =>
+            if @realtime and not @updatingRealTime
+                @updatingRealTime = true
+                @updateRealTime()
+        , 30000
+
+    updateRealTime: () =>
+        $.get '/mongo_db/trips', (data) =>
+            last30Minutes = new Date();
+            last30Minutes.setMinutes(last30Minutes.getMinutes()-30);
+            @tripsCompleted.data = []
+            @tripsCompletedF.data = []
+            @tripsRejected.data = []
+            @tripsRejectedF.data = []
+            @tripsCancelled.data = []
+            @tripsCancelledF.data = []
+            @tripsError.data = []
+            @tripsErrorF.data = []
+
+            @data = data.sort( (a, b) ->
+                ((b._id.Interval < a._id.Interval) ? -1 : ((b._id.Interval > a._id.Interval) ? 1 : 0));
+            )
+
+            lastInterval = -1
+            for entry in @data
+                date = Date.UTC(last30Minutes.getUTCFullYear(), last30Minutes.getUTCMonth(), last30Minutes.getUTCDate(), last30Minutes.getUTCHours(), last30Minutes.getUTCMinutes(), last30Minutes.getUTCSeconds())
+                switch entry._id.Status
+                    when 'Complete'
+                        @tripsCompleted.data.push [date, entry.count]
+                        @tripsCompletedF.data.push [date, entry.count]
+                    when 'Rejected'
+                        @tripsRejected.data.push [date, entry.count]
+                        @tripsRejectedF.data.push [date, entry.count]
+                    when 'Cancelled'
+                        @tripsCancelled.data.push [date, entry.count]
+                        @tripsCancelledF.data.push [date, entry.count]
+                if entry._id.Interval > lastInterval
+                    last30Minutes.setMinutes(last30Minutes.getMinutes() + 1)
+
+            @update(
+                [{
                     name: 'Completed trips'
                     historicData: @tripsCompleted
                     forecastData: @tripsCompletedF
@@ -1399,83 +1453,107 @@ class TimeSeries
                     historicData: @tripsError
                     forecastData: @tripsErrorF
                     load: @tripsErrorSelected
-                },
-                {
-                    name: 'Time enroute'
-                    historicData: @timeEnroute
-                    forecastData: @timeEnrouteF
-                    load: @timeEnrouteSelected
-                },
-                {
-                    name: 'Time occupied'
-                    historicData: @timeOccupied
-                    forecastData: @timeOccupiedF
-                    load: @timeOccupiedSelected
-                },
-                {
-                    name: 'Time idle'
-                    historicData: @timeIdle
-                    forecastData: @timeIdleF
-                    load: @timeIdleSelected
-                },
-                {
-                    name: 'Mileage enroute'
-                    historicData: @mileageEnroute
-                    forecastData: @mileageEnrouteF
-                    load: @mileageEnrouteSelected
-                },
-                {
-                    name: 'Mileage occupied'
-                    historicData: @mileageOccupied
-                    forecastData: @mileageOccupiedF
-                    load: @mileageOccupiedSelected
-                },
-                {
-                    name: 'Service level'
-                    historicData: @serviceGoal
-                    forecastData: @serviceGoalF
-                    load: @serviceGoalSelected
-                },
-                {
-                    name: 'Service lateness'
-                    historicData: @serviceLateness
-                    forecastData: @serviceLatenessF
-                    load: @serviceLatenessSelected
-                },
-                {
-                    name: 'Rating drivers'
-                    historicData: @ratingDrivers
-                    forecastData: @ratingDriversF
-                    load: @ratingDriversSelected
-                },
-                {
-                    name: 'Rating passengers'
-                    historicData: @ratingPassengers
-                    forecastData: @ratingPassengersF
-                    load: @ratingPassengersSelected
-                }
+                }]
+            )
+            @updatingRealTime = false
+
+    populate: () =>
+        @generateRandomData(@dates)
+        @clearCharts()
+        @update([
+            {
+                name: 'Completed trips'
+                historicData: @tripsCompleted
+                forecastData: @tripsCompletedF
+                load: @tripsCompletedSelected
+            },
+            {
+                name: 'Rejected trips'
+                historicData: @tripsRejectedF
+                forecastData: @tripsRejectedF
+                load: @tripsRejectedSelected
+            },
+            {
+                name: 'Cancelled trips'
+                historicData: @tripsCancelled
+                forecastData: @tripsCancelledF
+                load: @tripsCancelledSelected
+            },
+            {
+                name: 'Error trips'
+                historicData: @tripsError
+                forecastData: @tripsErrorF
+                load: @tripsErrorSelected
+            },
+            {
+                name: 'Time enroute'
+                historicData: @timeEnroute
+                forecastData: @timeEnrouteF
+                load: @timeEnrouteSelected
+            },
+            {
+                name: 'Time occupied'
+                historicData: @timeOccupied
+                forecastData: @timeOccupiedF
+                load: @timeOccupiedSelected
+            },
+            {
+                name: 'Time idle'
+                historicData: @timeIdle
+                forecastData: @timeIdleF
+                load: @timeIdleSelected
+            },
+            {
+                name: 'Mileage enroute'
+                historicData: @mileageEnroute
+                forecastData: @mileageEnrouteF
+                load: @mileageEnrouteSelected
+            },
+            {
+                name: 'Mileage occupied'
+                historicData: @mileageOccupied
+                forecastData: @mileageOccupiedF
+                load: @mileageOccupiedSelected
+            },
+            {
+                name: 'Service level'
+                historicData: @serviceGoal
+                forecastData: @serviceGoalF
+                load: @serviceGoalSelected
+            },
+            {
+                name: 'Service lateness'
+                historicData: @serviceLateness
+                forecastData: @serviceLatenessF
+                load: @serviceLatenessSelected
+            },
+            {
+                name: 'Rating drivers'
+                historicData: @ratingDrivers
+                forecastData: @ratingDriversF
+                load: @ratingDriversSelected
+            },
+            {
+                name: 'Rating passengers'
+                historicData: @ratingPassengers
+                forecastData: @ratingPassengersF
+                load: @ratingPassengersSelected
+            }
 
 
-            ])
-
-
-        $('#trips-completed-filter-button').toggleClass('active')
-        $('#trips-rejected-filter-button').toggleClass('active')
-        $('#trips-cancelled-filter-button').toggleClass('active')
-        $('#trips-error-filter-button').toggleClass('active')
+        ])
 
     update: (series) =>
         for serie in series
+            hserie = @historicChart.get(serie.historicData.name)
+            fserie = @forecastChart.get(serie.forecastData.name)
+            if hserie?
+                hserie.remove(false)
+            if fserie?
+                fserie.remove(false)
             if serie.load
                 @historicChart.addSeries(serie.historicData, false, false)
                 @forecastChart.addSeries(serie.forecastData, false, false)
-            else
-                hserie = @historicChart.get(serie.historicData.name)
-                if hserie?
-                    hserie.remove(false)
-                fserie = @forecastChart.get(serie.forecastData.name)
-                if fserie?
-                    fserie.remove(false)
         @refreshCharts()
 
     clearCharts: () =>
