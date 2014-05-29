@@ -36,6 +36,9 @@ Rails.application.routes.draw do
   delete '/signout', to: 'sessions#destroy'
   resources :settings
 
+  resources :mongo_db, only: []
+  get 'mongo_db/trips'
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

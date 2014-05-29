@@ -17,6 +17,8 @@ gem 'jquery-turbolinks'
 gem 'highcharts-rails', '~> 4.0.1'
 gem 'bcrypt-ruby', '3.1.2'
 gem 'pg', '~> 0.17.1'
+gem 'mongo'
+gem 'bson_ext'
 
 group :production do 
 	gem 'pg', '~> 0.17.1'
