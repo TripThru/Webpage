@@ -1,0 +1,884 @@
+########## DASHBOARD #########
+
+class ActiveTripsChart
+
+  constructor: (chartContainer) ->
+    @chart = new JustGage({
+      id: chartContainer
+      value: 0
+      min: 0
+      max: 10
+      label: 'trips'
+      relativeGaugeSize: true
+    })
+    @activeTripsCount = []
+    @max = 0
+
+  updateStats: (stats) =>
+    @update(stats.activeTrips, stats.activeTrips)
+
+  update: (activeTrips, selectedTypeActiveTrips) =>
+    if not activeTrips? or not selectedTypeActiveTrips?
+      console.error('Wrong parameters')
+      return
+
+    @max = if activeTrips > @max then activeTrips else @max
+    upperLimit = if @max < 10 then 10 else Math.ceil(@max * 1.4)
+
+    @chart.refresh(selectedTypeActiveTrips, upperLimit)
+
+
+class TripList
+
+  constructor: (@containerId) ->
+    @tripsInListById = {}
+    @pendingUpdateTripsIds = []
+    @currentStatus = null
+    @statusChanged = false
+
+  tripChanged: (trip) =>
+    if not trip?
+      $('#' + @containerId + '>div.active').removeClass('active')
+    else
+      if not $('#' + trip.getContainerId()).hasClass('active')
+        $('#' + @containerId + '>div.active').removeClass('active')
+        $("#" + trip.getContainerId()).addClass("active")
+
+  updateStatus: (status) =>
+    if @currentStatus != status
+      @statusChanged = true
+      if $('#triplist-loading').length <= 0
+        $('#' + @containerId).prepend('<span id="triplist-loading"><%= image_tag('loading.gif') %></span>')
+    @currentStatus = status
+
+  updateTrips: (tripsById) =>
+    if @statusChanged
+      @statusChanged = false
+      $('#' + @containerId).html('')
+      for id, trip of tripsById
+        @addTrip(trip)
+    else
+      for id, trip of tripsById
+        if id not of @tripsInListById
+          @addTrip(trip)
+      for id, trip of @tripsInListById
+        if id not of tripsById
+          @removeTrip(trip)
+        else
+          @updateTrip(trip)
+
+  updateActiveTrip: (trip) =>
+
+  addTrip: (trip) =>
+    if !trip.getPickupLocation().getAddress()?
+      @pendingUpdateTripsIds.push trip.getId()
+
+    @tripsInListById[trip.getId()] = trip
+    $('#' + @containerId).prepend @getTripTag(trip)
+    $('#' + trip.getContainerId()).slideDown()
+
+  updateTrip: (trip) =>
+    if trip.getId() in @pendingUpdateTripsIds and trip.getPickupLocation().getAddress()?
+      $('#' + trip.getContainerId()).find('.triplist-trip-pickup').fadeOut().html(trip.getPickupLocation().getAddress()).fadeIn()
+      @pendingUpdateTripsIds.splice($.inArray(trip.getId(), @pendingUpdateTripsIds), 1);
+
+  removeTrip: (trip) =>
+    delete @tripsInListById[trip.getId()]
+    $('#' + trip.getContainerId()).slideUp()
+
+
+  getTripTag: (trip) =>
+    tripPickupLocation = trip.getPickupLocation().getAddress()
+    pickupLocation = if tripPickupLocation then tripPickupLocation else 'loading...'
+    '
+                <div class="well trip" id="' + trip.getContainerId() + '" style="display:none;">
+                    <h1>' + trip.getId() + '</h1>
+                    <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
+                    <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
+                    <p><span>Pickup:</span> <i class="triplist-trip-pickup">' + pickupLocation + '</i></p>
+                </div>
+            '
+
+class TripTracker
+
+  constructor: (@tripInfoContainerId, @mapContainer) ->
+    @passengerMarker = null
+    @destinationMarker = null
+    @driverMarker = null
+    @initialMarker = null
+    @map = null
+    @mapOptions = null
+    @directionsDisplay = null
+    @directionsDisplay2 = null
+    @directionsDisplay3 = null
+    @directionsDisplay4 = null
+    @turn = true
+    @driverPreviousLocation = null
+    @setTripInfoBool = false
+    @tripId = null
+
+    @passengerRatingChartId = 'passenger-rating'
+    @driverRatingChartId = 'driver-rating'
+
+  cleanMap: () =>
+    @passengerMarker.setMap null  if @passengerMarker?
+    @driverMarker.setMap null  if @driverMarker?
+    @destinationMarker.setMap null  if @destinationMarker?
+    @initialMarker.setMap null  if @initialMarker?
+    @directionsDisplay.setMap null if @directionsDisplay?
+    @directionsDisplay2.setMap null if @directionsDisplay2?
+    @directionsDisplay3.setMap null if @directionsDisplay3?
+    @directionsDisplay4.setMap null if @directionsDisplay4?
+    @map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
+    @map.setZoom 4
+
+  tripChanged: (trip) =>
+    @tripId = null
+    @driverPreviousLocation = null
+    @updateTripInfo(trip)
+
+  updateActiveTrip: (trip) =>
+    @updateTripInfo(trip)
+    @updateMap(trip)
+    if trip?
+      @tripId = trip.getId()
+
+  updateTripInfo: (trip) =>
+    if trip?
+      tripPickupLocation = trip.getPickupLocation().getAddress()
+      tripDropoffLocation = trip.getDropoffLocation().getAddress()
+      tripDriverName = trip.getDriverName()
+      tripDriverLocation = if trip.getDriverLocation()? then trip.getDriverLocation().getAddress() else null
+      if !tripDriverLocation? and @driverPreviousLocation?
+        tripDriverLocation = @driverPreviousLocation.getAddress()
+
+      pickupLocation = if tripPickupLocation? then tripPickupLocation else 'loading...'
+      dropoffLocation = if tripDropoffLocation? then tripDropoffLocation else 'loading...'
+      driverLocation = if tripDriverLocation? then ' @ ' + tripDriverLocation else ''
+      driver = if tripDriverName? then tripDriverName + driverLocation else ''
+
+      $('#' + @tripInfoContainerId).html(
+          '<div>
+                              <h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1>
+                            <div><span>Passenger: </span><p>' + trip.getPassengerName() + '  </p>
+                               <div class="rating-container">
+                                    <div class="flexible-stars" data-isLocked="yes"
+                                            data-init="0" id="' + @passengerRatingChartId + '"></div>
+                               </div>
+                            </div>
+                            <div><span>Time: </span><p>' + trip.getPickupTime().split('.')[0] + '</p></div>
+                            <div><span>Pickup: </span><p>' + pickupLocation + '</p></div>
+                            <div><span>Dropoff: </span><p>' + dropoffLocation + '</p></div>
+                            <div>
+                              <span>Farmed-In: </span><p>' + trip.getOrigin() + ' - </p>
+                              <span>Farmed-Out: </span><p>' + trip.getServicing() + '</p>
+                            </div>
+                            <div><span>Driver: </span><p>' + driver + '  </p>
+                                <div class="rating-container">
+                                  <div class="flexible-stars" data-isLocked="yes"
+                                             data-init="0" id="' + @driverRatingChartId + '"></div>
+                                </div>
+                            </div>
+                         </div>
+                        '
+      )
+
+      $('#' + @passengerRatingChartId).html('')
+      $('#' + @passengerRatingChartId).flexibleStars({
+        init: trip.getPassengerRating()
+      })
+
+      if trip.getDriverName()?
+        $('#' + @driverRatingChartId).html('')
+        $('#' + @driverRatingChartId).flexibleStars({
+          init: trip.getDriverRating()
+        })
+    else
+      $('#' + @tripInfoContainerId).html('<h1>Select a trip</h1>')
+
+  updateMap: (trip) =>
+    return  if @setTripInfoBool is true or !trip? or !trip.driverLocation?
+    @setTripInfoBool = true
+    if not trip? or @tripId isnt trip.getId()
+      @passengerMarker.setMap null  if @passengerMarker?
+      @driverMarker.setMap null  if @driverMarker?
+      @destinationMarker.setMap null  if @destinationMarker?
+      @initialMarker.setMap null  if @initialMarker?
+      @driverPreviousLocation = null
+      @tripId = (if trip? then trip.getId() else "")
+      if @directionsDisplay?
+        @directionsDisplay.setMap null
+        @directionsDisplay = null
+      if @directionsDisplay2?
+        @directionsDisplay2.setMap null
+        @directionsDisplay2 = null
+      if @directionsDisplay3?
+        @directionsDisplay3.setMap null
+        @directionsDisplay3 = null
+      if @directionsDisplay4?
+        @directionsDisplay4.setMap null
+        @directionsDisplay4 = null
+    unless trip?
+      @setTripInfoBool = false
+      return
+    if not @driverPreviousLocation? or trip.driverLocation.lat isnt @driverPreviousLocation.lat or trip.driverLocation.lng isnt @driverPreviousLocation.lng
+      @driverPreviousLocation = trip.driverLocation
+      pickupLocation = trip.pickupLocation
+      driverLocation = trip.driverLocation
+      dropoffLocation = trip.dropoffLocation
+      driverInitialLocation = trip.driverInitialLocation
+      if pickupLocation or driverLocation
+        passengerLocation = null
+        driverCurrentLocation = null
+        destinationLocation = null
+        initialLocation = null
+        if dropoffLocation
+          destinationLocation = new google.maps.LatLng(dropoffLocation.lat, dropoffLocation.lng)
+          if @destinationMarker?
+            @destinationMarker.setMap @map
+            @destinationMarker.setPosition destinationLocation
+        if pickupLocation
+          passengerLocation = new google.maps.LatLng(pickupLocation.lat, pickupLocation.lng)
+          if @passengerMarker?
+            @passengerMarker.setMap @map
+            @passengerMarker.setPosition passengerLocation
+        if driverLocation
+          driverCurrentLocation = new google.maps.LatLng(driverLocation.lat, driverLocation.lng)
+          if @driverMarker?
+            @driverMarker.setMap @map
+            @driverMarker.setPosition driverCurrentLocation
+        if driverInitialLocation
+          initialLocation = new google.maps.LatLng(driverInitialLocation.lat, driverInitialLocation.lng)
+          if @initialMarker?
+            @initialMarker.setMap @map
+            @initialMarker.setPosition driverInitialLocation
+        unless @map?
+          @mapOptions =
+            center: (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+            zoom: 15
+            mapTypeControl: false
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+
+          @map = new google.maps.Map(document.getElementById("map-canvas"), @mapOptions)
+        if passengerLocation? and not @passengerMarker?
+          @passengerMarker = new google.maps.Marker(
+            position: passengerLocation
+            map: @map
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+            title: "Pickup"
+          )
+        if initialLocation? and not @initialMarker?
+          @initialMarker = new google.maps.Marker(
+            position: driverInitialLocation
+            map: @map
+            icon: "http://www.mricons.com/store/png/113267_25418_16_flag_icon.png"
+            title: "Initial"
+          )
+        if driverLocation? and not @driverMarker?
+          @driverMarker = new google.maps.Marker(
+            position: driverCurrentLocation
+            map: @map
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
+            title: "Driver"
+          )
+        if destinationLocation? and not @destinationMarker?
+          @destinationMarker = new google.maps.Marker(
+            position: dropoffLocation
+            map: @map
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+            title: "Destination"
+          )
+        if driverLocation? and pickupLocation? and dropoffLocation?
+          routes = []
+          switch trip.status
+            when "Enroute"
+              routes = [
+                origin: initialLocation
+                destination: driverCurrentLocation
+              ]
+            when "PickedUp"
+              routes = [
+                origin: initialLocation
+                destination: passengerLocation
+              ,
+                origin: passengerLocation
+                destination: driverCurrentLocation
+              ]
+            when "Complete"
+              routes = [
+                origin: initialLocation
+                destination: passengerLocation
+              ,
+                origin: passengerLocation
+                destination: destinationLocation
+              ]
+          rendererOptions =
+            preserveViewport: true
+            suppressMarkers: true
+            polylineOptions:
+              strokeColor: "#8B0000"
+              strokeOpacity: 1
+              strokeWeight: 5
+          rendererOptions2 =
+            preserveViewport: true
+            suppressMarkers: true
+            polylineOptions:
+              strokeColor: "#008000"
+              strokeOpacity: 1
+              strokeWeight: 5
+          directionsService = new google.maps.DirectionsService()
+          directionsService2 = new google.maps.DirectionsService()
+          boleanFirst = true
+          routes.forEach (route) =>
+            request =
+              origin: route.origin
+              destination: route.destination
+              travelMode: google.maps.TravelMode.DRIVING
+            if boleanFirst
+              if @turn
+                @directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
+                @directionsDisplay.setMap @map
+              else
+                @directionsDisplay3 = new google.maps.DirectionsRenderer(rendererOptions)
+                @directionsDisplay3.setMap @map
+            else
+              if @turn
+                @directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
+                @directionsDisplay2.setMap @map
+              else
+                @directionsDisplay4 = new google.maps.DirectionsRenderer(rendererOptions2)
+                @directionsDisplay4.setMap @map
+            if boleanFirst
+              directionsService.route request, (result, status) =>
+                if @turn
+                  @directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay?
+                  if @directionsDisplay3?
+                    @directionsDisplay3.setMap null
+                    @directionsDisplay3 = null
+                else
+                  @directionsDisplay3.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay3?
+                  if @directionsDisplay?
+                    @directionsDisplay.setMap null
+                    @directionsDisplay = null
+              boleanFirst = false
+            else
+              directionsService2.route request, (result, status) =>
+                if @turn
+                  @directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay2?
+                  if @directionsDisplay4?
+                    @directionsDisplay4.setMap null
+                    @directionsDisplay4 = null
+                  @turn = false
+                else
+                  @directionsDisplay4.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay4?
+                  if @directionsDisplay2?
+                    @directionsDisplay2.setMap null
+                    @directionsDisplay2 = null
+                  @turn = true
+        @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+        @map.setZoom 15
+    @setTripInfoBool = false
+
+class StatisticsDashboard
+
+  constructor: (@statisticsContainerId, @ratingsContainerId) ->
+    @timePieChartId = 'time-pie-chart'
+    @tripsPieChartId = 'trips-pie-chart'
+    @tripsPieChartTitleId = @tripsPieChartId + '-title'
+    @mileagePieChartId = 'mileage-pie-chart'
+    @servicePieChartId = 'service-pie-chart'
+    @driversRatingChartId = 'drivers-rating-chart'
+    @passengersRatingChartId = 'passengers-rating-chart'
+    @lastValues =
+      passengerRating: -1
+      driverRating: -1
+      timeWithPassenger: -1
+      mileageWithPassenger: -1
+      timeEnroute: -1
+      mileageEnroute: -1
+      timeIdle: -1
+      totalTrips: -1
+      cancelled: -1
+      completed: -1
+      rejected: -1
+      lateness: -1
+      withinServiceGoal: -1
+
+    $('#' + @statisticsContainerId).html('
+                <div  class="dashboard-statistics-pie-chart" >
+                    <div class="title" id="' + @tripsPieChartTitleId + '">0 Trips</div>
+                    <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
+                </div>
+                <div  class="dashboard-statistics-pie-chart" >
+                    <div class="title">Time</div>
+                    <div class="pie-chart" id="' + @timePieChartId + '"></div>
+                </div>
+                <div  class="dashboard-statistics-pie-chart" >
+                    <div class="title">Mileage</div>
+                    <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+                </div>
+                <div  class="dashboard-statistics-pie-chart" >
+                    <div class="title">Service</div>
+                    <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                </div>
+            ')
+
+    $('#' + @ratingsContainerId).html('
+                <div id="dashboard-ratings-container">
+                    <div  class="dashboard-statistics-rating" >
+                        <div class="title">Drivers</div>
+                        <div class="flexible-stars" data-isLocked="yes"
+                         data-init="0"  id="' + @driversRatingChartId + '"></div>
+                    </div>
+                    <div  class="dashboard-statistics-rating" >
+                        <div class="title">Passengers</div>
+                        <div class="flexible-stars" data-isLocked="yes"
+                            data-init="0"  id="' + @passengersRatingChartId + '"></div>
+                    </div>
+                </div>
+            ')
+
+    @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+  updateStats: (stats) =>
+    @update(80, 90, 55, 32, 70, 80, 15, 80, 10, 80, 10, 15, 95)
+
+  update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,timeIdle, totalTrips, cancelled, completed, rejected, lateness, withinServiceGoal) =>
+
+    if @lastValues.timeEnroute != timeEnroute or @lastValues.timeWithPassenger != timeWithPassenger or @lastValues.timeIdle != timeIdle
+
+      @lastValues.timeEnroute = timeEnroute
+      @lastValues.timeWithPassenger = timeWithPassenger
+      @lastValues.timeIdle = timeIdle
+      Morris.Donut({
+        element: @timePieChartId
+        data: [
+          {label: "Enroute", value: timeEnroute}
+          {label: "Occupied", value: timeWithPassenger}
+          {label: "Idle", value: timeIdle}
+        ]
+        colors: [
+          '#2922DD'
+          '#0BA462'
+          '#DD1D18'
+        ]
+        formatter: (x) -> x + "%"
+      })
+
+    if @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected
+
+      @lastValues.completed = completed
+      @lastValues.cancelled = cancelled
+      @lastValues.rejected = rejected
+      Morris.Donut({
+        element: @tripsPieChartId,
+        data: [
+          {label: "Completed", value: completed}
+          {label: "Rejected", value: rejected}
+          {label: "Cancelled", value: cancelled}
+        ]
+        colors: [
+          '#0BA462'
+          '#DADD0F'
+          '#DD1D18'
+        ]
+        formatter: (x) -> x + "%"
+      })
+
+    if @lastValues.mileageEnroute != mileageEnroute or @lastValues.mileageWithPassenger != mileageWithPassenger
+
+      @lastValues.mileageEnroute = mileageEnroute
+      @lastValues.mileageWithPassenger = mileageWithPassenger
+      Morris.Donut({
+        element: @mileagePieChartId,
+        data: [
+          {label: "Enroute", value: mileageEnroute}
+          {label: "Occupied", value: mileageWithPassenger}
+        ]
+        colors: [
+          '#3C6ADD'
+          '#0BA462'
+        ]
+        formatter: (x) -> x + "%"
+      })
+
+    if @lastValues.totalTrips != totalTrips
+      @lastValues.totalTrips = totalTrips
+      $('#' + @tripsPieChartTitleId).fadeOut().html(totalTrips + ' trips').fadeIn()
+
+
+    passengerRatingStars = passengerRating/100*5
+    if passengerRatingStars != @lastValues.passengerRating
+      $('#' + @passengersRatingChartId).html('')
+      $('#' + @passengersRatingChartId).flexibleStars({
+        init: passengerRatingStars
+      })
+
+    driverRatingStars = driverRating/100*5
+    if driverRatingStars != @lastValues.driverRating
+      $('#' + @driversRatingChartId).html('')
+      $('#' + @driversRatingChartId).flexibleStars({
+        init: driverRatingStars
+      })
+
+
+    if @lastValues.withinServiceGoal != withinServiceGoal or @lastValues.lateness != lateness
+
+      @lastValues.withinServiceGoal = withinServiceGoal
+      @lastValues.lateness = lateness
+      Morris.Donut({
+        element: @servicePieChartId,
+        data: [
+          {label: "Level", value: withinServiceGoal}
+          {label: "Lateness", value: lateness}
+        ]
+        colors: [
+          '#0BA462'
+          '#DD1D18'
+        ]
+        formatter: (x) -> x + "%"
+      })
+
+class ActivityLog
+
+  constructor: (@containerId) ->
+    @tripId = ''
+    @latestAddedLogDate = null
+    @tcurrentTripIdripId = null
+
+  tripChanged: (trip) =>
+    $('#' + @containerId).html('<%= image_tag('loading.gif') %>')
+
+  updateLog: (logList, currentTripId) =>
+    if logList? and logList.length > 0
+      logList = logList.reverse()
+      newLatest = logList[0].time
+      logs = []
+      if !@latestAddedLogDate? or @tcurrentTripIdripId != currentTripId
+        @tcurrentTripIdripId = currentTripId
+        logs = logList
+        $('#' + @containerId).html('')
+      else
+        for log in logList
+          if Date.parse(log.time) > Date.parse(@latestAddedLogDate)
+            logs.push log
+          else
+            break
+
+      if logs.length > 0
+        i = 0
+        for log in logs.reverse()
+          [id, logString] = @getLogTag(i, log)
+          $('#' + @containerId).prepend(logString)
+          $('#' + id).slideDown();
+          i++
+        Prism.highlightAll();@latestAddedLogDate = logList[logList.length-1].time
+
+      @tripId = currentTripId
+      @latestAddedLogDate = newLatest
+
+  getLogTag: (id, log) =>
+    id =  id + 'parent-accordion'
+    logString = '
+                            <div style="display: none" class="accordion-group" id="' + id + '">
+                                <div class="accordion-heading">
+                                    <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion">
+                                        ' + log.time.split('.')[0] + ' | ' + log.messages[0].text +  '
+                                    </a>
+                                </div>
+                                <div id="' + id + '-accordion" class="accordion-body collapse">
+                                    <div class="accordion-inner">
+                            '
+
+    if log.request?
+      logString += '
+                                              <div class="accordion-group json-inner-log">
+                                                  <div class="accordion-heading">
+                                                      <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-request">
+                                                          Request
+                                                      </a>
+                                                  </div>
+                                                  <div id="' + id + '-accordion-request" class="accordion-body collapse">
+                                                      <div class="accordion-inner">
+                                                          <pre><code class="language-javascript">' + FormatJSON(JSON.parse(log.request)) + '</code></pre>
+                                                      </div>
+                                                  </div>
+                                              </div>
+
+                          '
+
+    i = 1
+    while(i < log.messages.length - 1)
+      message = log.messages[i]
+      padding = if message.indent is 0 then '' else 'padding-left: ' + message.indent + 'px'
+
+      logString += '<div style="' + padding + '">'
+
+      if message.json?
+        hasResponse = ((i + 1) < (log.messages.length - 1)) and
+          log.messages[i + 1].text.indexOf('Response') != -1 and
+          log.messages[i + 1].json
+
+        logString += '
+                                                    <div class="accordion-group json-inner-log">
+                                                        <div class="accordion-heading">
+                                                            <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-' + i + '">
+                                                                ' + message.text + '
+                                                            </a>
+                                                        </div>
+                                                        <div id="' + id + '-accordion-' + i + '" class="accordion-body collapse">
+                                                            <div class="accordion-inner">
+                                                                <pre><code class="language-javascript">'
+
+        logString +=                'Request:\n' + FormatJSON(JSON.parse(message.json))
+
+        if hasResponse
+          logString +=            '\n\nResponse:\n' + FormatJSON(JSON.parse(log.messages[i + 1].json))
+          i++
+
+        logString += '          </code></pre>
+                                                            </div>
+                                                        </div>
+                                                    </div>'
+      else
+        logString +='<div class="accordion-group simple-inner-log">
+                                                        <div class="accordion-heading">
+                                                            <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-' + i + '">
+                                                                ' + message.text + '
+                                                            </a>
+                                                        </div>
+                                                     </div>
+                                                        '
+
+      logString += ' </div>'
+      i++
+
+    if log.response?
+      logString += '
+                                              <div class="accordion-group json-inner-log">
+                                                  <div class="accordion-heading">
+                                                      <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-response">
+                                                          Response
+                                                      </a>
+                                                  </div>
+                                                  <div id="' + id + '-accordion-response" class="accordion-body collapse">
+                                                      <div class="accordion-inner">
+                                                          <pre><code class="language-javascript">' + FormatJSON(JSON.parse(log.response)) + '</code></pre>
+                                                      </div>
+                                                  </div>
+                                              </div>
+
+                          '
+    logString +=
+      '           </div>
+                                      </div>
+                                  </div>
+                                '
+
+    return [id, logString]
+
+
+class DashboardManager
+
+  constructor: (@gateway, @statusSelectorContainerId, @listeners) ->
+    @tripsById = {}
+    @activeTrip = null
+    @selectedStatus = 'All'
+    @updatingStats = false
+    @updatingTrips = false
+    @updatingActiveTrip = false
+    @updatingLogs = false
+
+    $('#' + @statusSelectorContainerId).change =>
+      @selectedStatus = $('#' + @statusSelectorContainerId + ' option:selected').val()
+      @updateStatus()
+      @update()
+
+  update: =>
+    if not  @updatingStats
+      @updatingStats = true
+      @gateway.getStats(@updateStats)
+
+    if not @updatingTrips
+      @updatingTrips = true
+      status = if @selectedStatus != 'All' then @selectedStatus else null
+      @gateway.getTrips(status, @updateTrips)
+
+    if not @updatingActiveTrip
+      @updatingActiveTrip = true
+      if @activeTrip?
+        @gateway.getTripStatus(@activeTrip.getId(), @updateActiveTrip)
+      else
+        @updateActiveTrip(null)
+
+    if not @updatingLogs
+      @updatingLogs = true
+      tripId = if @activeTrip? then @activeTrip.getId() else null
+      @gateway.getLog(tripId, @updateLogs)
+
+  updateStats: (data) =>
+    if data?
+      for listener in @listeners
+        if typeof listener.updateStats is 'function'
+          try
+            listener.updateStats(data)
+          catch error
+            console.error listener + ' updateStats failed: ' + error
+    @updatingStats = false
+
+  cleanMap: () =>
+    for listener in @listeners
+      if listener instanceof TripTracker
+        listener.cleanMap()
+
+  updateTrips: (data) =>
+    if data?
+      tripsIds = []
+      for newTrip in data.trips
+        tripsIds.push newTrip.id
+        if newTrip.id not of @tripsById
+          @processTrip(newTrip)
+
+      for id, trip of @tripsById
+        if id not in tripsIds
+          delete @tripsById[id]
+
+      for listener in @listeners
+        if typeof listener.updateTrips is 'function'
+          try
+            listener.updateTrips(@tripsById)
+          catch error
+            console.error listener + ' updateTrips failed: ' + error
+    @updatingTrips = false
+
+  processTrip: (newTrip) =>
+    driverLocation =
+      if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, null) else null
+    driverInitialLocation =
+      if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, null) else null
+    trip = new Trip(
+      newTrip.id
+      newTrip.passengerName
+      newTrip.pickupTime
+      new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, null)
+      newTrip.originatingPartnerName
+      newTrip.servicingPartnerName
+      newTrip.status
+      newTrip.eta
+      newTrip.price
+      newTrip.driverName
+      driverLocation
+      new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, null)
+      driverInitialLocation
+    )
+    @tripsById[trip.getId()] = trip
+    $(document).off('click', '#' + trip.getContainerId()).on 'click', '#' + trip.getContainerId(),  =>
+      @toggleActiveTrip(newTrip.id)
+
+
+  toggleActiveTrip: (tripId) =>
+    trip = @tripsById[tripId]
+    if not @activeTrip? or !trip? or @activeTrip.id != trip.id
+      @activeTrip = trip
+    else
+      @activeTrip = null
+      @cleanMap()
+
+    for listener in @listeners
+      if typeof listener.tripChanged is 'function'
+        try
+          listener.tripChanged(@activeTrip)
+        catch error
+          console.error listener + ' tripChanged failed: ' + error
+
+    @update()
+
+
+  updateActiveTrip: (data) =>
+    if data?
+      if !@activeTrip? or (data.driverLocation? and !@activeTrip.getDriverLocation()?) or
+        (data.driverLocation? and
+          @activeTrip.getDriverLocation()? and
+          data.driverLocation.lat != @activeTrip.getDriverLocation().lat and
+          data.driverLocation.lng != @activeTrip.getDriverLocation().lng)
+
+        driverLocation = new Location(data.driverLocation.lat, data.driverLocation.lng, null)
+      else
+        driverLocation = @activeTrip.getDriverLocation()
+
+      if !@activeTrip? or (data.historyEnrouteList and data.historyEnrouteList[0] and !@activeTrip.getDriverInitialLocation()?)
+
+        driverInitialLocation = new Location(data.historyEnrouteList[0].lat, data.historyEnrouteList[0].lng, null)
+      else
+        driverInitialLocation = @activeTrip.getDriverInitialLocation()
+
+      if @activeTrip != null
+        @activeTrip.update(
+          if data.status? then data.status else @activeTrip.getStatus()
+          data.driverName
+          driverLocation
+          driverInitialLocation
+          data.historyEnrouteList
+          data.historyPickUpList
+        )
+    for listener in @listeners
+      if typeof listener.updateActiveTrip is 'function'
+        try
+          listener.updateActiveTrip(@activeTrip)
+        catch error
+          console.error listener.toString() + ' updateLogs failed: ' + error
+
+    @updatingActiveTrip = false
+
+  updateLogs: (data) =>
+    if data?
+      tripId = if @activeTrip? then @activeTrip.getId() else null
+      for listener in @listeners
+        if typeof listener.updateLog is 'function'
+          try
+            listener.updateLog(data.logList, tripId)
+          catch error
+            console.error listener + ' updateLogs failed: ' + error
+    @updatingLogs = false
+
+  updateStatus: () =>
+    status = if @selectedStatus != 'All' then @selectedStatus else null
+    for listener in @listeners
+      if typeof listener.updateStatus is 'function'
+        try
+          listener.updateStatus(status)
+        catch error
+          console.error listener + ' updateStatus failed: ' + error
+
+`
+$(document).ready(function(){
+    var url = window.location
+    $('.list-group-item').filter( function(){
+        return this.href == url;
+    }).addClass('active');
+    });
+`
+
+$('.developer.dashboard').ready ->
+
+  dashboardManager = new DashboardManager(
+    new TripThru($('#access_token').val())
+    'trip-status-selector'
+    [
+      new ActiveTripsChart('active-trips-chart')
+      new TripList('trips-panel')
+      new StatisticsDashboard('statistics-gauges-container', 'ratings-container')
+      new TripTracker('tracking-trip-info', 'tracking-map-container')
+      new ActivityLog('activity-log')
+    ]
+  )
+
+  update = ->
+    dashboardManager.update()
+
+  update()
+  setInterval ->
+    update()
+  , 10000
+
+  return

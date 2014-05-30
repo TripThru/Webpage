@@ -1,0 +1,80 @@
+########## PARTNERS #########
+
+class CoverageMap
+
+  constructor: (@gateway, @containerId, @selectorId) ->
+    @fleets = {}
+    @mapCanvas = null
+    $('#' + @containerId).html('<%= image_tag('loading.gif', height: 128, width: 128) %>')
+    google.maps.event.addDomListener window, "load", @gateway.getPartners(@init)
+
+  init: (data) =>
+    if data?
+      $('#' + @containerId).html('')
+      @loadSelectorFleets(data.fleets)
+      @loadMap(data.fleets, @containerId)
+
+  loadSelectorFleets: (fleets) =>
+    for fleet in fleets
+      if fleet.fleetName == "TripThru San Francisco"
+        continue
+      @fleets[fleet.fleetName] =  fleet
+      $('#' + @selectorId).append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
+    $('#' + @selectorId).change =>
+      selectedStatus = $('#' + @selectorId + ' option:selected').val()
+      @mapCanvas.panTo(new google.maps.LatLng(@fleets[selectedStatus].coverage[0].center.lat, @fleets[selectedStatus].coverage[0].center.lng))
+
+
+  loadMap: (fleets, containerId) =>
+    mapOptions =
+      zoom: 4
+      center: new google.maps.LatLng(37.09024, -95.712891)
+      mapTypeId: google.maps.MapTypeId.TERRAIN
+
+    colors = [ "#006600", "#0D6B00", "#1A7000", "#267500", "#337A00", "#408000", "#4C8500", "#598A00", "#668F00", "#739400", "#809900", "#8C9E00", "#99A300", "#A6A800", "#B2AD00", "#BFB200", "#CCB800", "#D9BD00", "#E6C200", "#F2C700", "#FFCC00", "#FCC200", "#FAB800", "#F7AD00", "#F5A300", "#F29900", "#F08F00", "#ED8500", "#EB7A00", "#E87000", "#E66600", "#E35C00", "#E05200", "#DE4700", "#DB3D00", "#D93300", "#D62900", "#D41F00", "#D11400", "#CF0A00", "#CC0000" ]
+    driversTotal = [89,5,37,90,35,18,51,47,31,19,74,10,92,65,65,20,32]
+    driver = 0
+    @mapCanvas = new google.maps.Map(document.getElementById(containerId), mapOptions)
+
+    citymap = {}
+    count = 0
+    for fleet in fleets
+      if fleet.fleetName == "TripThru San Francisco"
+        continue
+      driver++
+      citymap[fleet.fleetName]=
+        center: new google.maps.LatLng(fleet.coverage[0].center.lat, fleet.coverage[0].center.lng)
+        population: fleet.coverage[0].radius
+        drivers: driversTotal[driver]
+      if count < driversTotal[driver]
+        count = driversTotal[driver]
+
+    steps = (colors.length / count)
+    cityCircle = undefined
+    for city of citymap
+      temporalVar = (steps * citymap[city].drivers)
+      colorNumber = Math.floor(temporalVar)
+      populationOptions =
+        strokeColor: if colorNumber > (colors.length - 1) then colors[colors.length - 1] else colors[colorNumber]
+        strokeOpacity: 0.8
+        strokeWeight: 2
+        fillColor: if colorNumber > (colors.length - 1) then colors[colors.length - 1] else colors[colorNumber]
+        fillOpacity: 0.35
+        map: @mapCanvas
+        center: citymap[city].center
+        radius: citymap[city].population * 1000
+      marker = new google.maps.Marker({
+        position: citymap[city].center
+        map: @mapCanvas
+        title: city
+      })
+      cityCircle = new google.maps.Circle(populationOptions)
+
+
+$('.developer.partners').ready ->
+
+  coverageMap = new CoverageMap(
+    new TripThru($('#access_token').val())
+    'partner-coverage-map'
+    'partner-select'
+  )
