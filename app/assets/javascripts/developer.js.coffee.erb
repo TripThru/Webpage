@@ -274,17 +274,35 @@ class TripTracker
         @initialMarker = null
         @map = null
         @mapOptions = null
-        @directionsDisplay = null
-        @directionsDisplay2 = null
-        @directionsDisplay3 = null
-        @directionsDisplay4 = null
-        @turn = true
+
+        rendererOptions =
+            preserveViewport: true
+            suppressMarkers: true
+            polylineOptions:
+                strokeColor: "#8B0000"
+                strokeOpacity: 1
+                strokeWeight: 5
+        rendererOptions2 =
+            preserveViewport: true
+            suppressMarkers: true
+            polylineOptions:
+                strokeColor: "#008000"
+                strokeOpacity: 1
+                strokeWeight: 5
+
+        @directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
+        @directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
+
+        @directionsService = new google.maps.DirectionsService()
+
         @driverPreviousLocation = null
         @setTripInfoBool = false
         @tripId = null
 
         @passengerRatingChartId = 'passenger-rating'
         @driverRatingChartId = 'driver-rating'
+
+
 
     cleanMap: () =>
         @passengerMarker.setMap null  if @passengerMarker?
@@ -293,8 +311,6 @@ class TripTracker
         @initialMarker.setMap null  if @initialMarker?
         @directionsDisplay.setMap null if @directionsDisplay?
         @directionsDisplay2.setMap null if @directionsDisplay2?
-        @directionsDisplay3.setMap null if @directionsDisplay3?
-        @directionsDisplay4.setMap null if @directionsDisplay4?
         @map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
         @map.setZoom 4
 
@@ -374,16 +390,8 @@ class TripTracker
             @tripId = (if trip? then trip.getId() else "")
             if @directionsDisplay?
                 @directionsDisplay.setMap null
-                @directionsDisplay = null
             if @directionsDisplay2?
                 @directionsDisplay2.setMap null
-                @directionsDisplay2 = null
-            if @directionsDisplay3?
-                @directionsDisplay3.setMap null
-                @directionsDisplay3 = null
-            if @directionsDisplay4?
-                @directionsDisplay4.setMap null
-                @directionsDisplay4 = null
         unless trip?
             @setTripInfoBool = false
             return
@@ -478,22 +486,7 @@ class TripTracker
                                 origin: passengerLocation
                                 destination: destinationLocation
                             ]
-                    rendererOptions =
-                        preserveViewport: true
-                        suppressMarkers: true
-                        polylineOptions:
-                            strokeColor: "#8B0000"
-                            strokeOpacity: 1
-                            strokeWeight: 5
-                    rendererOptions2 =
-                        preserveViewport: true
-                        suppressMarkers: true
-                        polylineOptions:
-                            strokeColor: "#008000"
-                            strokeOpacity: 1
-                            strokeWeight: 5
-                    directionsService = new google.maps.DirectionsService()
-                    directionsService2 = new google.maps.DirectionsService()
+
                     boleanFirst = true
                     routes.forEach (route) =>
                         request =
@@ -501,46 +494,14 @@ class TripTracker
                             destination: route.destination
                             travelMode: google.maps.TravelMode.DRIVING
                         if boleanFirst
-                            if @turn
-                                @directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
-                                @directionsDisplay.setMap @map
-                            else
-                                @directionsDisplay3 = new google.maps.DirectionsRenderer(rendererOptions)
-                                @directionsDisplay3.setMap @map
-                        else
-                            if @turn
-                                @directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
-                                @directionsDisplay2.setMap @map
-                            else
-                                @directionsDisplay4 = new google.maps.DirectionsRenderer(rendererOptions2)
-                                @directionsDisplay4.setMap @map
-                        if boleanFirst
-                            directionsService.route request, (result, status) =>
-                                if @turn
+                            @directionsDisplay.setMap @map
+                            @directionsService.route request, (result, status) =>
                                     @directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay?
-                                    if @directionsDisplay3?
-                                        @directionsDisplay3.setMap null
-                                        @directionsDisplay3 = null
-                                else
-                                    @directionsDisplay3.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay3?
-                                    if @directionsDisplay?
-                                        @directionsDisplay.setMap null
-                                        @directionsDisplay = null
                             boleanFirst = false
                         else
-                            directionsService2.route request, (result, status) =>
-                                if @turn
+                            @directionsDisplay2.setMap @map
+                            @directionsService.route request, (result, status) =>
                                     @directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay2?
-                                    if @directionsDisplay4?
-                                        @directionsDisplay4.setMap null
-                                        @directionsDisplay4 = null
-                                    @turn = false
-                                else
-                                    @directionsDisplay4.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay4?
-                                    if @directionsDisplay2?
-                                        @directionsDisplay2.setMap null
-                                        @directionsDisplay2 = null
-                                    @turn = true
                 @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
                 @map.setZoom 15
         @setTripInfoBool = false
