@@ -8,7 +8,7 @@ class MongoDbController < ApplicationController
     puts params[:startDate]
     get_trips = '
       function () {
-        var startDate = new Date(' + params[:startDate] + ');
+        var startDate = new Date("' + params[:startDate] + '");
         var trips = db.trips.aggregate(
           { $match : { LastUpdate : { $gt: startDate } } },
           { $project : {
