@@ -14,18 +14,20 @@ class MongoDbController < ApplicationController
           { $project : {
               Status : "$Status",
               Interval : {
-                  $add: [
-                           { $dayOfYear : "$LastUpdate" },
-                           { $hour : "$LastUpdate" },
-                           { $minute : "$LastUpdate" }
-                        ]
+                  $divide: [
+                        { $add: [
+                           { $multiply : [ { $hour : "$LastUpdate"}, 3600 ]},
+                           { $multiply : [ { $minute : "$LastUpdate"}, 60 ]},
+                           { $second : "$LastUpdate" }
+                        ]}, 15
+                  ]
               }
             }
           },
           { $group : {
               _id :  {
                   "Status" : "$Status" ,
-                  "Interval" : "$Interval"
+                  "Interval" : { $subtract : ["$Interval", { $mod : ["$Interval", 1] }] }
               },
               count : { $sum : 1 }
             }

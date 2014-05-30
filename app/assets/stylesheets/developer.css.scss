@@ -1228,6 +1228,48 @@
             color: #ffffff !important;
         }
 
+        #display-modes-container{
+          width: 100%;
+          input{
+            margin: 0 0 10px 0;
+            width: 49%;
+            height: 28px;
+
+            background-color: #ededed;
+            -webkit-border-radius: 0px;
+            -moz-border-radius: 0px;
+            border-radius: 0px;
+            text-indent: 0;
+            border: 1px solid #dcdcdc;
+            color: #888888;
+            text-decoration: none;
+            text-align: center;
+            font-size: 12px;
+
+            &:hover {
+              background-color: rgb(17, 161, 16);
+              color: #ffffff;
+            }
+            &:active {
+              position: relative;
+              top: 1px;
+            }
+          }
+
+          .active{
+            background-color: rgb(17, 161, 16) !important;
+            color: #ffffff !important;
+          }
+
+          #percentage-button{
+            float: left;
+          }
+
+          #absolute-button{
+            float: right;
+          }
+        }
+
         #datepicker {
           margin: 0 0 10px 0;
           input {

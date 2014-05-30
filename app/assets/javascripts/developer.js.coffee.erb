@@ -1118,7 +1118,9 @@ class TimeSeries
         @endDate = new Date()
         @data = null
 
+        @YAxisMax = 100
         @realtime = true
+        @percentageDisplay = true
         @tripsCompletedSelected =   true
         @tripsCancelledSelected =   true
         @tripsRejectedSelected =    true
@@ -1132,6 +1134,14 @@ class TimeSeries
         @serviceLatenessSelected =  false
         @ratingDriversSelected =    false
         @ratingPassengersSelected = false
+
+        $('#trips-completed-filter-button').toggleClass('active')
+        $('#trips-rejected-filter-button').toggleClass('active')
+        $('#trips-cancelled-filter-button').toggleClass('active')
+        $('#trips-error-filter-button').toggleClass('active')
+        $('#realtime-button').toggleClass('active')
+        $('#percentage-button').toggleClass('active')
+        $('#datepicker>input').attr("disabled", true)
 
         @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
         @tripsCancelled = { name: 'Cancelled trips', id: 'Cancelled trips', data: []}
@@ -1206,6 +1216,8 @@ class TimeSeries
             yAxis:
                 title:
                     text: ''
+                min: 0
+                max: 100
             tooltip:
                 headerFormat: '<b>{series.name}</b><br>',
                 pointFormat: '{point.x:%I:%M %p}: {point.y:.2f}'
@@ -1228,6 +1240,8 @@ class TimeSeries
             yAxis:
                 title:
                     text: ''
+                min: 0
+                max: 100
             tooltip:
                 headerFormat: '<b>{series.name}</b><br>',
                 pointFormat: '{point.x:%I:%M %p}: {point.y:.2f}'
@@ -1235,6 +1249,26 @@ class TimeSeries
             ]
 
         @updateRealTime()
+
+        $('#percentage-button').click =>
+            if not $('#percentage-button').hasClass('active')
+                @percentageDisplay = true
+                $('#absolute-button').toggleClass('active')
+                $('#percentage-button').toggleClass('active')
+                if @realtime
+                    @updateRealTime()
+                else
+                    @populate()
+
+        $('#absolute-button').click =>
+            if not $('#absolute-button').hasClass('active')
+                @percentageDisplay = false
+                $('#absolute-button').toggleClass('active')
+                $('#percentage-button').toggleClass('active')
+                if @realtime
+                    @updateRealTime()
+                else
+                    @populate()
 
         $('#realtime-button').click =>
             if $('#realtime-button').hasClass('active')
@@ -1247,6 +1281,10 @@ class TimeSeries
                 @clearCharts()
                 @updateRealTime()
             $('#realtime-button').toggleClass('active')
+
+        $('#partners-select').change =>
+            if not @realtime
+                @populate()
 
         $('#trips-completed-filter-button').click =>
             $('#trips-completed-filter-button').toggleClass('active')
@@ -1378,28 +1416,16 @@ class TimeSeries
                 load: @ratingPassengersSelected
             }])
 
-        $('#partners-select').change =>
-            if not @realtime
-                @populate()
-
-
-        $('#trips-completed-filter-button').toggleClass('active')
-        $('#trips-rejected-filter-button').toggleClass('active')
-        $('#trips-cancelled-filter-button').toggleClass('active')
-        $('#trips-error-filter-button').toggleClass('active')
-        $('#realtime-button').toggleClass('active')
-        $('#datepicker>input').attr("disabled", true)
-
         setInterval =>
             if @realtime and not @updatingRealTime
                 @updatingRealTime = true
                 @updateRealTime()
-        , 30000
+        , 15000
 
     updateRealTime: () =>
-        last30Minutes = new Date();
-        last30Minutes.setMinutes(last30Minutes.getMinutes()-30);
-        $.get '/mongo_db/trips?startDate=' + last30Minutes, (data) =>
+        last10Minutes = new Date();
+        last10Minutes.setMinutes(last10Minutes.getMinutes()-10);
+        $.get '/mongo_db/trips?startDate=' + last10Minutes, (data) =>
             @tripsCompleted.data = []
             @tripsCompletedF.data = []
             @tripsRejected.data = []
@@ -1408,53 +1434,88 @@ class TimeSeries
             @tripsCancelledF.data = []
             @tripsError.data = []
             @tripsErrorF.data = []
+            datesByInterval = {}
+            #timestmp = new Date().setFullYear(new Date().getFullYear(), 0, 1);
+            #yearFirstDay = Math.floor(timestmp / 86400000);
 
             @data = data.sort( (a, b) ->
                 ((b._id.Interval < a._id.Interval) ? -1 : ((b._id.Interval > a._id.Interval) ? 1 : 0));
             )
 
-            lastInterval = -1
-            for entry in @data
-                date = Date.UTC(last30Minutes.getUTCFullYear(), last30Minutes.getUTCMonth(), last30Minutes.getUTCDate(), last30Minutes.getUTCHours(), last30Minutes.getUTCMinutes(), last30Minutes.getUTCSeconds())
-                switch entry._id.Status
-                    when 'Complete'
-                        @tripsCompleted.data.push [date, entry.count]
-                        @tripsCompletedF.data.push [date, entry.count]
-                    when 'Rejected'
-                        @tripsRejected.data.push [date, entry.count]
-                        @tripsRejectedF.data.push [date, entry.count]
-                    when 'Cancelled'
-                        @tripsCancelled.data.push [date, entry.count]
-                        @tripsCancelledF.data.push [date, entry.count]
-                if entry._id.Interval > lastInterval
-                    last30Minutes.setMinutes(last30Minutes.getMinutes() + 1)
+            for i in [0..41]
+                #dayOfYear = Math.ceil((last10Minutes.getTime()) / 86400000) - yearFirstDay;
+                interval = (
+                    ((last10Minutes.getUTCHours()*3600 +
+                        last10Minutes.getUTCMinutes()*60 +
+                        last10Minutes.getUTCSeconds())/15).toFixed(0)
+                ).toString()
+                datesByInterval[interval] = last10Minutes.getTime()
+                last10Minutes.setSeconds(last10Minutes.getSeconds() + 15)
 
-            @update(
-                [{
+            @YAxisMax = 0
+            for id of datesByInterval
+                date = datesByInterval[id]
+
+                count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
+                countComplete = if count.length == 0 then 0 else count[0].count
+                count = data.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
+                countCancelled = if count.length == 0 then 0 else count[0].count
+                count = data.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
+                countRejected = if count.length == 0 then 0 else count[0].count
+                count = data.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
+                countError = if count.length == 0 then 0 else count[0].count
+                total = countComplete + countCancelled + countRejected + countError
+                @YAxisMax = if total > @YAxisMax then total else @YAxisMax
+
+                if @percentageDisplay
+                    countComplete = if countComplete > 0 then countComplete*100/total else 0
+                    countCancelled = if countCancelled > 0 then countCancelled*100/total else 0
+                    countRejected = if countRejected > 0 then countRejected*100/total else 0
+                    countError = if countError > 0 then countError*100/total else 0
+
+                if @tripsCompletedSelected
+                    @tripsCompleted.data.push [date, countComplete]
+                    @tripsCompletedF.data.push [date, countComplete]
+                if @tripsRejectedSelected
+                    @tripsRejected.data.push [date, countRejected]
+                    @tripsRejectedF.data.push [date, countRejected]
+                if @tripsCancelledSelected
+                    @tripsCancelled.data.push [date, countCancelled]
+                    @tripsCancelledF.data.push [date, countCancelled]
+                if @tripsErrorSelected
+                    @tripsError.data.push [date, countError]
+                    @tripsErrorF.data.push [date, countError]
+
+            updateData = []
+            if @tripsCompletedSelected
+                updateData.push({
                     name: 'Completed trips'
                     historicData: @tripsCompleted
                     forecastData: @tripsCompletedF
                     load: @tripsCompletedSelected
-                },
-                {
+                })
+            if @tripsRejectedSelected
+                updateData.push({
                     name: 'Rejected trips'
                     historicData: @tripsRejectedF
                     forecastData: @tripsRejectedF
                     load: @tripsRejectedSelected
-                },
-                {
+                })
+            if @tripsCancelledSelected
+                updateData.push({
                     name: 'Cancelled trips'
                     historicData: @tripsCancelled
                     forecastData: @tripsCancelledF
                     load: @tripsCancelledSelected
-                },
-                {
+                })
+            if @tripsErrorSelected
+                updateData.push({
                     name: 'Error trips'
                     historicData: @tripsError
                     forecastData: @tripsErrorF
                     load: @tripsErrorSelected
-                }]
-            )
+                })
+            @update updateData
             @updatingRealTime = false
 
     populate: () =>
@@ -1554,6 +1615,13 @@ class TimeSeries
             if serie.load
                 @historicChart.addSeries(serie.historicData, false, false)
                 @forecastChart.addSeries(serie.forecastData, false, false)
+
+        if not @percentageDisplay
+            @historicChart.yAxis[0].setExtremes(0, @YAxisMax)
+            @forecastChart.yAxis[0].setExtremes(0, @YAxisMax)
+        else
+            @historicChart.yAxis[0].setExtremes(0, 100)
+            @forecastChart.yAxis[0].setExtremes(0, 100)
         @refreshCharts()
 
     clearCharts: () =>
@@ -1611,6 +1679,7 @@ class TimeSeries
 
 
     generateRandomData: (dates) =>
+        @YAxisMax = 0
         @tripsCompleted.data = []
         @tripsCancelled.data = []
         @tripsRejected.data = [] 
@@ -1669,7 +1738,10 @@ class TimeSeries
             @ratingPassengersF.data.push @r(date)
 
     r: (date) =>
-        [date, (Math.random() * 30) + 70]
+        value = if @percentageDisplay then ((Math.random() * 70) + 30) else ((Math.random() * 40) + 10)
+        if not @percentageDisplay
+            @YAxisMax = if value > @YAxisMax then value else @YAxisMax
+        [date, value]
 
 
 $('.developer.statistics').ready ->
