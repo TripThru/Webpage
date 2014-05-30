@@ -164,32 +164,3 @@ class window.Trip
         @historyEnrouteList
     getHistoryPickUpList: () =>
         @historyPickUpList
-
-
-        rendererOptions =
-            preserveViewport: true
-            suppressMarkers: true
-            polylineOptions:
-                strokeColor: "#8B0000"
-                strokeOpacity: 1
-                strokeWeight: 5
-        rendererOptions2 =
-            preserveViewport: true
-            suppressMarkers: true
-            polylineOptions:
-                strokeColor: "#008000"
-                strokeOpacity: 1
-                strokeWeight: 5
-
-        @directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
-        @directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
-
-        @directionsService = new google.maps.DirectionsService()
-
-
-
-
-                            @directionsDisplay.setMap @map
-                            @directionsService.route request, (result, status) =>
-                            @directionsDisplay2.setMap @map
-                            @directionsService.route request, (result, status) =>
