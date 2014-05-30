@@ -400,6 +400,7 @@ class StatisticsDashboard
       totalTrips: -1
       cancelled: -1
       completed: -1
+      error: -1
       rejected: -1
       lateness: -1
       withinServiceGoal: -1
@@ -438,12 +439,30 @@ class StatisticsDashboard
                 </div>
             ')
 
-    @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
   updateStats: (stats) =>
-    @update(80, 90, 55, 32, 70, 80, 15, 80, 10, 80, 10, 15, 95)
+    lastHour = new Date();
+    lastHour.setHours(lastHour.getHours()-1);
+    $.get '/mongo_db/trips_seconds?startDate=' + lastHour, (data) =>
+        completed = 0
+        rejected = 0
+        cancelled = 0
+        error = 0
+        for entry in data
+            switch entry._id.Status
+                when 'Complete'
+                    completed += entry.count
+                when 'Cancelled'
+                    cancelled += entry.count
+                when 'Rejected'
+                    rejected += entry.count
+                when 'Error'
+                    error += entry.count
+        total = completed + rejected + cancelled + error
+        @update(80, 90, 55, 32, 70, 80, 15, total, cancelled, completed, rejected, error, 15, 95)
 
-  update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,timeIdle, totalTrips, cancelled, completed, rejected, lateness, withinServiceGoal) =>
+  update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,timeIdle, totalTrips, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
 
     if @lastValues.timeEnroute != timeEnroute or @lastValues.timeWithPassenger != timeWithPassenger or @lastValues.timeIdle != timeIdle
 
@@ -465,24 +484,26 @@ class StatisticsDashboard
         formatter: (x) -> x + "%"
       })
 
-    if @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected
+    if @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
 
       @lastValues.completed = completed
       @lastValues.cancelled = cancelled
       @lastValues.rejected = rejected
+      @lastValues.error = error
       Morris.Donut({
         element: @tripsPieChartId,
         data: [
           {label: "Completed", value: completed}
           {label: "Rejected", value: rejected}
           {label: "Cancelled", value: cancelled}
+          {label: "Error", value: error}
         ]
         colors: [
           '#0BA462'
           '#DADD0F'
           '#DD1D18'
+          '#DD1D18'
         ]
-        formatter: (x) -> x + "%"
       })
 
     if @lastValues.mileageEnroute != mileageEnroute or @lastValues.mileageWithPassenger != mileageWithPassenger
