@@ -5,13 +5,12 @@ class MongoDbController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def trips
+    puts params[:startDate]
     get_trips = '
       function () {
-        var last30Minutes = new Date();
-        last30Minutes.setMinutes(last30Minutes.getMinutes()-30);
-
+        var startDate = new Date(' + params[:startDate] + ');
         var trips = db.trips.aggregate(
-          { $match : { LastUpdate : { $gt: last30Minutes } } },
+          { $match : { LastUpdate : { $gt: startDate } } },
           { $project : {
               Status : "$Status",
               Interval : {

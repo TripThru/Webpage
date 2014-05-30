@@ -1397,9 +1397,9 @@ class TimeSeries
         , 30000
 
     updateRealTime: () =>
-        $.get '/mongo_db/trips', (data) =>
-            last30Minutes = new Date();
-            last30Minutes.setMinutes(last30Minutes.getMinutes()-30);
+        last30Minutes = new Date();
+        last30Minutes.setMinutes(last30Minutes.getMinutes()-30);
+        $.get '/mongo_db/trips?startDate=' + last30Minutes, (data) =>
             @tripsCompleted.data = []
             @tripsCompletedF.data = []
             @tripsRejected.data = []
