@@ -717,6 +717,7 @@ class ActivityLog
     constructor: (@containerId) ->
         @tripId = ''
         @latestAddedLogDate = null
+        @tcurrentTripIdripId = null
 
     tripChanged: (trip) =>
         $('#' + @containerId).html('<%= image_tag('loading.gif') %>')
@@ -727,6 +728,7 @@ class ActivityLog
             newLatest = logList[0].time
             logs = []
             if !@latestAddedLogDate? or @tcurrentTripIdripId != currentTripId
+                @tcurrentTripIdripId = currentTripId
                 logs = logList
                 $('#' + @containerId).html('')
             else
