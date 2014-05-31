@@ -2,7 +2,8 @@
 
 class CoverageMap
 
-  constructor: (@gateway, @containerId, @selectorId) ->
+  constructor: (@gateway, @containerId, @selectorId, @stats) ->
+    @updatingStats = false
     @fleets = {}
     @mapCanvas = null
     $('#' + @containerId).html('<%= image_tag('loading.gif', height: 128, width: 128) %>')
@@ -70,11 +71,34 @@ class CoverageMap
       })
       cityCircle = new google.maps.Circle(populationOptions)
 
+  update: =>
+      @updatingStats = true
+      @gateway.getStats(@updateStats)
+
+  updateStats: (data) =>
+      if data?
+          try
+              @stats.updateStats(data)
+          catch error
+              console.error @stats + ' updateStats failed: ' + error
+      @updatingStats = false
 
 $('.developer.partners').ready ->
 
-  coverageMap = new CoverageMap(
-    new TripThru($('#access_token').val())
-    'partner-coverage-map'
-    'partner-select'
-  )
+    coverageMap = new CoverageMap(
+        new TripThru($('#access_token').val())
+        'partner-coverage-map'
+        'partner-select'
+        new StatisticsDashboard('statistics-gauges-container', 'ratings-container')
+    )
+
+
+    update = ->
+        coverageMap.update()
+
+    update()
+    setInterval ->
+        update()
+    , 10000
+
+    return
