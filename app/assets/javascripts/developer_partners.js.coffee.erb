@@ -233,7 +233,7 @@ class PartnerOptions
     updatePartner: (partner) =>
         if partner?
             $('#' + @containerId).html('
-                <div class="col-md-6" id="partner-info-main">
+                <div class="col-md-5 col-md-push-1 col-sm-5" id="partner-info-main">
                   <h1>' + partner.fleetName + '</h1>
                   <div class="row">
                      <input type="submit" id="partnership-button" value="Request partnership"/>
@@ -242,7 +242,7 @@ class PartnerOptions
                      <input type="submit" id="negotiate-button" value="Negotiate rules"/>
                   </div>
                 </div>
-                <div class="col-md-6" id="partner-info-rating">
+                <div class="col-md-6 col-sm-7" id="partner-info-rating">
                   <div class="panel panel-default">
                       <div class="panel-body">
                         <div id="partner-rating">

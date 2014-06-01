@@ -213,6 +213,19 @@
     }
   }
 
+  @media (max-width: 767px) {
+
+    .list-group-item {
+      .image-wrapper{
+        height: 16px;
+      }
+
+      img {
+        width: 16px;
+      }
+    }
+  }
+
 
   #dashboard{
     height: 100%;
@@ -1559,8 +1572,12 @@
           top: 1px;
         }
       }
+      text-align: left;
+
       h1{
+        display: inline-block;
         font-size: 26px;
+        margin-left: 10%;
       }
       #partnership-button{
 
@@ -1635,6 +1652,283 @@
           width: 29px;
           height: 28px;
         }
+      }
+    }
+
+    @media (min-width: 1400px){
+        margin-top: 40px;
+        padding-right: 10px;
+
+        #statistics-panel-container {
+          margin-top: 15px;
+          width: 100%;
+          float: none;
+          #statistics-panel {
+            #statistics-gauges-container {
+              padding-top: 0;
+              margin-top: 10px;
+              margin-bottom: 10px;
+              height: 590px;
+              text-align: center;
+
+              .dashboard-statistics-pie-chart {
+                display: inline-block;
+                .title {
+                  padding: 0;
+                  margin: 25px 0 0px 0;
+                  font-size: 12px;
+                }
+
+                height: 120px;
+                width: 130px;
+                margin: 18px 0 20px 0;
+
+                svg {
+                  margin: 0 auto;
+                  padding: 0;
+                  height: 120px;
+                  width: 130px;
+                }
+
+                .chart {
+                  height: 120px;
+                  width: 130px;
+                }
+              }
+
+            }
+          }
+        }
+
+        #ratings-panel-container {
+          #ratings-panel {
+            height: 167px;
+            margin: 10px 0 0 0;
+            #ratings-container {
+
+              #dashboard-ratings-container {
+                display: inline-block;
+                margin: 0 0 0 0;
+                width: 200px;
+              }
+
+              .dashboard-statistics-rating {
+                .title {
+                  padding: 0;
+                  margin: 15px 0 0 0;
+                  font-size: 14px;
+                }
+              }
+            }
+          }
+        }
+        #partner-coverage-map-container{
+          height: 580px;
+          width: 98%;
+
+          #partner-coverage-map{
+            height: 100%;
+            width: 100%;
+            text-align: center;
+            img{
+              display: inline-block;
+            }
+          }
+        }
+
+      #partner-select-container {
+        margin: 0 0 0 0;
+        height: 95%;
+        width: 100%;
+
+        #partner-select{
+          border: none;
+          height: 825px;
+        }
+      }
+    }
+
+    @media (max-width: 991px){
+        margin-top: 30px;
+
+        .col-sm-9 {
+          margin: 0;
+          padding: 0 0 0 5px;
+        }
+
+        .col-sm-3 {
+          margin: 0;
+          padding: 0 5px 0 0;
+        }
+
+        .col-sm-12 {
+          width: 100%;
+          height: 180px;
+          padding: 0;
+          margin: 0;
+        }
+
+        #statistics-panel-container {
+          width: 74.5%;
+          float: left;
+          margin: 0 0 20px 0;
+          #statistics-panel {
+            #statistics-gauges-container {
+              display: inline-block;
+              padding-top: 0;
+              margin: -10px 0 10px 15%;
+              height: 102px;
+              width: 80%;
+              .dashboard-statistics-pie-chart {
+                float: left;
+                height: 110px;
+                width: 110px;
+                margin: 0 18px 0 0;
+
+                .title {
+                  padding: 0;
+                  margin: 10px 10px -10px 0;
+                  font-size: 12px;
+                }
+
+                svg {
+                  margin: 0 0 0 0;
+                  padding: 0;
+                  height: 110px;
+                  width: 110px;
+                }
+
+                .chart {
+                  height: 110px;
+                  width: 110px;
+                }
+              }
+            }
+          }
+        }
+
+        #ratings-panel-container {
+          width: 24.5%;
+          float: right;
+          margin: 0 0 20px 0;
+          height: 170px;
+          text-align: center;
+          #ratings-panel {
+            text-align: center;
+            display: inline-block;
+            #ratings-container {
+              text-align: center;
+              display: inline-block;
+              #dashboard-ratings-container {
+                margin: 0 0 0 0;
+                width: 160px;
+                float: left;
+              }
+              .dashboard-statistics-rating {
+                display: inline-block;
+                .title {
+                  padding: 0;
+                  margin: 10px 0 0 0;
+                  font-size: 12px;
+                }
+                float: left;
+              }
+            }
+          }
+        }
+    }
+
+    @media (max-width: 767px){
+
+      .col-xs-12 {
+        padding-right: 0px;
+        padding-left: 0px;
+        height: 100% !important;
+      }
+        #statistics-panel-container {
+          width: 100%;
+          height: 180px;
+          margin: 0;
+          float: none;
+          text-align: center;
+          #statistics-panel {
+            text-align: center;
+            display: inline-block;
+            width: 100%;
+            #statistics-gauges-container {
+              display: inline-block;
+              text-align: center;
+              padding-top: 0;
+              margin-top: 0;
+              margin-bottom: 10px;
+              width: 100%;
+
+              .dashboard-statistics-pie-chart {
+                display: inline-block;
+                margin: 0 0 10px -10px;
+                height: 100px;
+                width: 90px;
+                .title {
+                  padding: 0;
+                  margin: 20px 0 -15px 0;
+                  font-size: 10px;
+                }
+                svg {
+                  margin: 0 auto;
+                  padding: 0;
+                  height: 100px;
+                  width: 90px;
+                }
+
+                .chart {
+                  height: 100px;
+                  width: 90px;
+                }
+              }
+
+            }
+          }
+        }
+
+        #ratings-panel-container {
+          width: 100%;
+          float: none;
+          margin: 0;
+          #ratings-panel {
+            #ratings-container {
+              .dashboard-statistics-rating {
+                .title {
+                  padding: 0;
+                  margin: 5px 0 0 0;
+                  font-size: 12px;
+                }
+
+                float: left;
+              }
+            }
+          }
+        }
+
+      #partner-select-container {
+        margin: 0 0 10px 0;
+        height: 95%;
+        width: 100%;
+
+        #partner-select{
+          border: none;
+          height: 250px;
+        }
+      }
+
+      .col-md-3{
+        margin-bottom: 10px;
+      }
+
+      #partner-info{
+        height: 300px;
+      }
+      #partner-info-main{
+        height: 150px;
       }
     }
 
