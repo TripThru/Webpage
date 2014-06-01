@@ -1,0 +1,212 @@
+$('.developer.report').ready ->
+    lastHour = new Date();
+    lastHour.setMinutes(lastHour.getMinutes()-60);
+    date = +lastHour / 1000;
+    $.get '/mongo_db/trips_list?startDate=' + date, (data) =>
+        completeTrips = []
+        rejectedTrips = []
+        cancelledTrips = []
+        errorTrips = []
+        queuedTrips = []
+        data.forEach (entry) ->
+            switch entry.Status
+                when 'Complete'
+                    completeTrips.push entry
+                    console.log 'Stauts' + entry.Status
+                when 'Rejected'
+                    rejectedTrips.push entry
+                    console.log 'Stauts' + entry.Status
+                when 'Cancelled'
+                    cancelledTrips.push entry
+                    console.log 'Stauts' + entry.Status
+                when 'Error'
+                    errorTrips.push entry
+                    console.log 'Stauts' + entry.Status
+                when 'Queued'
+                    queuedTrips.push entry
+                    console.log 'Stauts' + entry.Status
+                else
+                    console.log 'Default'
+
+        $('#listTripsComplete').html('<%= image_tag('loadingSmall.gif') %>')
+
+        titleComplete = '<span class="label label-success pull-center"> Completes  </span><span class="badge pull-right" >' + completeTrips.length + '</span>'
+        $('#titleComplete').html titleComplete
+        stringReport = '
+                <div class="panel-group" id="accordion">
+                    '
+        completeTrips.forEach (trip) ->
+            res = trip._id.replace("@", "-")
+            res = res.replace("@", "-")
+            res = res.replace(".", "-")
+            stringReport+='
+                            <div class="panel panel-success">
+                             <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
+                               <div class="panel-heading">
+                                <h4 class="panel-title">
+                                     ' + trip._id + '
+                                 </h4>
+                                </div>
+                              </a>
+                                 <div id="'+ res + '" class="panel-collapse collapse">
+                                  <div class="panel-body">
+                                    <span class="text-muted">Last Update:</span> ' + trip.LastUpdate + '<br />
+                                    <span class="text-muted">Servicing Partner Name:</span> ' + trip.ServicingPartnerName + '<br />
+                                    <span class="text-muted">Passenger Name:</span> ' + trip.PassengerName + '
+                                  </div>
+                              </div>
+                            </div>
+                            '
+        stringReport+='
+                    </div>'
+        $('#listTripsComplete').html stringReport
+
+        $('#listTripsQueued').html('<%= image_tag('loadingSmall.gif') %>')
+
+        titleQueued = '<span class="label label-default"> Queued  </span><span class="badge pull-right" >' + queuedTrips.length + '</span>'
+
+        $('#titleQueued').html titleQueued
+
+        stringReport = '
+                        <div class="panel-group" id="accordion">
+                            '
+        queuedTrips.forEach (trip) ->
+            res = trip._id.replace("@", "-")
+            res = res.replace("@", "-")
+            res = res.replace(".", "-")
+            stringReport+='
+                            <div class="panel panel-default">
+                             <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
+                              <div class="panel-heading">
+                                <h4 class="panel-title">
+                                        ' + trip._id + '
+                                </h4>
+                                </div>
+                                    </a>
+                                  <div id="'+ res + '" class="panel-collapse collapse">
+                                  <div class="panel-body">
+                                    <span class="text-muted">Last Update:</span> ' + trip.LastUpdate + '<br />
+                                    <span class="text-muted">Servicing Partner Name:</span> ' + trip.ServicingPartnerName + '<br />
+                                    <span class="text-muted">Passenger Name:</span> ' + trip.PassengerName + '
+                                 </div>
+                              </div>
+                            </div>
+                            '
+
+        stringReport+='
+                            </div>'
+        $('#listTripsQueued').html stringReport
+
+
+        titleRejected = '<span class="label label-primary"> Rejected  </span><span class="badge pull-right" >' + rejectedTrips.length + '</span>'
+
+        $('#titleRejected').html titleRejected
+
+        if rejectedTrips.length > 0
+            $('#listTripsRejected').html('<%= image_tag('loadingSmall.gif') %>')
+
+            stringReport = '
+                            <div class="panel-group" id="accordion">
+                                '
+            rejectedTrips.forEach (trip) ->
+                res = trip._id.replace("@", "-")
+                res = res.replace("@", "-")
+                res = res.replace(".", "-")
+                stringReport+='
+                                <div class="panel panel-default">
+                                 <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
+                                  <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                            ' + trip._id + '
+                                    </h4>
+                                    </div>
+                                        </a>
+                                      <div id="'+ res + '" class="panel-collapse collapse">
+                                      <div class="panel-body">
+                                        <span class="text-muted">Last Update:</span> ' + trip.LastUpdate + '<br />
+                                        <span class="text-muted">Servicing Partner Name:</span> ' + trip.ServicingPartnerName + '<br />
+                                        <span class="text-muted">Passenger Name:</span> ' + trip.PassengerName + '
+                                     </div>
+                                  </div>
+                                </div>
+                                '
+
+            stringReport+='
+                                        </div>'
+            $('#listTripsRejected').html stringReport
+
+
+        titleCancelled = '<span class="label label-warning"> Cancelled  </span><span class="badge pull-right" >' + cancelledTrips.length + '</span>'
+
+        $('#titleCancelled').html titleCancelled
+
+        if cancelledTrips.length > 0
+            $('#listTripsCancelled').html('<%= image_tag('loadingSmall.gif') %>')
+
+            stringReport = '
+                            <div class="panel-group" id="accordion">
+                                '
+            cancelledTrips.forEach (trip) ->
+                res = trip._id.replace("@", "-")
+                res = res.replace("@", "-")
+                res = res.replace(".", "-")
+                stringReport+='
+                                <div class="panel panel-default">
+                                 <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
+                                  <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                            ' + trip._id + '
+                                    </h4>
+                                    </div>
+                                        </a>
+                                      <div id="'+ res + '" class="panel-collapse collapse">
+                                      <div class="panel-body">
+                                        <span class="text-muted">Last Update:</span> ' + trip.LastUpdate + '<br />
+                                        <span class="text-muted">Servicing Partner Name:</span> ' + trip.ServicingPartnerName + '<br />
+                                        <span class="text-muted">Passenger Name:</span> ' + trip.PassengerName + '
+                                    </div>
+                                  </div>
+                                </div>
+                                '
+
+            stringReport+='
+            $('#listTripsCancelled').html
+
+
+        titleError = '<span class="label label-danger"> Error  </span><span class="badge pull-right" >' + errorTrips.length + '</span>'
+
+        $('#titleError').html titleError
+
+        if errorTrips.length > 0
+            $('#listTripsError').html('<%= image_tag('loadingSmall.gif') %>')
+
+            stringReport = '
+                                        <br />
+                                        <div class="panel-group" id="accordion">
+                                            '
+            errorTrips.forEach (trip) ->
+                res = trip._id.replace("@", "-")
+                res = res.replace("@", "-")
+                res = res.replace(".", "-")
+                stringReport+='
+                                <div class="panel panel-default">
+                                 <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
+                                  <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                            ' + trip._id + '
+                                    </h4>
+                                    </div>
+                                        </a>
+                                      <div id="'+ res + '" class="panel-collapse collapse">
+                                      <div class="panel-body">
+                                        <span class="text-muted">Last Update:</span> ' + trip.LastUpdate + '<br />
+                                        <span class="text-muted">Servicing Partner Name:</span> ' + trip.ServicingPartnerName + '<br />
+                                        <span class="text-muted">Passenger Name:</span> ' + trip.PassengerName + '
+                                    </div>
+                                  </div>
+                                </div>
+                                '
+
+            stringReport+='
+                                        </div>'
+            $('#listTripsError').html stringReport
