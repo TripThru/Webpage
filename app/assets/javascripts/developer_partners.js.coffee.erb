@@ -1,44 +1,195 @@
 ########## PARTNERS #########
 
+class Stats
+
+    constructor: (@statisticsContainerId, @ratingsContainerId) ->
+        @timePieChartId = 'time-pie-chart'
+        @tripsPieChartId = 'trips-pie-chart'
+        @tripsPieChartTitleId = @tripsPieChartId + '-title'
+        @servicePieChartId = 'service-pie-chart'
+        @driversRatingChartId = 'drivers-rating-chart'
+        @passengersRatingChartId = 'passengers-rating-chart'
+        @lastValues =
+            passengerRating: -1
+            driverRating: -1
+            timeWithPassenger: -1
+            timeEnroute: -1
+            timeIdle: -1
+            totalTrips: -1
+            cancelled: -1
+            completed: -1
+            error: -1
+            rejected: -1
+            lateness: -1
+            withinServiceGoal: -1
+
+        $('#' + @statisticsContainerId).html('
+                                      <div  class="dashboard-statistics-pie-chart" >
+                                          <div class="title" id="' + @tripsPieChartTitleId + '">0 Trips</div>
+                                          <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
+                                      </div>
+                                      <div  class="dashboard-statistics-pie-chart" >
+                                          <div class="title">Time</div>
+                                          <div class="pie-chart" id="' + @timePieChartId + '"></div>
+                                      </div>
+                                      <div  class="dashboard-statistics-pie-chart" >
+                                          <div class="title">Service</div>
+                                          <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                                      </div>
+                                  ')
+
+        $('#' + @ratingsContainerId).html('
+                                      <div id="dashboard-ratings-container">
+                                          <div  class="dashboard-statistics-rating" >
+                                              <div class="title">Drivers</div>
+                                              <div class="flexible-stars" data-isLocked="yes"
+                                               data-init="0"  id="' + @driversRatingChartId + '"></div>
+                                          </div>
+                                          <div  class="dashboard-statistics-rating" >
+                                              <div class="title">Passengers</div>
+                                              <div class="flexible-stars" data-isLocked="yes"
+                                                  data-init="0"  id="' + @passengersRatingChartId + '"></div>
+                                          </div>
+                                      </div>
+                                  ')
+
+        @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+    updateStats: (stats) =>
+        lastHour = new Date();
+        lastHour.setHours(lastHour.getHours()-1);
+        $.get '/mongo_db/trips_seconds?startDate=' + lastHour, (data) =>
+            completed = 0
+            rejected = 0
+            cancelled = 0
+            error = 0
+            for entry in data
+                switch entry._id.Status
+                    when 'Complete'
+                        completed += entry.count
+                    when 'Cancelled'
+                        cancelled += entry.count
+                    when 'Rejected'
+                        rejected += entry.count
+                    when 'Error'
+                        error += entry.count
+            total = completed + rejected + cancelled + error
+            @update(80, 90, 55, 70, 80, total, cancelled, completed, rejected, error, 15, 95)
+
+    update: (passengerRating, driverRating, timeWithPassenger, timeEnroute, timeIdle, totalTrips, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
+
+        if @lastValues.timeEnroute != timeEnroute or @lastValues.timeWithPassenger != timeWithPassenger or @lastValues.timeIdle != timeIdle
+
+            @lastValues.timeEnroute = timeEnroute
+            @lastValues.timeWithPassenger = timeWithPassenger
+            @lastValues.timeIdle = timeIdle
+            Morris.Donut({
+                element: @timePieChartId
+                data: [
+                    {label: "Enroute", value: timeEnroute}
+                    {label: "Occupied", value: timeWithPassenger}
+                    {label: "Idle", value: timeIdle}
+                ]
+                colors: [
+                    '#2922DD'
+                    '#0BA462'
+                    '#DD1D18'
+                ]
+                formatter: (x) -> x + "%"
+            })
+
+        if @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
+
+            @lastValues.completed = completed
+            @lastValues.cancelled = cancelled
+            @lastValues.rejected = rejected
+            @lastValues.error = error
+            Morris.Donut({
+                element: @tripsPieChartId,
+                data: [
+                    {label: "Completed", value: completed}
+                    {label: "Rejected", value: rejected}
+                    {label: "Cancelled", value: cancelled}
+                    {label: "Error", value: error}
+                ]
+                colors: [
+                    '#0BA462'
+                    '#DADD0F'
+                    '#DD1D18'
+                    '#DD1D18'
+                ]
+            })
+
+        if @lastValues.totalTrips != totalTrips
+            @lastValues.totalTrips = totalTrips
+            $('#' + @tripsPieChartTitleId).fadeOut().html(totalTrips + ' trips').fadeIn()
+
+
+        passengerRatingStars = passengerRating/100*5
+        if passengerRatingStars != @lastValues.passengerRating
+            $('#' + @passengersRatingChartId).html('')
+            $('#' + @passengersRatingChartId).flexibleStars({
+                init: passengerRatingStars
+            })
+
+        driverRatingStars = driverRating/100*5
+        if driverRatingStars != @lastValues.driverRating
+            $('#' + @driversRatingChartId).html('')
+            $('#' + @driversRatingChartId).flexibleStars({
+                init: driverRatingStars
+            })
+
+
+        if @lastValues.withinServiceGoal != withinServiceGoal or @lastValues.lateness != lateness
+
+            @lastValues.withinServiceGoal = withinServiceGoal
+            @lastValues.lateness = lateness
+            Morris.Donut({
+                element: @servicePieChartId,
+                data: [
+                    {label: "Level", value: withinServiceGoal}
+                    {label: "Lateness", value: lateness}
+                ]
+                colors: [
+                    '#0BA462'
+                    '#DD1D18'
+                ]
+                formatter: (x) -> x + "%"
+            })
+
 class CoverageMap
 
-  constructor: (@gateway, @containerId, @selectorId) ->
-    @fleets = {}
+  constructor: (@containerId, @fleets) ->
     @mapCanvas = null
     $('#' + @containerId).html('<%= image_tag('loading.gif', height: 128, width: 128) %>')
-    google.maps.event.addDomListener window, "load", @gateway.getPartners(@init)
+    google.maps.event.addDomListener window, "load", @init()
 
-  init: (data) =>
-    if data?
+  init: () =>
+    if @fleets?
       $('#' + @containerId).html('')
-      @loadSelectorFleets(data.fleets)
-      @loadMap(data.fleets, @containerId)
+      @loadMap()
+      @updateCoverage()
 
-  loadSelectorFleets: (fleets) =>
-    for fleet in fleets
-      if fleet.fleetName == "TripThru San Francisco"
-        continue
-      @fleets[fleet.fleetName] =  fleet
-      $('#' + @selectorId).append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
-    $('#' + @selectorId).change =>
-      selectedStatus = $('#' + @selectorId + ' option:selected').val()
-      @mapCanvas.panTo(new google.maps.LatLng(@fleets[selectedStatus].coverage[0].center.lat, @fleets[selectedStatus].coverage[0].center.lng))
+  updatePartner: (partner) =>
+    if partner?
+     @mapCanvas.panTo(new google.maps.LatLng(partner.coverage[0].center.lat, partner.coverage[0].center.lng))
 
+  loadMap: () =>
+      mapOptions =
+          zoom: 4
+          center: new google.maps.LatLng(37.09024, -95.712891)
+          mapTypeId: google.maps.MapTypeId.TERRAIN
+      @mapCanvas = new google.maps.Map(document.getElementById(@containerId), mapOptions)
 
-  loadMap: (fleets, containerId) =>
-    mapOptions =
-      zoom: 4
-      center: new google.maps.LatLng(37.09024, -95.712891)
-      mapTypeId: google.maps.MapTypeId.TERRAIN
+  updateCoverage: () =>
 
     colors = [ "#006600", "#0D6B00", "#1A7000", "#267500", "#337A00", "#408000", "#4C8500", "#598A00", "#668F00", "#739400", "#809900", "#8C9E00", "#99A300", "#A6A800", "#B2AD00", "#BFB200", "#CCB800", "#D9BD00", "#E6C200", "#F2C700", "#FFCC00", "#FCC200", "#FAB800", "#F7AD00", "#F5A300", "#F29900", "#F08F00", "#ED8500", "#EB7A00", "#E87000", "#E66600", "#E35C00", "#E05200", "#DE4700", "#DB3D00", "#D93300", "#D62900", "#D41F00", "#D11400", "#CF0A00", "#CC0000" ]
     driversTotal = [89,5,37,90,35,18,51,47,31,19,74,10,92,65,65,20,32]
     driver = 0
-    @mapCanvas = new google.maps.Map(document.getElementById(containerId), mapOptions)
 
     citymap = {}
     count = 0
-    for fleet in fleets
+    for fleet in @fleets
       if fleet.fleetName == "TripThru San Francisco"
         continue
       driver++
@@ -70,11 +221,108 @@ class CoverageMap
       })
       cityCircle = new google.maps.Circle(populationOptions)
 
+class PartnerOptions
+
+    constructor: (@containerId) ->
+        $('#partner-options-partnership').click =>
+
+        $('#partner-options-rules').click =>
+
+        $('#partner-options-rate').click =>
+
+    updatePartner: (partner) =>
+        if partner?
+            $('#' + @containerId).html('
+                <div class="col-md-6" id="partner-info-main">
+                  <h1>' + partner.fleetName + '</h1>
+                  <div class="row">
+                     <input type="submit" id="partnership-button" value="Request partnership"/>
+                  </div>
+                  <div class="row">
+                     <input type="submit" id="negotiate-button" value="Negotiate rules"/>
+                  </div>
+                </div>
+                <div class="col-md-6" id="partner-info-rating">
+                  <div class="panel panel-default">
+                      <div class="panel-body">
+                        <div id="partner-rating">
+                            <div class="row pull-left"><div id="rate-me" data-isLocked="no" data-init="0" class="flexible-stars"></div></div>
+                            <div class="row"><textarea id="review-text" type="textarea">Write a review</textarea></div>
+                            <div class="row"><div class="pull-right"><input type="submit" value="Submit" id="submit-rating"/></div></div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+            ')
+
+            rating = ((Math.random() * 1.5) + 3.5)
+            $('#rate-me').flexibleStars({
+                init: rating
+            })
+        else
+            $('#' + @containerId).html('<h1>Select a network</h1>')
+
+
+class PartnersManager
+
+    constructor: (@gateway, @coverageMapId, @partnerStatsId, @partnerRatingsId, @partnerOptionsId, @selectorId) ->
+        @coverageMap = null
+        @stats = null
+        @partnerOptions = null
+        @partnersById = {}
+
+        $('#' + @selectorId).change =>
+            selected = $('#' + @selectorId + ' option:selected').val()
+            @updatePartner(@partnersById[selected])
+
+
+        @stats = new Stats(@partnerStatsId, @partnerRatingsId)
+        @partnerOptions = new PartnerOptions(@partnerOptionsId)
+        @gateway.getPartners(@initPartners)
+
+    initPartners: (partners) =>
+        partners = partners.fleets
+        @coverageMap = new CoverageMap(@coverageMapId, partners)
+        for fleet in partners
+            if fleet.fleetName == "TripThru San Francisco"
+                continue
+            @partnersById[fleet.fleetName] = fleet
+            $('#' + @selectorId).append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
+        @update()
+        @updatePartner(null)
+
+    update: () =>
+        if @stats?
+            #@gateway.getStats(@updateStats)
+            @updateStats(null)
+
+
+    updatePartner: (partner) =>
+        @coverageMap.updatePartner(partner)
+        @partnerOptions.updatePartner(partner)
+
+    updateStats: (stats) =>
+        @stats.updateStats(stats)
+
 
 $('.developer.partners').ready ->
 
-  coverageMap = new CoverageMap(
-    new TripThru($('#access_token').val())
-    'partner-coverage-map'
-    'partner-select'
-  )
+    partnersManager = new PartnersManager(
+        new TripThru($('#access_token').val())
+        'partner-coverage-map'
+        'statistics-gauges-container'
+        'ratings-container'
+        'partner-info'
+        'partner-select'
+    )
+
+
+    update = ->
+        partnersManager.update()
+
+    update()
+    setInterval ->
+        update()
+    , 10000
+
+    return

@@ -1,19 +1,70 @@
-<div id="partners">
+<div id="partners" class="col-md-12 col-sm-12 col-xs-12">
   <div class="page-header">
     <h3>Networks</h3>
   </div>
   <div class="container">
-    <div class="col-md-10">
-      <div id="partner-coverage-map" class="tracking-map"></div>
-    </div>
-    <div class="col-md-2 pull-right">
-      <div class="panel panel-default filter-button-group">
-        <div class="panel-body" id="partner-select-container">
-            <select id="partner-select" multiple='multiple'>
-
-            </select>
+    <div class="col-md-2 col-md-push-10 col-sm-12 col-xs-12">
+      <div id="ratings-panel-container">
+        <div class="panel panel-default">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Ratings</h3>
+          </div>
+          <div class="panel-body" id="ratings-panel">
+            <div id="ratings-container"></div>
+          </div>
         </div>
       </div>
+      <div id="statistics-panel-container">
+        <div class="panel panel-default">
+          <div class="panel-heading text-center ">
+            <h3 class="panel-title">Statistics</h3>
+          </div>
+          <div class="panel-body" id="statistics-panel">
+            <div id="statistics-gauges-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-10 col-md-pull-2 col-sm-12 col-xs-12">
+        <div class="col-md-3 col-sm-3 col-xs-12">
+            <div class="panel panel-default filter-button-group" >
+              <div class="panel-heading text-center ">
+                <h3 class="panel-title">Networks</h3>
+              </div>
+              <div class="panel-body" id="partner-select-container">
+                <select id="partner-select" multiple='multiple'>
+
+                </select>
+              </div>
+            </div>
+        </div>
+        <div class="col-md-9 col-sm-9 col-xs-12">
+          <div class="panel panel-default">
+            <div class="panel-heading text-center ">
+              <h3 class="panel-title">Network information</h3>
+            </div>
+            <div class="panel-body" id="partner-info-panel">
+              <div class="col-md-12">
+                <div class="panel panel-default">
+                  <div class="panel-body">
+                    <div id="partner-info">
+                        <h1>Select a network</h1>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12" id="map-column">
+                <div class="panel panel-default">
+                  <div class="panel-body">
+                    <div id="partner-coverage-map-container">
+                      <div id="partner-coverage-map" class="tracking-map"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
   </div>
 </div>
