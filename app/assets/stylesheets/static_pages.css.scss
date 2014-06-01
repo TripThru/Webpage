@@ -36,6 +36,11 @@
   .flick-sub-text{
     font-weight: bold;
   }
+
+  .flickerplate ul.flicks > li .flick-title span.flick-block-text, .flickerplate ul.flicks > li .flick-sub-text span.flick-block-text {
+    background-color: rgba(0, 0, 0, 0.87);
+    padding: 12px 18px;
+  }
 }
 
 #static_pages_faq{
