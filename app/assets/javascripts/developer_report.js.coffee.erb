@@ -28,6 +28,14 @@ $('.developer.report').ready ->
                 else
                     console.log 'Default'
 
+        tripsCount = completeTrips.length
+        tripsCount += rejectedTrips.length
+        tripsCount += cancelledTrips.length
+        tripsCount += errorTrips.length
+        tripsCount += queuedTrips.length
+
+        $('#spanReport').html(tripsCount)
+
         $('#listTripsComplete').html('<%= image_tag('loadingSmall.gif') %>')
 
         titleComplete = '<span class="label label-success pull-center"> Completes  </span><span class="badge pull-right" >' + completeTrips.length + '</span>'
