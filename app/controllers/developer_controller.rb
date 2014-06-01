@@ -65,7 +65,13 @@ class DeveloperController < ApplicationController
     end
   end
 
-
+  def report
+    if userAccessToken
+      render 'report'
+    else
+      redirect_to signin_path
+    end
+  end
 
   def new
     if roleUser == 'Admin'
