@@ -477,6 +477,186 @@ class ActivityLog
 
     return [id, logString]
 
+class StatisticsDashboard
+
+  constructor: (@statisticsContainerId, @ratingsContainerId) ->
+      @timePieChartId = 'time-pie-chart'
+      @tripsPieChartId = 'trips-pie-chart'
+      @tripsPieChartTitleId = @tripsPieChartId + '-title'
+      @mileagePieChartId = 'mileage-pie-chart'
+      @servicePieChartId = 'service-pie-chart'
+      @driversRatingChartId = 'drivers-rating-chart'
+      @passengersRatingChartId = 'passengers-rating-chart'
+      @lastValues =
+          passengerRating: -1
+          driverRating: -1
+          timeWithPassenger: -1
+          mileageWithPassenger: -1
+          timeEnroute: -1
+          mileageEnroute: -1
+          timeIdle: -1
+          totalTrips: -1
+          cancelled: -1
+          completed: -1
+          error: -1
+          rejected: -1
+          lateness: -1
+          withinServiceGoal: -1
+
+      $('#' + @statisticsContainerId).html('
+                              <div  class="dashboard-statistics-pie-chart" >
+                                  <div class="title" id="' + @tripsPieChartTitleId + '">0 Trips</div>
+                                  <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
+                              </div>
+                              <div  class="dashboard-statistics-pie-chart" >
+                                  <div class="title">Time</div>
+                                  <div class="pie-chart" id="' + @timePieChartId + '"></div>
+                              </div>
+                              <div  class="dashboard-statistics-pie-chart" >
+                                  <div class="title">Mileage</div>
+                                  <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+                              </div>
+                              <div  class="dashboard-statistics-pie-chart" >
+                                  <div class="title">Service</div>
+                                  <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                              </div>
+                          ')
+
+      $('#' + @ratingsContainerId).html('
+                              <div id="dashboard-ratings-container">
+                                  <div  class="dashboard-statistics-rating" >
+                                      <div class="title">Drivers</div>
+                                      <div class="flexible-stars" data-isLocked="yes"
+                                       data-init="0"  id="' + @driversRatingChartId + '"></div>
+                                  </div>
+                                  <div  class="dashboard-statistics-rating" >
+                                      <div class="title">Passengers</div>
+                                      <div class="flexible-stars" data-isLocked="yes"
+                                          data-init="0"  id="' + @passengersRatingChartId + '"></div>
+                                  </div>
+                              </div>
+                          ')
+
+      @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+  updateStats: (stats) =>
+      lastHour = new Date();
+      lastHour.setHours(lastHour.getHours()-1);
+      $.get '/mongo_db/trips_seconds?startDate=' + lastHour, (data) =>
+          completed = 0
+          rejected = 0
+          cancelled = 0
+          error = 0
+          for entry in data
+              switch entry._id.Status
+                  when 'Complete'
+                      completed += entry.count
+                  when 'Cancelled'
+                      cancelled += entry.count
+                  when 'Rejected'
+                      rejected += entry.count
+                  when 'Error'
+                      error += entry.count
+          total = completed + rejected + cancelled + error
+          @update(80, 90, 55, 32, 70, 80, 15, total, cancelled, completed, rejected, error, 15, 95)
+
+  update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,timeIdle, totalTrips, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
+
+      if @lastValues.timeEnroute != timeEnroute or @lastValues.timeWithPassenger != timeWithPassenger or @lastValues.timeIdle != timeIdle
+
+          @lastValues.timeEnroute = timeEnroute
+          @lastValues.timeWithPassenger = timeWithPassenger
+          @lastValues.timeIdle = timeIdle
+          Morris.Donut({
+              element: @timePieChartId
+              data: [
+                  {label: "Enroute", value: timeEnroute}
+                  {label: "Occupied", value: timeWithPassenger}
+                  {label: "Idle", value: timeIdle}
+              ]
+              colors: [
+                  '#2922DD'
+                  '#0BA462'
+                  '#DD1D18'
+              ]
+              formatter: (x) -> x + "%"
+          })
+
+      if @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
+
+          @lastValues.completed = completed
+          @lastValues.cancelled = cancelled
+          @lastValues.rejected = rejected
+          @lastValues.error = error
+          Morris.Donut({
+              element: @tripsPieChartId,
+              data: [
+                  {label: "Completed", value: completed}
+                  {label: "Rejected", value: rejected}
+                  {label: "Cancelled", value: cancelled}
+                  {label: "Error", value: error}
+              ]
+              colors: [
+                  '#0BA462'
+                  '#DADD0F'
+                  '#DD1D18'
+                  '#DD1D18'
+              ]
+          })
+
+      if @lastValues.mileageEnroute != mileageEnroute or @lastValues.mileageWithPassenger != mileageWithPassenger
+
+          @lastValues.mileageEnroute = mileageEnroute
+          @lastValues.mileageWithPassenger = mileageWithPassenger
+          Morris.Donut({
+              element: @mileagePieChartId,
+              data: [
+                  {label: "Enroute", value: mileageEnroute}
+                  {label: "Occupied", value: mileageWithPassenger}
+              ]
+              colors: [
+                  '#3C6ADD'
+                  '#0BA462'
+              ]
+              formatter: (x) -> x + "%"
+          })
+
+      if @lastValues.totalTrips != totalTrips
+          @lastValues.totalTrips = totalTrips
+          $('#' + @tripsPieChartTitleId).fadeOut().html(totalTrips + ' trips').fadeIn()
+
+
+      passengerRatingStars = passengerRating/100*5
+      if passengerRatingStars != @lastValues.passengerRating
+          $('#' + @passengersRatingChartId).html('')
+          $('#' + @passengersRatingChartId).flexibleStars({
+              init: passengerRatingStars
+          })
+
+      driverRatingStars = driverRating/100*5
+      if driverRatingStars != @lastValues.driverRating
+          $('#' + @driversRatingChartId).html('')
+          $('#' + @driversRatingChartId).flexibleStars({
+              init: driverRatingStars
+          })
+
+
+      if @lastValues.withinServiceGoal != withinServiceGoal or @lastValues.lateness != lateness
+
+          @lastValues.withinServiceGoal = withinServiceGoal
+          @lastValues.lateness = lateness
+          Morris.Donut({
+              element: @servicePieChartId,
+              data: [
+                  {label: "Level", value: withinServiceGoal}
+                  {label: "Lateness", value: lateness}
+              ]
+              colors: [
+                  '#0BA462'
+                  '#DD1D18'
+              ]
+              formatter: (x) -> x + "%"
+          })
 
 class DashboardManager
 

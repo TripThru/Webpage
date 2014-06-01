@@ -1358,46 +1358,74 @@
 
   #partners {
 
-    #statistics-panel-container {;
+    height: 100%;
+    width: 100%;
+
+    .container{
+      padding: 0;
       width: 100%;
-      height: 250px;
-      float: none;
-      #statistics-panel {
-        #statistics-gauges-container {
-          display: inline-block;
-          padding-top: 0;
-          margin-top: 0;
-          margin-bottom: 10px;
+    }
 
-          .dashboard-statistics-pie-chart {
-            float: left;
-            margin: -5px -5px 0 -5px;
-            height: 100px;
-            width: 90px;
-            .title {
-              padding: 0;
-              margin: 20px 0 -15px 0;
-              font-size: 10px;
-            }
-            svg {
-              margin: 0 auto;
-              padding: 0;
-              height: 100px;
-              width: 90px;
-            }
+    .col-md-10 {
+      padding: 0 10px 0 0;
+    }
 
-            .chart {
-              height: 100px;
-              width: 90px;
-            }
-          }
+    .col-md-2{
+      padding: 0 10px 0 0;
+    }
 
+    .col-md-9{
+      padding: 0 10px 0 10px;
+    }
+
+    .col-md-12{
+      padding: 0;
+      margin: 0;
+    }
+
+    .col-md-3 {
+      padding: 0 10px 0 10px;
+      margin: 0 0 0 0;
+    }
+
+    #map-column{
+      margin-top: 15px;
+    }
+
+    #partner-select-container {
+      margin: 0 0 0 0;
+      height: 95%;
+      width: 100%;
+
+      #partner-select{
+        border: none;
+        height: 600px;
+      }
+    }
+
+    #partner-info {
+      min-height: 165px;
+      height: 165px;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      text-align: left;
+
+      h1 {
+        font-size: 22px;
+        padding: 0;
+        margin: -3px 0 5px 0;
+        text-align: center;
+
+        span {
+          font-size: 18px;
+          color: #a1a1a1;
         }
       }
     }
-    
-    .col-md-10{
-      height: 680px;
+
+    #partner-coverage-map-container{
+      height: 357px;
+      width: 98%;
 
       #partner-coverage-map{
         height: 100%;
@@ -1409,26 +1437,206 @@
       }
     }
 
-    .col-md-2 {
-      height: 680px;
-      margin: 0 0 0 0;
+
+
+    .panel {
+      margin: 0;
       padding: 0;
+    }
 
-      .panel{
-        height: 680px;
-        width: 100%;
+    .panel-heading{
+      height: 20px;
+
+      .panel-title{
+        line-height: 0;
       }
+    }
 
-      #partner-select-container {
-        margin: 0 0 0 0;
-        height: 100%;
-        width: 100%;
+    #statistics-panel-container {
+      margin-top: 15px;
+      width: 100%;
+      float: none;
+      #statistics-panel {
+        #statistics-gauges-container {
+          padding-top: 0;
+          margin-top: 10px;
+          margin-bottom: 10px;
+          height: 405px;
+          text-align: center;
 
-        #partner-select{
-          border: none;
-          height: 100%;
+          .dashboard-statistics-pie-chart {
+            display: inline-block;
+            .title {
+              padding: 0;
+              margin: 25px 0 0px 0;
+              font-size: 12px;
+            }
+
+            height: 95px;
+            width: 120px;
+            padding: 0;
+
+            svg {
+              margin: 0 auto;
+              padding: 0;
+              height: 95px;
+              width: 120px;
+            }
+
+            .chart {
+              height: 95px;
+              width: 120px;
+            }
+          }
+
         }
       }
     }
+
+    #ratings-panel-container {
+      #ratings-panel {
+        height: 137px;
+
+        #ratings-container {
+          margin-top: -10px;
+          text-align: center;
+          .dashboard-statistics-rating {
+            .title {
+              display: inline-block;
+              padding: 0;
+              margin: 10px 0 0 0;
+              font-size: 12px;
+            }
+
+            .flexible-stars {
+
+              i {
+                display: inline-block
+              }
+              [class^="sprite-"] {
+                background: url(rating-stars-big.png) no-repeat top left;
+              }
+
+              .sprite-gold-star {
+                background-position: 0 0;
+                width: 29px;
+                height: 28px;
+              }
+              .sprite-half-star {
+                background-position: 0 -78px;
+                width: 29px;
+                height: 28px;
+              }
+              .sprite-silver-star {
+                background-position: 0 -156px;
+                width: 29px;
+                height: 28px;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    #partner-info-main{
+      input{
+        margin-top: 15px;
+        width: 180px;
+        height: 28px;
+
+        -webkit-border-radius: 0px;
+        -moz-border-radius: 0px;
+        border-radius: 0px;
+        text-indent: 0;
+        border: 1px solid #dcdcdc;
+        background-color: rgb(17, 161, 16);
+        color: #ffffff;
+        text-decoration: none;
+        text-align: center;
+        font-size: 14px;
+        &:active {
+          position: relative;
+          top: 1px;
+        }
+      }
+      h1{
+        font-size: 26px;
+      }
+      #partnership-button{
+
+      }
+      #negotiate-button{
+        background-color: rgb(161, 21, 36);
+        color: #ffffff;
+      }
+    }
+
+    #partner-info-rating {
+      margin-top: -20px;
+      overflow-y: hidden;
+
+      .panel{
+        border: 0;
+        overflow-y: hidden;
+      }
+
+      .panel-body{
+        overflow-y: hidden;
+      }
+
+      #review-text{
+        height: 90px;
+        width: 100%;
+        float: right;
+      }
+
+      #submit-rating{
+        margin-top: 5px;
+        width: 180px;
+        height: 28px;
+
+        -webkit-border-radius: 0px;
+        -moz-border-radius: 0px;
+        border-radius: 0px;
+        text-indent: 0;
+        border: 1px solid #dcdcdc;
+        background-color: rgb(41, 97, 248);
+        color: #ffffff;
+        text-decoration: none;
+        text-align: center;
+        font-size: 14px;
+        &:active {
+          position: relative;
+          top: 1px;
+        }
+      }
+
+      .flexible-stars {
+
+        i {
+          display: inline-block
+        }
+        [class^="sprite-"] {
+          background: url(rating-stars-big.png) no-repeat top left;
+        }
+
+        .sprite-gold-star {
+          background-position: 0 0;
+          width: 29px;
+          height: 28px;
+        }
+        .sprite-half-star {
+          background-position: 0 -78px;
+          width: 29px;
+          height: 28px;
+        }
+        .sprite-silver-star {
+          background-position: 0 -156px;
+          width: 29px;
+          height: 28px;
+        }
+      }
+    }
+
   }
 }
