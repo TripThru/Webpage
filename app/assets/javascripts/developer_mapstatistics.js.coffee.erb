@@ -151,12 +151,16 @@ class StatisticsHeatMap
   update: () =>
     if not @updatingHeatMap
       @updatingHeatMap = true
-      @gateway.getTrips('',@loadHeatMapTrips)
+      last10Minutes = new Date();
+      last10Minutes.setMinutes(last10Minutes.getMinutes()-10);
+      date = +last10Minutes / 1000;
+      $.get '/mongo_db/trips_list?startDate=' + date, (data) =>
+        @loadHeatMapTrips(data)
 
   loadHeatMapTrips: (trips) =>
     tripsIds = []
-    for newTrip in trips.trips
-      tripsIds.push newTrip.id
+    for newTrip in trips
+      tripsIds.push newTrip._id
       if newTrip.id not of @tripsById
         @processTrip(newTrip)
 
@@ -197,10 +201,10 @@ class StatisticsHeatMap
     driverInitialLocation =
       if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, null) else null
     trip = new Trip(
-      newTrip.id
+      newTrip._id
       newTrip.passengerName
       newTrip.pickupTime
-      new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, null, false)
+      new Location(newTrip.PickupLocation.Lat, newTrip.PickupLocation.Lng, null, false)
       newTrip.originatingPartnerName
       newTrip.servicingPartnerName
       newTrip.status
@@ -208,7 +212,7 @@ class StatisticsHeatMap
       newTrip.price
       newTrip.driverName
       driverLocation
-      new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, null, false)
+      new Location(newTrip.DropoffLocation.Lat, newTrip.DropoffLocation.Lng, null, false)
       driverInitialLocation
     )
     @tripsById[trip.getId()] = trip

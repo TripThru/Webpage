@@ -5,7 +5,6 @@ class MongoDbController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def trips_seconds
-    puts params[:startDate]
     get_trips = '
       function () {
         var startDate = new Date("' + params[:startDate] + '");
@@ -47,7 +46,6 @@ class MongoDbController < ApplicationController
   end
 
   def trips_hours
-    puts params[:startDate]
     get_trips = '
       function () {
         var startDate = new Date("' + params[:startDate] + '");
@@ -84,6 +82,16 @@ class MongoDbController < ApplicationController
 
     respond_to do |format|
       format.json { render text: res['_firstBatch'].to_json }
+    end
+  end
+
+  def trips_list
+    client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
+    db = client.db('TripThru')
+    match = { 'LastUpdate' => { '$gte' => Time.at(params[:startDate].to_f) } }
+    trips = db.collection('trips').find(match)
+    respond_to do |format|
+      format.json { render text: trips.to_json }
     end
   end
 
