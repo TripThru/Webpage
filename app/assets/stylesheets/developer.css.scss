@@ -1393,4 +1393,23 @@
       }
     }
   }
+
+  #report{
+    .col-lg-4{
+      max-height: 500px;
+      margin: 0 0 0 0;
+      padding: 0;
+    }
+    .panel-body-trips{
+      .img{
+        max-height: 50px;
+        max-width: 50px;
+        align-content: center;
+      }
+      height: 100%;
+      max-height: 460px;
+      border: none;
+      overflow-y:scroll;
+    }
+  }
 }

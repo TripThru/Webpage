@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   get 'developer/partners', to: 'developer#partners'
   get 'developer/mapstatistics', to: 'developer#mapstatistics'
   get 'developer/money', to: 'developer#money'
+  get 'developer/report', to: 'developer#report'
 
   root 'static_pages#home'
   get '/home', to: 'static_pages#home'
