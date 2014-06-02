@@ -32,6 +32,6 @@
 //= require bootstrap-datepicker
 //= require highcharts
 //= require flickerplate.js
-//= require jquery-finger-v0.1.0
-//= require modernizr-custom-v2.7.1
+//= require jquery-finger-v0.1.0.min.js
+//= require modernizr-custom-v2.7.1.min.js
 //= require_tree .

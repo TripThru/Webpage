@@ -10,11 +10,10 @@
   }
 
   .flickerplate {
-    height: 100vh;
-  }
-
-  .flicks li {
-    height: 100%;
+    height: 90vh;
+    .flicks li{
+      height: 90vh !important;
+    }
   }
 
   #sec2{
@@ -57,7 +56,6 @@
 #static_pages_faq{
   .faq {
     background: #545455;
-    #background: rgb(60, 106, 221);
     padding-bottom: 100px;
     min-height: 600px;
 
@@ -90,7 +88,6 @@
 #static_pages_about{
   .about_section {
     background: #545455;
-    #background: rgb(60, 106, 221);
     padding-bottom: 100px;
     min-height: 600px;
 
