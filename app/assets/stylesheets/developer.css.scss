@@ -2062,4 +2062,31 @@
       }
     }
   }
+
+  #money{
+      .panel-footer-trips{
+        max-height: 550px;
+        border: none;
+        overflow-y:scroll;
+      }
+      .imageGif{
+        height:70px;
+        width:77px;
+        visibility:hidden;
+        align-items:center;
+      }
+      .list-group-item{
+        background: #ffffff;
+      }
+      #partner-select-container {
+        margin: 0 0 0 0;
+        height: 100%;
+        width: 100%;
+
+        #partner-select{
+          border: none;
+          height: 450px;
+        }
+      }
+  }
 }
