@@ -3,6 +3,20 @@
   <div id="chart-container" class="container">
     <div class="row">
       <div id="filters-container">
+        <div id="chart-type-buttons-container">
+          <a id="time-series-display-button" href="#">
+            <i class="icon-home icon-1x"></i>
+            <div class="image-wrapper">
+              <%= image_tag('statistics.png', alt: 'Time series') %>
+            </div>
+          </a>
+          <a id="heat-map-display-button" href="#">
+            <i class="icon-home icon-1x"></i>
+            <div class="image-wrapper">
+              <%= image_tag('map.png', alt: 'Heat map') %>
+            </div>
+          </a>
+        </div>
         <div class="panel panel-default filter-button-group">
           <div class="panel-heading text-center ">
             <h3 class="panel-title">Trips</h3>
@@ -65,6 +79,9 @@
               <br/>
               <div id="forecast-chart"></div>
           </div>
+        </div>
+        <div id="map-container" style="display: none" class="col-md-9 col-md-push-0 col-sm-10 col-sm-push-2 col-xs-10 col-xs-push-2">
+            <div id="heat-map" class="tracking-map"></div>
         </div>
 
         <div id="selectors-container" class="col-md-2 col-md-pull-0 col-sm-2 col-sm-pull-10 col-xs-2 col-xs-pull-10">

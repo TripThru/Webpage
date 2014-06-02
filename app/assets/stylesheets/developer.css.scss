@@ -1151,6 +1151,52 @@
 
       #filters-container {
         margin: 0 2% 30px 2%;
+
+        #chart-type-buttons-container{
+          display: inline-block;
+          margin-right: 10px;
+          .image-wrapper{
+            background-color: #aeafab;
+            height: 48px;
+            width: 48px;
+            text-align: center;
+            display: inline-block;
+            vertical-align: bottom;
+            padding-top: 15px;
+
+            &:hover {
+              background-color: #19af1f;
+              color: #ffffff;
+            }
+            &:active {
+              position: relative;
+              top: 1px;
+            }
+          }
+          .active{
+            background-color: #19af1f !important;
+          }
+          #time-series-display-button{
+            display: inline-block;
+            img {
+              width: 32px;
+              margin: 0;
+              padding: 0;
+            }
+          }
+
+          #heat-map-display-button {
+            display: inline-block;
+            img {
+              width: 32px;
+              margin: -7px 0 0 0;
+              padding: 0;
+            }
+          }
+
+
+        }
+
         .panel{
           display: inline-block;
           margin: 0 0 10px 0;
