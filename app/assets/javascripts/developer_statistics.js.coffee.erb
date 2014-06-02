@@ -1,11 +1,21 @@
 class TimeSeries
 
-  constructor: (@historicChartContainerId, @forecastChartContainerId) ->
+  constructor: (@gateway, @historicChartContainerId, @forecastChartContainerId, @mapContainer) ->
+    @gateway.getPartners(@loadSelectorFleets)
     @startDate = new Date()
     @endDate = new Date()
     @data = null
 
     @YAxisMax = 100
+
+    @chartType = 'series'
+    @chartTypeChanged = true
+    @selectedStat = 'tripsCompleted'
+    @selectedFleet = 'All'
+    @map = null
+    @heatmap = null
+    @fleets = {}
+    @tripsById = {}
 
     @realtime = true
     @percentageDisplay = true
@@ -31,6 +41,7 @@ class TimeSeries
     @ratingDriversSelected =    false
     @ratingPassengersSelected = false
 
+    $('#time-series-display-button>.image-wrapper').addClass('active')
     $('#trips-completed-filter-button').toggleClass('active')
     $('#trips-rejected-filter-button').toggleClass('active')
     $('#trips-cancelled-filter-button').toggleClass('active')
@@ -118,8 +129,7 @@ class TimeSeries
       tooltip:
         headerFormat: '<b>{series.name}</b><br>',
         pointFormat: '{point.x:%I:%M %p}: {point.y:.2f}'
-      series: [
-      ]
+      series: []
 
     @forecastChart = new Highcharts.Chart
       chart:
@@ -142,20 +152,16 @@ class TimeSeries
       tooltip:
         headerFormat: '<b>{series.name}</b><br>',
         pointFormat: '{point.x:%I:%M %p}: {point.y:.2f}'
-      series: [
-      ]
+      series: []
 
-    @updateRealTime()
+    @setFilterEvents()
 
     $('#percentage-button').click =>
       if not $('#percentage-button').hasClass('active')
         @percentageDisplay = true
         $('#absolute-button').toggleClass('active')
         $('#percentage-button').toggleClass('active')
-        if @realtime
-          @updateRealTime()
-        else
-          @populate()
+        @update()
 
     $('#seconds-button').click =>
         if @realtime and not $('#seconds-button').hasClass('active')
@@ -164,7 +170,7 @@ class TimeSeries
                 @realtimeInterval[name] = false
             $('#seconds-button').addClass('active')
             @realtimeInterval.seconds = true
-            @updateRealTime()
+            @update()
 
     $('#minutes-button').click =>
       if @realtime and  not $('#minutes-button').hasClass('active')
@@ -173,7 +179,7 @@ class TimeSeries
             @realtimeInterval[name] = false
           $('#minutes-button').addClass('active')
           @realtimeInterval.minutes = true
-          @updateRealTime()
+          @update()
 
     $('#hours-button').click =>
       if @realtime and  not $('#hours-button').hasClass('active')
@@ -182,7 +188,7 @@ class TimeSeries
             @realtimeInterval[name] = false
           $('#hours-button').addClass('active')
           @realtimeInterval.hours = true
-          @updateRealTime()
+          @update()
 
     $('#days-button').click =>
       if @realtime and  not $('#days-button').hasClass('active')
@@ -191,7 +197,7 @@ class TimeSeries
             @realtimeInterval[name] = false
           $('#days-button').addClass('active')
           @realtimeInterval.days = true
-          @updateRealTime()
+          @update()
 
     $('#weeks-button').click =>
       if @realtime and  not $('#weeks-button').hasClass('active')
@@ -200,7 +206,7 @@ class TimeSeries
             @realtimeInterval[name] = false
           $('#weeks-button').addClass('active')
           @realtimeInterval.weeks = true
-          @updateRealTime()
+          @update()
 
 
     $('#absolute-button').click =>
@@ -208,170 +214,300 @@ class TimeSeries
         @percentageDisplay = false
         $('#absolute-button').toggleClass('active')
         $('#percentage-button').toggleClass('active')
-        if @realtime
-          @updateRealTime()
-        else
-          @populate()
+        @update()
 
     $('#realtime-button').click =>
       if $('#realtime-button').hasClass('active')
         @realtime = false
         $('#datepicker>input').attr("disabled", false)
         $('#realtime-intervals-container>input').addClass('disabled')
-        @populate()
+        @update()
       else
         @realtime = true
         $('#datepicker>input').attr("disabled", true)
         $('#realtime-intervals-container>input').removeClass('disabled')
         @clearCharts()
-        @updateRealTime()
+        @update()
       $('#realtime-button').toggleClass('active')
 
     $('#partners-select').change =>
-      if not @realtime
-        @populate()
+      @selectedFleet = $('#partners-select option:selected').val()
+      @update()
 
-    $('#trips-completed-filter-button').click =>
-      $('#trips-completed-filter-button').toggleClass('active')
-      @tripsCompletedSelected= not @tripsCompletedSelected
-      @update([{
-        name: 'Completed trips'
-        historicData: @tripsCompleted
-        forecastData: @tripsCompletedF
-        load: @tripsCompletedSelected
-      }])
+    $('#heat-map-display-button').click =>
+        if @chartType == 'series'
+            @chartType = 'map'
+            $('#time-series-display-button>.image-wrapper').removeClass('active')
+            $('#heat-map-display-button>.image-wrapper').addClass('active')
+            @chartTypeChanged = true
+            @setFilterEvents()
+            @update()
+            @chartTypeChanged = false
 
-    $('#trips-rejected-filter-button').click =>
-      $('#trips-rejected-filter-button').toggleClass('active')
-      @tripsRejectedSelected= not @tripsRejectedSelected
-      @update([{
-        name: 'Rejected trips'
-        historicData: @tripsRejectedF
-        forecastData: @tripsRejectedF
-        load: @tripsRejectedSelected
-      }])
+    $('#time-series-display-button').click =>
+        if @chartType == 'map'
+            @chartType = 'series'
+            $('#time-series-display-button>.image-wrapper').addClass('active')
+            $('#heat-map-display-button>.image-wrapper').removeClass('active')
+            @chartTypeChanged = true
+            @setFilterEvents()
+            @update()
+            @chartTypeChanged = false
 
-    $('#trips-cancelled-filter-button').click =>
-      $('#trips-cancelled-filter-button').toggleClass('active')
-      @tripsCancelledSelected= not @tripsCancelledSelected
-      @update([{
-        name: 'Cancelled trips'
-        historicData: @tripsCancelled
-        forecastData: @tripsCancelledF
-        load: @tripsCancelledSelected
-      }])
-
-    $('#trips-error-filter-button').click =>
-      $('#trips-error-filter-button').toggleClass('active')
-      @tripsErrorSelected= not @tripsErrorSelected
-      @update([{
-        name: 'Error trips'
-        historicData: @tripsError
-        forecastData: @tripsErrorF
-        load: @tripsErrorSelected
-      }])
-
-    $('#time-enroute-filter-button').click =>
-      $('#time-enroute-filter-button').toggleClass('active')
-      @timeEnrouteSelected = not @timeEnrouteSelected
-      @update([{
-        name: 'Time enroute'
-        historicData: @timeEnroute
-        forecastData: @timeEnrouteF
-        load: @timeEnrouteSelected
-      }])
-
-    $('#time-occupied-filter-button').click =>
-      $('#time-occupied-filter-button').toggleClass('active')
-      @timeOccupiedSelected = not @timeOccupiedSelected
-      @update([{
-        name: 'Time occupied'
-        historicData: @timeOccupied
-        forecastData: @timeOccupiedF
-        load: @timeOccupiedSelected
-      }])
-
-    $('#time-idle-filter-button').click =>
-      $('#time-idle-filter-button').toggleClass('active')
-      @timeIdleSelected = not @timeIdleSelected
-      @update([{
-        name: 'Time idle'
-        historicData: @timeIdle
-        forecastData: @timeIdleF
-        load: @timeIdleSelected
-      }])
-
-    $('#mileage-enroute-filter-button').click =>
-      $('#mileage-enroute-filter-button').toggleClass('active')
-      @mileageEnrouteSelected = not @mileageEnrouteSelected
-      @update([{
-        name: 'Mileage enroute'
-        historicData: @mileageEnroute
-        forecastData: @mileageEnrouteF
-        load: @mileageEnrouteSelected
-      }])
-
-    $('#mileage-occupied-filter-button').click =>
-      $('#mileage-occupied-filter-button').toggleClass('active')
-      @mileageOccupiedSelected = not @mileageOccupiedSelected
-      @update([{
-        name: 'Mileage occupied'
-        historicData: @mileageOccupied
-        forecastData: @mileageOccupiedF
-        load: @mileageOccupiedSelected
-      }])
-
-    $('#service-goal-filter-button').click =>
-      $('#service-goal-filter-button').toggleClass('active')
-      @serviceGoalSelected = not @serviceGoalSelected
-      @update([{
-        name: 'Service level'
-        historicData: @serviceGoal
-        forecastData: @serviceGoalF
-        load: @serviceGoalSelected
-      }])
-
-    $('#service-lateness-filter-button').click =>
-      $('#service-lateness-filter-button').toggleClass('active')
-      @serviceLatenessSelected = not @serviceLatenessSelected
-      @update([{
-        name: 'Service lateness'
-        historicData: @serviceLateness
-        forecastData: @serviceLatenessF
-        load: @serviceLatenessSelected
-      }])
-
-    $('#ratings-drivers-filter-button').click =>
-      $('#ratings-drivers-filter-button').toggleClass('active')
-      @ratingDriversSelected = not @ratingDriversSelected
-      @update([{
-        name: 'Rating drivers'
-        historicData: @ratingDrivers
-        forecastData: @ratingDriversF
-        load: @ratingDriversSelected
-      }])
-
-    $('#ratings-passengers-filter-button').click =>
-      $('#ratings-passengers-filter-button').toggleClass('active')
-      @ratingPassengersSelected = not @ratingPassengersSelected
-      @update([{
-        name: 'Rating passengers'
-        historicData: @ratingPassengers
-        forecastData: @ratingPassengersF
-        load: @ratingPassengersSelected
-      }])
-
+    @update()
     setInterval =>
       if @realtime and not @updatingRealTime
         @updatingRealTime = true
-        @updateRealTime()
+        @update()
     , 15000
 
+  setFilterEvents: () =>
+      if @chartType == 'series'
+          $('.filter-button').removeClass('active')
+          $('#trips-completed-filter-button').toggleClass('active')
+          $('#trips-rejected-filter-button').toggleClass('active')
+          $('#trips-cancelled-filter-button').toggleClass('active')
+          $('#trips-error-filter-button').toggleClass('active')
+          $('#trips-completed-filter-button').off('click').on('click', =>
+              $('#trips-completed-filter-button').toggleClass('active')
+              @tripsCompletedSelected= not @tripsCompletedSelected
+              @update([{
+                  name: 'Completed trips'
+                  historicData: @tripsCompleted
+                  forecastData: @tripsCompletedF
+                  load: @tripsCompletedSelected
+              }]))
+
+          $('#trips-rejected-filter-button').off('click').on('click', =>
+              $('#trips-rejected-filter-button').toggleClass('active')
+              @tripsRejectedSelected= not @tripsRejectedSelected
+              @update([{
+                  name: 'Rejected trips'
+                  historicData: @tripsRejectedF
+                  forecastData: @tripsRejectedF
+                  load: @tripsRejectedSelected
+              }]))
+
+          $('#trips-cancelled-filter-button').off('click').on('click', =>
+              $('#trips-cancelled-filter-button').toggleClass('active')
+              @tripsCancelledSelected= not @tripsCancelledSelected
+              @update([{
+                  name: 'Cancelled trips'
+                  historicData: @tripsCancelled
+                  forecastData: @tripsCancelledF
+                  load: @tripsCancelledSelected
+              }]))
+
+          $('#trips-error-filter-button').off('click').on('click', =>
+              $('#trips-error-filter-button').toggleClass('active')
+              @tripsErrorSelected= not @tripsErrorSelected
+              @update([{
+                  name: 'Error trips'
+                  historicData: @tripsError
+                  forecastData: @tripsErrorF
+                  load: @tripsErrorSelected
+              }]))
+
+          $('#time-enroute-filter-button').off('click').on('click', =>
+              $('#time-enroute-filter-button').toggleClass('active')
+              @timeEnrouteSelected = not @timeEnrouteSelected
+              @update([{
+                  name: 'Time enroute'
+                  historicData: @timeEnroute
+                  forecastData: @timeEnrouteF
+                  load: @timeEnrouteSelected
+              }]))
+
+          $('#time-occupied-filter-button').off('click').on('click', =>
+              $('#time-occupied-filter-button').toggleClass('active')
+              @timeOccupiedSelected = not @timeOccupiedSelected
+              @update([{
+                  name: 'Time occupied'
+                  historicData: @timeOccupied
+                  forecastData: @timeOccupiedF
+                  load: @timeOccupiedSelected
+              }]))
+
+          $('#time-idle-filter-button').off('click').on('click', =>
+              $('#time-idle-filter-button').toggleClass('active')
+              @timeIdleSelected = not @timeIdleSelected
+              @update([{
+                  name: 'Time idle'
+                  historicData: @timeIdle
+                  forecastData: @timeIdleF
+                  load: @timeIdleSelected
+              }]))
+
+          $('#mileage-enroute-filter-button').off('click').on('click', =>
+              $('#mileage-enroute-filter-button').toggleClass('active')
+              @mileageEnrouteSelected = not @mileageEnrouteSelected
+              @update([{
+                  name: 'Mileage enroute'
+                  historicData: @mileageEnroute
+                  forecastData: @mileageEnrouteF
+                  load: @mileageEnrouteSelected
+              }]))
+
+          $('#mileage-occupied-filter-button').off('click').on('click', =>
+              $('#mileage-occupied-filter-button').toggleClass('active')
+              @mileageOccupiedSelected = not @mileageOccupiedSelected
+              @update([{
+                  name: 'Mileage occupied'
+                  historicData: @mileageOccupied
+                  forecastData: @mileageOccupiedF
+                  load: @mileageOccupiedSelected
+              }]))
+
+          $('#service-goal-filter-button').off('click').on('click', =>
+              $('#service-goal-filter-button').toggleClass('active')
+              @serviceGoalSelected = not @serviceGoalSelected
+              @update([{
+                  name: 'Service level'
+                  historicData: @serviceGoal
+                  forecastData: @serviceGoalF
+                  load: @serviceGoalSelected
+              }]))
+
+          $('#service-lateness-filter-button').off('click').on('click', =>
+              $('#service-lateness-filter-button').toggleClass('active')
+              @serviceLatenessSelected = not @serviceLatenessSelected
+              @update([{
+                  name: 'Service lateness'
+                  historicData: @serviceLateness
+                  forecastData: @serviceLatenessF
+                  load: @serviceLatenessSelected
+              }]))
+
+          $('#ratings-drivers-filter-button').off('click').on('click', =>
+              $('#ratings-drivers-filter-button').toggleClass('active')
+              @ratingDriversSelected = not @ratingDriversSelected
+              @update([{
+                  name: 'Rating drivers'
+                  historicData: @ratingDrivers
+                  forecastData: @ratingDriversF
+                  load: @ratingDriversSelected
+              }]))
+
+          $('#ratings-passengers-filter-button').off('click').on('click', =>
+              $('#ratings-passengers-filter-button').toggleClass('active')
+              @ratingPassengersSelected = not @ratingPassengersSelected
+              @update([{
+                  name: 'Rating passengers'
+                  historicData: @ratingPassengers
+                  forecastData: @ratingPassengersF
+                  load: @ratingPassengersSelected
+              }]))
+      else
+          @selectedStat = 'Completed trips'
+          $('.filter-button').removeClass('active')
+          $('#trips-completed-filter-button').addClass('active')
+          $('#trips-completed-filter-button').off('click').on('click', =>
+              if @selectedStat != 'tripsCompleted'
+                  $('.filter-button').removeClass('active')
+                  $('#trips-completed-filter-button').addClass('active')
+                  @selectedStat = 'Completed trips'
+                  @update()
+          )
+
+          $('#trips-rejected-filter-button').off('click').on('click', =>
+              if @selectedStat != 'tripsRejected'
+                  $('.filter-button').removeClass('active')
+                  $('#trips-rejected-filter-button').addClass('active')
+                  @selectedStat = 'Rejected trips'
+                  @update()
+          )
+
+          $('#trips-cancelled-filter-button').off('click').on('click', =>
+              if @selectedStat != 'tripsCancelled'
+                  $('.filter-button').removeClass('active')
+                  $('#trips-cancelled-filter-button').addClass('active')
+                  @selectedStat = 'Cancelled trips'
+                  @update()
+          )
+
+          $('#trips-error-filter-button').off('click').on('click', =>
+              if @selectedStat != 'tripsError'
+                  $('.filter-button').removeClass('active')
+                  $('#trips-error-filter-button').addClass('active')
+                  @selectedStat = 'Error trips'
+                  @update()
+          )
+
+          $('#time-enroute-filter-button').off('click').on('click', =>
+              if @selectedStat != 'timeEnroute'
+                  $('.filter-button').removeClass('active')
+                  $('#time-enroute-filter-button').addClass('active')
+                  @selectedStat = 'Time enroute'
+                  @update()
+          )
+
+          $('#time-occupied-filter-button').off('click').on('click', =>
+              if @selectedStat != 'timeOccupied'
+                  $('.filter-button').removeClass('active')
+                  $('#time-occupied-filter-button').addClass('active')
+                  @selectedStat = 'Time occupied'
+                  @update()
+          )
+
+          $('#time-idle-filter-button').off('click').on('click', =>
+              if @selectedStat != 'timeIdle'
+                  $('.filter-button').removeClass('active')
+                  $('#time-idle-filter-button').addClass('active')
+                  @selectedStat = 'Time idle'
+                  @update()
+          )
+
+          $('#mileage-enroute-filter-button').off('click').on('click', =>
+              if @selectedStat != 'mileageEnroute'
+                  $('.filter-button').removeClass('active')
+                  $('#mileage-enroute-filter-button').addClass('active')
+                  @selectedStat = 'Mileage enroute'
+                  @update()
+          )
+
+          $('#mileage-occupied-filter-button').off('click').on('click', =>
+              if @selectedStat != 'mileageOccupied'
+                  $('.filter-button').removeClass('active')
+                  $('#mileage-occupied-filter-button').addClass('active')
+                  @selectedStat = 'Mileage occupied'
+                  @update()
+          )
+
+          $('#service-goal-filter-button').off('click').on('click', =>
+              if @selectedStat != 'serviceGoal'
+                  $('.filter-button').removeClass('active')
+                  $('#service-goal-filter-button').addClass('active')
+                  @selectedStat = 'Service goal'
+                  @update()
+          )
+
+          $('#service-lateness-filter-button').off('click').on('click', =>
+              if @selectedStat != 'serviceLateness'
+                  $('.filter-button').removeClass('active')
+                  $('#service-lateness-filter-button').addClass('active')
+                  @selectedStat = 'Service lateness'
+                  @update()
+          )
+
+          $('#ratings-drivers-filter-button').off('click').on('click', =>
+              if @selectedStat != 'ratingDrivers'
+                  $('.filter-button').removeClass('active')
+                  $('#ratings-drivers-filter-button').addClass('active')
+                  @selectedStat = 'Rating drivers'
+                  @update()
+          )
+
+          $('#ratings-passengers-filter-button').off('click').on('click', =>
+              if @selectedStat != 'ratingPassengers'
+                  $('.filter-button').removeClass('active')
+                  $('#ratings-passengers-filter-button').addClass('active')
+                  @selectedStat = 'Rating passengers'
+                  @update()
+          )
+      
   updateRealTime: () =>
     [startDate, intervalName, bucketSize, datesByInterval] = @getRealTimeQueryParams()
     $.get '/mongo_db/trips_seconds?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
-      x = startDate
-      y = datesByInterval
       @tripsCompleted.data = []
       @tripsCompletedF.data = []
       @tripsRejected.data = []
@@ -448,7 +584,7 @@ class TimeSeries
           forecastData: @tripsErrorF
           load: @tripsErrorSelected
         })
-      @update updateData
+      @setSeries updateData
       @updatingRealTime = false
 
   getRealTimeQueryParams: () =>
@@ -507,111 +643,226 @@ class TimeSeries
 
       return [returnDate, intervalName, bucketSize, datesByInterval]
 
-  populate: () =>
-    @generateRandomData(@dates)
-    @clearCharts()
-    @update([
-      {
-        name: 'Completed trips'
-        historicData: @tripsCompleted
-        forecastData: @tripsCompletedF
-        load: @tripsCompletedSelected
-      },
-      {
-        name: 'Rejected trips'
-        historicData: @tripsRejectedF
-        forecastData: @tripsRejectedF
-        load: @tripsRejectedSelected
-      },
-      {
-        name: 'Cancelled trips'
-        historicData: @tripsCancelled
-        forecastData: @tripsCancelledF
-        load: @tripsCancelledSelected
-      },
-      {
-        name: 'Error trips'
-        historicData: @tripsError
-        forecastData: @tripsErrorF
-        load: @tripsErrorSelected
-      },
-      {
-        name: 'Time enroute'
-        historicData: @timeEnroute
-        forecastData: @timeEnrouteF
-        load: @timeEnrouteSelected
-      },
-      {
-        name: 'Time occupied'
-        historicData: @timeOccupied
-        forecastData: @timeOccupiedF
-        load: @timeOccupiedSelected
-      },
-      {
-        name: 'Time idle'
-        historicData: @timeIdle
-        forecastData: @timeIdleF
-        load: @timeIdleSelected
-      },
-      {
-        name: 'Mileage enroute'
-        historicData: @mileageEnroute
-        forecastData: @mileageEnrouteF
-        load: @mileageEnrouteSelected
-      },
-      {
-        name: 'Mileage occupied'
-        historicData: @mileageOccupied
-        forecastData: @mileageOccupiedF
-        load: @mileageOccupiedSelected
-      },
-      {
-        name: 'Service level'
-        historicData: @serviceGoal
-        forecastData: @serviceGoalF
-        load: @serviceGoalSelected
-      },
-      {
-        name: 'Service lateness'
-        historicData: @serviceLateness
-        forecastData: @serviceLatenessF
-        load: @serviceLatenessSelected
-      },
-      {
-        name: 'Rating drivers'
-        historicData: @ratingDrivers
-        forecastData: @ratingDriversF
-        load: @ratingDriversSelected
-      },
-      {
-        name: 'Rating passengers'
-        historicData: @ratingPassengers
-        forecastData: @ratingPassengersF
-        load: @ratingPassengersSelected
-      }
-
-
-    ])
-
   update: (series) =>
-    for serie in series
-      hserie = @historicChart.get(serie.historicData.name)
-      fserie = @forecastChart.get(serie.forecastData.name)
-      if hserie?
-        hserie.remove(false)
-      if fserie?
-        fserie.remove(false)
-      if serie.load
-        @historicChart.addSeries(serie.historicData, false, false)
-        @forecastChart.addSeries(serie.forecastData, false, false)
-
-    if not @percentageDisplay
-      @historicChart.yAxis[0].setExtremes(0, @YAxisMax)
-      @forecastChart.yAxis[0].setExtremes(0, @YAxisMax)
+    if @chartTypeChanged and @chartType == 'series'
+        $('#map-container').hide()
+        $('#time-series-container').show()
+        @refreshCharts()
+    else if @chartTypeChanged and @chartType == 'map'
+        $('#time-series-container').hide()
+        $('#map-container').show()
+        if !@map?
+            @loadMap()
+            google.maps.event.addDomListenerOnce(@map, "tilesloaded", () =>
+                google.maps.event.addDomListenerOnce(@map, "tilesloaded", @update(series)))
+        else
+            google.maps.event.trigger(@map,'resize')
+    if @realtime
+        @updateRealTime()
+    else if series?
+        @setSeries(series)
     else
-      @historicChart.yAxis[0].setExtremes(0, 100)
-      @forecastChart.yAxis[0].setExtremes(0, 100)
-    @refreshCharts()
+        @clearCharts()
+        @setSeries(@generateSeries())
+
+  setSeries: (series) =>
+    if @chartType == 'series'
+        for serie in series
+            hserie = @historicChart.get(serie.historicData.name)
+            fserie = @forecastChart.get(serie.forecastData.name)
+            if hserie?
+                hserie.remove(false)
+            if fserie?
+                fserie.remove(false)
+            if serie.load
+                @historicChart.addSeries(serie.historicData, false, false)
+                @forecastChart.addSeries(serie.forecastData, false, false)
+
+        if not @percentageDisplay
+            @historicChart.yAxis[0].setExtremes(0, @YAxisMax)
+            @forecastChart.yAxis[0].setExtremes(0, @YAxisMax)
+        else
+            @historicChart.yAxis[0].setExtremes(0, 100)
+            @forecastChart.yAxis[0].setExtremes(0, 100)
+        @refreshCharts()
+    else
+        last10Minutes = new Date();
+        last10Minutes.setMinutes(last10Minutes.getMinutes()-10);
+        date = +last10Minutes / 1000;
+        $.get '/mongo_db/trips_list?startDate=' + date, (trips) =>
+          @loadHeatMapTrips(trips, series)
+
+  loadHeatMapTrips: (trips, series) =>
+      tripsIds = []
+      for newTrip in trips
+          tripsIds.push newTrip._id
+          if newTrip.id not of @tripsById
+              @processTrip(newTrip)
+
+      for id, trip of @tripsById
+          if id not in tripsIds
+              delete @tripsById[id]
+      @drawHeatMap(series)
+
+  drawHeatMap: (series) =>
+      taxiData = []
+      weight = 0
+      if @realtime
+        weight = series[0].historicData.data[0][1] * 100
+      else
+        for serie in series
+            if serie.name == @selectedStat
+                weight = series[0].historicData.data[0][1]
+                break
+      for key of @tripsById
+          if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
+              taxiData.push {
+                  location: new google.maps.LatLng(@tripsById[key].pickupLocation.lat,@tripsById[key].pickupLocation.lng),
+                  weight: weight
+              }
+              taxiData.push {
+                  location: new google.maps.LatLng(@tripsById[key].dropoffLocation.lat,@tripsById[key].dropoffLocation.lng),
+                  weight: weight
+              }
+      if @selectedFleet != 'All'
+          @map.panTo(new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng))
+      @heatmap.setMap null
+      gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
+      @heatmap = new google.maps.visualization.HeatmapLayer({
+          data: taxiData,
+          radius: 20,
+          maxIntensity: 100,
+          gradient: gradient
+      })
+      @heatmap.setMap @map
+
+
+  processTrip: (newTrip) =>
+      driverLocation =
+          if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, null) else null
+      driverInitialLocation =
+          if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, null) else null
+      trip = new Trip(
+              newTrip._id
+              newTrip.passengerName
+              newTrip.pickupTime
+              new Location(newTrip.PickupLocation.Lat, newTrip.PickupLocation.Lng, null, false)
+              newTrip.OriginatingPartnerName
+              newTrip.ServicingPartnerName
+              newTrip.status
+              newTrip.eta
+              newTrip.price
+              newTrip.driverName
+              driverLocation
+              new Location(newTrip.DropoffLocation.Lat, newTrip.DropoffLocation.Lng, null, false)
+              driverInitialLocation
+      )
+      @tripsById[trip.getId()] = trip
+
+  generateSeries: () =>
+    @generateRandomData(@dates)
+    [
+        {
+            name: 'Completed trips'
+            historicData: @tripsCompleted
+            forecastData: @tripsCompletedF
+            load: @tripsCompletedSelected
+        },
+        {
+            name: 'Rejected trips'
+            historicData: @tripsRejectedF
+            forecastData: @tripsRejectedF
+            load: @tripsRejectedSelected
+        },
+        {
+            name: 'Cancelled trips'
+            historicData: @tripsCancelled
+            forecastData: @tripsCancelledF
+            load: @tripsCancelledSelected
+        },
+        {
+            name: 'Error trips'
+            historicData: @tripsError
+            forecastData: @tripsErrorF
+            load: @tripsErrorSelected
+        },
+        {
+            name: 'Time enroute'
+            historicData: @timeEnroute
+            forecastData: @timeEnrouteF
+            load: @timeEnrouteSelected
+        },
+        {
+            name: 'Time occupied'
+            historicData: @timeOccupied
+            forecastData: @timeOccupiedF
+            load: @timeOccupiedSelected
+        },
+        {
+            name: 'Time idle'
+            historicData: @timeIdle
+            forecastData: @timeIdleF
+            load: @timeIdleSelected
+        },
+        {
+            name: 'Mileage enroute'
+            historicData: @mileageEnroute
+            forecastData: @mileageEnrouteF
+            load: @mileageEnrouteSelected
+        },
+        {
+            name: 'Mileage occupied'
+            historicData: @mileageOccupied
+            forecastData: @mileageOccupiedF
+            load: @mileageOccupiedSelected
+        },
+        {
+            name: 'Service level'
+            historicData: @serviceGoal
+            forecastData: @serviceGoalF
+            load: @serviceGoalSelected
+        },
+        {
+            name: 'Service lateness'
+            historicData: @serviceLateness
+            forecastData: @serviceLatenessF
+            load: @serviceLatenessSelected
+        },
+        {
+            name: 'Rating drivers'
+            historicData: @ratingDrivers
+            forecastData: @ratingDriversF
+            load: @ratingDriversSelected
+        },
+        {
+            name: 'Rating passengers'
+            historicData: @ratingPassengers
+            forecastData: @ratingPassengersF
+            load: @ratingPassengersSelected
+        }
+    ]
+
+  loadMap: () =>
+      mapOptions =
+          zoom: 4
+          center: new google.maps.LatLng(37.09024, -95.712891)
+          mapTypeId: google.maps.MapTypeId.TERRAIN
+          disableDefaultUI: false
+          scrollwheel: true
+          draggable: true
+          navigationControl: true
+          mapTypeControl: false
+          scaleControl: true
+          disableDoubleClickZoom: false
+      @map = new google.maps.Map(document.getElementById(@mapContainer), mapOptions)
+      @heatmap = new google.maps.visualization.HeatmapLayer()
+
+  loadSelectorFleets: (fleets) =>
+      for fleet in fleets.fleets
+          if fleet.fleetName == "TripThru San Francisco"
+              continue
+          @fleets[fleet.fleetName] =  fleet
+          $('#partners-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
 
   clearCharts: () =>
     @historicChart = new Highcharts.Chart
@@ -734,7 +985,7 @@ class TimeSeries
 
 
 $('.developer.statistics').ready ->
-  timeSeries = new TimeSeries('historic-chart', 'forecast-chart')
+  timeSeries = new TimeSeries(new TripThru($('#access_token').val()), 'historic-chart', 'forecast-chart', 'heat-map')
   $('#datepicker').datepicker(
     format: "yyyy/mm/dd"
     startDate: "2012-01-01"
