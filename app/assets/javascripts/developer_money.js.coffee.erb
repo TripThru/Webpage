@@ -3,13 +3,20 @@ class money
         @gateway.getPartners(@partnersList)
 
     partnersList: (fleets) =>
+        firstFleet = null
         for fleet in fleets.fleets
             if fleet.fleetName == "TripThru San Francisco"
                 continue
-            $('#' + @selectorId).append('<option value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
+            if !firstFleet?
+                firstFleet = fleet.partnerId
+                $('#' + @selectorId).append('<option selected="selected" value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
+            else
+                $('#' + @selectorId).append('<option value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
         $('#' + @selectorId).change =>
             @selectedFleet = $('#' + @selectorId + ' option:selected').val()
             @updateStats(@selectedFleet)
+        if firstFleet?
+            @updateStats(firstFleet)
 
     updateStats: (iD) =>
         document.getElementById("imageLoad").style.visibility = "visible"
@@ -25,58 +32,48 @@ class money
                     farmedOut.push entry
                 else if entry.ServicingPartnerId is iD
                     farmedIn.push entry
+            $('#farmed-out-total').html(farmedOut.length)
+            $('#farmed-in-total').html(farmedIn.length)
 
-            stringFarmed = '
-                                Farmed out <span class="badge pull-right" >Total farmed out trips: ' + farmedOut.length + '</span>
-                           '
-
-            $('#farmedOutTitle').html stringFarmed
-
-            stringFarmed = '
-                                Farmed int <span class="badge pull-right" >Total farmed in trips: ' + farmedIn.length + '</span>
-                           '
-
-            $('#farmedInTitle').html stringFarmed
-
-            stringFarmed = '
+            content = '
                               <ul class="list-group">
                              '
             if farmedIn.length > 0
                 farmedIn.forEach (trip) ->
-                    stringFarmed += '
-                                      <li class="list-group-item">' + trip._id + '<span class="badge pull-right" >$0.50</span></li>
+                    content += '
+                                      <li class="list-group-item">' + trip._id + '</li>
                                     '
             else
-                stringFarmed +='
+                content +='
                                 <li class="list-group-item">Empty</li>
                                '
-            stringFarmed += '
+            content += '
                               </ul>
                             '
-            $('#farmedInDiv').html stringFarmed
+            $('#farmedInDiv').html content
 
-            stringFarmed = '
+            content = '
                               <ul class="list-group">
                              '
             if farmedOut.length >0
                 farmedOut.forEach (trip) ->
-                    stringFarmed += '
-                                   <li class="list-group-item">' + trip._id + '<span class="badge pull-right" >$0.50</span></li>
+                    content += '
+                                   <li class="list-group-item">' + trip._id + '</li>
                                   '
             else
-                stringFarmed +='
+                content +='
                                 <li class="list-group-item">Empty</li>
                                '
-            stringFarmed += '
+            content += '
                                </ul>
                               '
-            $('#farmedOutDiv').html stringFarmed
+            $('#farmedOutDiv').html content
 
-            stringFarmed = '
-                            <h4><span class="label label-default pull-center"><em>Total trips:  ' + (farmedOut.length + farmedIn.length) + '</em></span></h4></br>
-                             <h2>Total:<strong> $' + ((farmedOut.length + farmedIn.length)/2).toFixed(2); + '</strong></h2>'
-            stringFarmed += '<button type="button" class="btn btn-info">Make payment</button>'
-            $('#totalDiv').html stringFarmed
+            $('#balance-due').html (farmedOut.length + farmedIn.length)
+            content = '<row><h2>Balance due</h2></row>
+                       <row><h2><strong> $' + ((farmedOut.length + farmedIn.length)/2).toFixed(2) + '</strong></h2></row>
+                       <row><button type="button" class="btn btn-info">Make payment</button></row>'
+            $('#balanceDiv').html content
             document.getElementById("imageLoad").style.visibility = "hidden"
 
 $('.developer.money').ready ->
