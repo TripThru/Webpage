@@ -160,7 +160,7 @@ class TimeSeries
           @populate()
 
     $('#seconds-button').click =>
-        if not $('#seconds-button').hasClass('active')
+        if @realtime and not $('#seconds-button').hasClass('active')
             $('#realtime-intervals-container').find('.active').removeClass('active')
             for name of @realtimeInterval
                 @realtimeInterval[name] = false
@@ -169,7 +169,7 @@ class TimeSeries
             @updateRealTime()
 
     $('#minutes-button').click =>
-      if not $('#minutes-button').hasClass('active')
+      if @realtime and  not $('#minutes-button').hasClass('active')
           $('#realtime-intervals-container').find('.active').removeClass('active')
           for name of @realtimeInterval
             @realtimeInterval[name] = false
@@ -178,7 +178,7 @@ class TimeSeries
           @updateRealTime()
 
     $('#hours-button').click =>
-      if not $('#hours-button').hasClass('active')
+      if @realtime and  not $('#hours-button').hasClass('active')
           $('#realtime-intervals-container').find('.active').removeClass('active')
           for name of @realtimeInterval
             @realtimeInterval[name] = false
@@ -187,7 +187,7 @@ class TimeSeries
           @updateRealTime()
 
     $('#days-button').click =>
-      if not $('#days-button').hasClass('active')
+      if @realtime and  not $('#days-button').hasClass('active')
           $('#realtime-intervals-container').find('.active').removeClass('active')
           for name of @realtimeInterval
             @realtimeInterval[name] = false
@@ -196,7 +196,7 @@ class TimeSeries
           @updateRealTime()
 
     $('#weeks-button').click =>
-      if not $('#weeks-button').hasClass('active')
+      if @realtime and  not $('#weeks-button').hasClass('active')
           $('#realtime-intervals-container').find('.active').removeClass('active')
           for name of @realtimeInterval
             @realtimeInterval[name] = false
@@ -219,10 +219,12 @@ class TimeSeries
       if $('#realtime-button').hasClass('active')
         @realtime = false
         $('#datepicker>input').attr("disabled", false)
+        $('#realtime-intervals-container>input').addClass('disabled')
         @populate()
       else
         @realtime = true
         $('#datepicker>input').attr("disabled", true)
+        $('#realtime-intervals-container>input').removeClass('disabled')
         @clearCharts()
         @updateRealTime()
       $('#realtime-button').toggleClass('active')
