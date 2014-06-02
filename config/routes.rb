@@ -6,7 +6,6 @@ Rails.application.routes.draw do
   get 'developer/statistics', to: 'developer#statistics'
   get 'developer/api', to: 'developer#api'
   get 'developer/partners', to: 'developer#partners'
-  get 'developer/mapstatistics', to: 'developer#mapstatistics'
   get 'developer/money', to: 'developer#money'
   get 'developer/report', to: 'developer#report'
 

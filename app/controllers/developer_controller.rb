@@ -49,14 +49,6 @@ class DeveloperController < ApplicationController
     end
   end
 
-  def mapstatistics
-    if userAccessToken
-      render 'mapstatistics'
-    else
-      redirect_to signin_path
-    end
-  end
-
   def money
     if userAccessToken
       render 'money'
