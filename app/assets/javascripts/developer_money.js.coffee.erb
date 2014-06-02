@@ -1,0 +1,86 @@
+class money
+    constructor: (@gateway, @selectorId) ->
+        @gateway.getPartners(@partnersList)
+
+    partnersList: (fleets) =>
+        for fleet in fleets.fleets
+            if fleet.fleetName == "TripThru San Francisco"
+                continue
+            $('#' + @selectorId).append('<option value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
+        $('#' + @selectorId).change =>
+            @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+            @updateStats(@selectedFleet)
+
+    updateStats: (iD) =>
+        document.getElementById("imageLoad").style.visibility = "visible"
+        day = new Date();
+        day.setHours(day.getHours()-24);
+        date = +day / 1000;
+        $.get '/mongo_db/trips_list?startDate=' + date, (data) =>
+            farmedIn = []
+            farmedOut = []
+
+            data.forEach (entry) ->
+                if entry.OriginatingPartnerId is iD
+                    farmedOut.push entry
+                else if entry.ServicingPartnerId is iD
+                    farmedIn.push entry
+
+            stringFarmed = '
+                                Farmed out <span class="badge pull-right" >Total farmed out trips: ' + farmedOut.length + '</span>
+                           '
+
+            $('#farmedOutTitle').html stringFarmed
+
+            stringFarmed = '
+                                Farmed int <span class="badge pull-right" >Total farmed in trips: ' + farmedIn.length + '</span>
+                           '
+
+            $('#farmedInTitle').html stringFarmed
+
+            stringFarmed = '
+                              <ul class="list-group">
+                             '
+            if farmedIn.length > 0
+                farmedIn.forEach (trip) ->
+                    stringFarmed += '
+                                      <li class="list-group-item">' + trip._id + '<span class="badge pull-right" >$0.50</span></li>
+                                    '
+            else
+                stringFarmed +='
+                                <li class="list-group-item">Empty</li>
+                               '
+            stringFarmed += '
+                              </ul>
+                            '
+            $('#farmedInDiv').html stringFarmed
+
+            stringFarmed = '
+                              <ul class="list-group">
+                             '
+            if farmedOut.length >0
+                farmedOut.forEach (trip) ->
+                    stringFarmed += '
+                                   <li class="list-group-item">' + trip._id + '<span class="badge pull-right" >$0.50</span></li>
+                                  '
+            else
+                stringFarmed +='
+                                <li class="list-group-item">Empty</li>
+                               '
+            stringFarmed += '
+                               </ul>
+                              '
+            $('#farmedOutDiv').html stringFarmed
+
+            stringFarmed = '
+                            <h4><span class="label label-default pull-center"><em>Total trips:  ' + (farmedOut.length + farmedIn.length) + '</em></span></h4></br>
+                             <h2>Total:<strong> $' + ((farmedOut.length + farmedIn.length)/2).toFixed(2); + '</strong></h2>'
+            stringFarmed += '<button type="button" class="btn btn-info">Make payment</button>'
+            $('#totalDiv').html stringFarmed
+            document.getElementById("imageLoad").style.visibility = "hidden"
+
+$('.developer.money').ready ->
+    moneyV = new money(
+        new TripThru($('#access_token').val())
+        'partners-select'
+    )
