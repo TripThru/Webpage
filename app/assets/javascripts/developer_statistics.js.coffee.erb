@@ -1,45 +1,24 @@
 ########## STATISTICS #########
 
-class GatewayMockStatistics
-
-  constructor: () ->
-
-  getStats: (startDate, endDate, _callback) =>
-
-    values =
-      passengerRating: -1
-      driverRating: -1
-      timeWithPassenger: -1
-      mileageWithPassenger: -1
-      timeEnroute: -1
-      mileageEnroute: -1
-      timeIdle: -1
-      totalTrips: -1
-      cancelled: -1
-      completed: -1
-      rejected: -1
-      lateness: -1
-      withinServiceGoal: -1
-
-  treatAsUTC: (date) =>
-    result = new Date(date)
-    result.setMinutes(result.getMinutes() - result.getTimezoneOffset())
-    result
-
-  daysBetween: (startDate, endDate) =>
-    millisecondsPerDay = 24 * 60 * 60 * 1000
-    return (treatAsUTC(endDate) - treatAsUTC(startDate)) / millisecondsPerDay
-
 class TimeSeries
 
-  constructor: (@gateway, @historicChartContainerId, @forecastChartContainerId) ->
+  constructor: (@historicChartContainerId, @forecastChartContainerId) ->
     @startDate = new Date()
     @endDate = new Date()
     @data = null
 
     @YAxisMax = 100
+
     @realtime = true
     @percentageDisplay = true
+    @realtimeInterval  = {
+        seconds: true
+        hours: false
+        days: false
+        weeks: false
+        months: false
+    }
+
     @tripsCompletedSelected =   true
     @tripsCancelledSelected =   true
     @tripsRejectedSelected =    true
@@ -60,6 +39,7 @@ class TimeSeries
     $('#trips-error-filter-button').toggleClass('active')
     $('#realtime-button').toggleClass('active')
     $('#percentage-button').toggleClass('active')
+    $('#seconds-button').toggleClass('active')
     $('#datepicker>input').attr("disabled", true)
 
     @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
@@ -178,6 +158,52 @@ class TimeSeries
           @updateRealTime()
         else
           @populate()
+
+    $('#seconds-button').click =>
+        if not $('#seconds-button').hasClass('active')
+            $('#realtime-intervals-container').find('.active').removeClass('active')
+            for name of @realtimeInterval
+                @realtimeInterval[name] = false
+            $('#seconds-button').addClass('active')
+            @realtimeInterval.seconds = true
+            @updateRealTime()
+
+    $('#minutes-button').click =>
+      if not $('#minutes-button').hasClass('active')
+          $('#realtime-intervals-container').find('.active').removeClass('active')
+          for name of @realtimeInterval
+            @realtimeInterval[name] = false
+          $('#minutes-button').addClass('active')
+          @realtimeInterval.minutes = true
+          @updateRealTime()
+
+    $('#hours-button').click =>
+      if not $('#hours-button').hasClass('active')
+          $('#realtime-intervals-container').find('.active').removeClass('active')
+          for name of @realtimeInterval
+            @realtimeInterval[name] = false
+          $('#hours-button').addClass('active')
+          @realtimeInterval.hours = true
+          @updateRealTime()
+
+    $('#days-button').click =>
+      if not $('#days-button').hasClass('active')
+          $('#realtime-intervals-container').find('.active').removeClass('active')
+          for name of @realtimeInterval
+            @realtimeInterval[name] = false
+          $('#days-button').addClass('active')
+          @realtimeInterval.days = true
+          @updateRealTime()
+
+    $('#weeks-button').click =>
+      if not $('#weeks-button').hasClass('active')
+          $('#realtime-intervals-container').find('.active').removeClass('active')
+          for name of @realtimeInterval
+            @realtimeInterval[name] = false
+          $('#weeks-button').addClass('active')
+          @realtimeInterval.weeks = true
+          @updateRealTime()
+
 
     $('#absolute-button').click =>
       if not $('#absolute-button').hasClass('active')
@@ -342,9 +368,10 @@ class TimeSeries
     , 15000
 
   updateRealTime: () =>
-    last10Minutes = new Date();
-    last10Minutes.setMinutes(last10Minutes.getMinutes()-10);
-    $.get '/mongo_db/trips_seconds?startDate=' + last10Minutes, (data) =>
+    [startDate, intervalName, bucketSize, datesByInterval] = @getRealTimeQueryParams()
+    $.get '/mongo_db/trips_seconds?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
+      x = startDate
+      y = datesByInterval
       @tripsCompleted.data = []
       @tripsCompletedF.data = []
       @tripsRejected.data = []
@@ -353,23 +380,10 @@ class TimeSeries
       @tripsCancelledF.data = []
       @tripsError.data = []
       @tripsErrorF.data = []
-      datesByInterval = {}
-      #timestmp = new Date().setFullYear(new Date().getFullYear(), 0, 1);
-      #yearFirstDay = Math.floor(timestmp / 86400000);
 
       @data = data.sort( (a, b) ->
         ((b._id.Interval < a._id.Interval) ? -1 : ((b._id.Interval > a._id.Interval) ? 1 : 0));
       )
-
-      for i in [0..41]
-        #dayOfYear = Math.ceil((last10Minutes.getTime()) / 86400000) - yearFirstDay;
-        interval = (
-          ((last10Minutes.getUTCHours()*3600 +
-            last10Minutes.getUTCMinutes()*60 +
-            last10Minutes.getUTCSeconds())/15).toFixed(0)
-        ).toString()
-        datesByInterval[interval] = last10Minutes.getTime()
-        last10Minutes.setSeconds(last10Minutes.getSeconds() + 15)
 
       @YAxisMax = 0
       for id of datesByInterval
@@ -436,6 +450,62 @@ class TimeSeries
         })
       @update updateData
       @updatingRealTime = false
+
+  getRealTimeQueryParams: () =>
+      startDate = new Date()
+      intervals = 0
+      bucketSize = 1
+      intervalName = ''
+      if @realtimeInterval.seconds
+          startDate.setMinutes(startDate.getMinutes()-10)
+          intervals = 41
+          bucketSize = 15
+          intervalName = 'second'
+      else if @realtimeInterval.minutes
+          startDate.setHours(startDate.getHours()-10)
+          intervals = 41
+          bucketSize = 15
+          intervalName = 'minute'
+      else if @realtimeInterval.hours
+          startDate.setDate(startDate.getDate()-2)
+          intervals = 49
+          intervalName = 'hour'
+      else if @realtimeInterval.days
+          startDate.setMonth(startDate.getMonth()-1)
+          intervals = 33
+          intervalName = 'day'
+      else if @realtimeInterval.weeks
+          startDate.setMonth(startDate.getMonth()-3)
+          intervals = 14
+          intervalName = 'week'
+          bucketSize = 7
+      returnDate = new Date(startDate)
+
+      datesByInterval = {}
+      for i in [0..intervals]
+          interval = 0
+          if @realtimeInterval.seconds
+              interval = startDate.getUTCHours()*3600 + startDate.getUTCMinutes()*60 + startDate.getUTCSeconds()
+              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              startDate.setSeconds(startDate.getSeconds() + bucketSize)
+          else if @realtimeInterval.minutes
+              interval = startDate.getUTCHours()*60 + startDate.getUTCMinutes()
+              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              startDate.setMinutes(startDate.getMinutes() + bucketSize)
+          else if @realtimeInterval.hours
+              interval = startDate.getDayOfYear() * 24 + startDate.getUTCHours()
+              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              startDate.setHours(startDate.getHours() + bucketSize)
+          else if @realtimeInterval.days
+              interval = startDate.getDayOfYear()
+              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              startDate.setDate(startDate.getDate() + bucketSize)
+          else if @realtimeInterval.weeks
+              interval = startDate.getUTCMonth() * 30.5 + startDate.getDayOfYear()
+              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              startDate.setDate(startDate.getDate() + bucketSize)
+
+      return [returnDate, intervalName, bucketSize, datesByInterval]
 
   populate: () =>
     @generateRandomData(@dates)
@@ -664,7 +734,7 @@ class TimeSeries
 
 
 $('.developer.statistics').ready ->
-  timeSeries = new TimeSeries(new GatewayMockStatistics(), 'historic-chart', 'forecast-chart')
+  timeSeries = new TimeSeries('historic-chart', 'forecast-chart')
   $('#datepicker').datepicker(
     format: "yyyy/mm/dd"
     startDate: "2012-01-01"

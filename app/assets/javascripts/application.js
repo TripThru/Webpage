@@ -35,3 +35,9 @@
 //= require jquery-finger-v0.1.0.min.js
 //= require modernizr-custom-v2.7.1.min.js
 //= require_tree .
+
+
+Date.prototype.getDayOfYear = function() {
+    var onejan = new Date(this.getFullYear(),0,1);
+    return Math.ceil((this - onejan) / 86400000);
+}

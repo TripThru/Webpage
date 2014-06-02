@@ -5,6 +5,40 @@ class MongoDbController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def trips_seconds
+    interval = ''
+    case params[:interval]
+      when 'second'
+        interval = '$divide: [
+                        { $add: [
+                           { $multiply : [ { $hour : "$LastUpdate"}, 3600 ]},
+                           { $multiply : [ { $minute : "$LastUpdate"}, 60 ]},
+                           { $second : "$LastUpdate" }
+                        ]}, ' + params[:bucketSize] + '
+                    ]'
+      when 'minute'
+        interval = '$divide: [
+                        { $add: [
+                           { $multiply : [ { $hour : "$LastUpdate"}, 60 ]},
+                           { $minute : "$LastUpdate"}
+                        ]}, ' + params[:bucketSize] + '
+                    ]'
+      when 'hour'
+        interval = '$divide: [
+                        { $add: [
+                           { $multiply : [ { $dayOfYear : "$LastUpdate"}, 24 ]},
+                           { $hour : "$LastUpdate" }
+                        ]}, ' + params[:bucketSize] + '
+                    ]'
+      when 'day'
+        interval = '$dayOfYear : "$LastUpdate"'
+      when 'week'
+        interval = '$divide: [
+                        { $add: [
+                           { $multiply : [ { $month : "$LastUpdate"}, 30.5 ]},
+                           { $dayOfYear : "$LastUpdate"}
+                        ]}, ' + params[:bucketSize] + '
+                    ]'
+    end
     get_trips = '
       function () {
         var startDate = new Date("' + params[:startDate] + '");
@@ -12,15 +46,7 @@ class MongoDbController < ApplicationController
           { $match : { LastUpdate : { $gt: startDate } } },
           { $project : {
               Status : "$Status",
-              Interval : {
-                  $divide: [
-                        { $add: [
-                           { $multiply : [ { $hour : "$LastUpdate"}, 3600 ]},
-                           { $multiply : [ { $minute : "$LastUpdate"}, 60 ]},
-                           { $second : "$LastUpdate" }
-                        ]}, 15
-                  ]
-              }
+              Interval : { ' + interval +' }
             }
           },
           { $group : {
