@@ -1244,7 +1244,7 @@
         #display-modes-container{
           width: 100%;
           input{
-            margin: 0 0 10px 0;
+            margin: 0 0 5px 0;
             width: 49%;
             height: 28px;
 
@@ -1283,6 +1283,50 @@
           }
         }
 
+        #realtime-intervals-container{
+          text-align: center;
+          width: 100%;
+          input{
+            display: inline-block;
+            margin: 0 0 5px 0;
+            width: 17%;
+            height: 28px;
+
+            background-color: #ededed;
+            -webkit-border-radius: 0px;
+            -moz-border-radius: 0px;
+            border-radius: 0px;
+            text-indent: 0;
+            border: 1px solid #dcdcdc;
+            color: #888888;
+            text-decoration: none;
+            text-align: center;
+            font-size: 12px;
+
+            &:hover {
+              background-color: rgb(255, 76, 63) !important;
+              color: #ffffff;
+            }
+            &:active {
+              position: relative;
+              top: 1px;
+            }
+          }
+
+          .active{
+            background-color: rgb(255, 76, 63) !important;
+            color: #ffffff !important;
+          }
+
+          #percentage-button{
+            float: left;
+          }
+
+          #absolute-button{
+            float: right;
+          }
+        }
+
         #datepicker {
           margin: 0 0 10px 0;
           input {
@@ -1295,19 +1339,19 @@
 
         #partner-select-container {
           #partners-select {
-            height: 220px;
+            height: 210px;
           }
         }
 
         #fleet-select-container {
           #fleet-select {
-            height: 220px;
+            height: 210px;
           }
         }
 
         #driver-select-container {
           #driver-select {
-            height: 220px;
+            height: 210px;
           }
         }
       }
