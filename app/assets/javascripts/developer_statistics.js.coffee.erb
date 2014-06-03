@@ -507,7 +507,7 @@ class TimeSeries
       
   updateRealTime: () =>
     [startDate, intervalName, bucketSize, datesByInterval] = @getRealTimeQueryParams()
-    $.get '/mongo_db/trips_seconds?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
+    $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
       @tripsCompleted.data = []
       @tripsCompletedF.data = []
       @tripsRejected.data = []

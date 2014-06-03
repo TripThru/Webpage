@@ -3,19 +3,13 @@
 class Stats
 
     constructor: (@statisticsContainerId, @ratingsContainerId) ->
-        @timePieChartId = 'time-pie-chart'
-        @tripsPieChartId = 'trips-pie-chart'
-        @tripsPieChartTitleId = @tripsPieChartId + '-title'
-        @servicePieChartId = 'service-pie-chart'
-        @driversRatingChartId = 'drivers-rating-chart'
-        @passengersRatingChartId = 'passengers-rating-chart'
+        @tripsPieChartId = 'partner-trips-pie-chart'
+        @servicePieChartId = 'partner-service-pie-chart'
+        @driversRatingChartId = 'partner-drivers-rating-chart'
+        @passengersRatingChartId = 'partner-passengers-rating-chart'
         @lastValues =
             passengerRating: -1
             driverRating: -1
-            timeWithPassenger: -1
-            timeEnroute: -1
-            timeIdle: -1
-            totalTrips: -1
             cancelled: -1
             completed: -1
             error: -1
@@ -25,12 +19,8 @@ class Stats
 
         $('#' + @statisticsContainerId).html('
                                       <div  class="dashboard-statistics-pie-chart" >
-                                          <div class="title" id="' + @tripsPieChartTitleId + '">0 Trips</div>
+                                          <div class="title">Trips</div>
                                           <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
-                                      </div>
-                                      <div  class="dashboard-statistics-pie-chart" >
-                                          <div class="title">Time</div>
-                                          <div class="pie-chart" id="' + @timePieChartId + '"></div>
                                       </div>
                                       <div  class="dashboard-statistics-pie-chart" >
                                           <div class="title">Service</div>
@@ -56,9 +46,9 @@ class Stats
         @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     updateStats: (stats) =>
-        lastHour = new Date();
-        lastHour.setHours(lastHour.getHours()-1);
-        $.get '/mongo_db/trips_seconds?startDate=' + lastHour, (data) =>
+        lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate()-7);
+        $.get '/mongo_db/trips_count?startDate=' + lastWeek + '&interval=week&bucketSize=1', (data) =>
             completed = 0
             rejected = 0
             cancelled = 0
@@ -73,30 +63,10 @@ class Stats
                         rejected += entry.count
                     when 'Error'
                         error += entry.count
-            total = completed + rejected + cancelled + error
-            @update(80, 90, 55, 70, 80, total, cancelled, completed, rejected, error, 15, 95)
+            @update(80, 90, cancelled, completed, rejected, error, 15, 95)
 
-    update: (passengerRating, driverRating, timeWithPassenger, timeEnroute, timeIdle, totalTrips, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
+    update: (passengerRating, driverRating, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
 
-        if @lastValues.timeEnroute != timeEnroute or @lastValues.timeWithPassenger != timeWithPassenger or @lastValues.timeIdle != timeIdle
-
-            @lastValues.timeEnroute = timeEnroute
-            @lastValues.timeWithPassenger = timeWithPassenger
-            @lastValues.timeIdle = timeIdle
-            Morris.Donut({
-                element: @timePieChartId
-                data: [
-                    {label: "Enroute", value: timeEnroute}
-                    {label: "Occupied", value: timeWithPassenger}
-                    {label: "Idle", value: timeIdle}
-                ]
-                colors: [
-                    '#2922DD'
-                    '#0BA462'
-                    '#DD1D18'
-                ]
-                formatter: (x) -> x + "%"
-            })
 
         if @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
 
@@ -119,11 +89,6 @@ class Stats
                     '#DD1D18'
                 ]
             })
-
-        if @lastValues.totalTrips != totalTrips
-            @lastValues.totalTrips = totalTrips
-            $('#' + @tripsPieChartTitleId).fadeOut().html(totalTrips + ' trips').fadeIn()
-
 
         passengerRatingStars = passengerRating/100*5
         if passengerRatingStars != @lastValues.passengerRating

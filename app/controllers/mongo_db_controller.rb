@@ -4,7 +4,7 @@ include Mongo
 class MongoDbController < ApplicationController
   skip_before_action :verify_authenticity_token
 
-  def trips_seconds
+  def trips_count
     interval = ''
     case params[:interval]
       when 'second'
@@ -47,46 +47,6 @@ class MongoDbController < ApplicationController
           { $project : {
               Status : "$Status",
               Interval : { ' + interval +' }
-            }
-          },
-          { $group : {
-              _id :  {
-                  "Status" : "$Status" ,
-                  "Interval" : { $subtract : ["$Interval", { $mod : ["$Interval", 1] }] }
-              },
-              count : { $sum : 1 }
-            }
-          }
-        )
-        return trips;
-      }
-    '
-
-    client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
-    db = client.db('TripThru')
-    res = db.eval(get_trips)
-
-    respond_to do |format|
-      format.json { render text: res['_firstBatch'].to_json }
-    end
-  end
-
-  def trips_hours
-    get_trips = '
-      function () {
-        var startDate = new Date("' + params[:startDate] + '");
-        var trips = db.trips.aggregate(
-          { $match : { LastUpdate : { $gt: startDate } } },
-          { $project : {
-              Status : "$Status",
-              Interval : {
-                  $divide: [
-                        { $add: [
-                           { $multiply : [ { $dayOfYear : "$LastUpdate" }, 24 ] },
-                           { $hour : "$LastUpdate"}
-                        ]}, 15
-                  ]
-              }
             }
           },
           { $group : {

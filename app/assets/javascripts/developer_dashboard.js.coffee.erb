@@ -542,7 +542,7 @@ class StatisticsDashboard
   updateStats: (stats) =>
       lastHour = new Date();
       lastHour.setHours(lastHour.getHours()-1);
-      $.get '/mongo_db/trips_seconds?startDate=' + lastHour, (data) =>
+      $.get '/mongo_db/trips_count?startDate=' + lastHour+ '&interval=hour&bucketSize=1', (data) =>
           completed = 0
           rejected = 0
           cancelled = 0
