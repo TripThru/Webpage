@@ -379,6 +379,10 @@ class ActivityLog
 
   getLogTag: (id, log) =>
     id =  id + 'parent-accordion'
+    if log.request == ''
+        log.request = '{}'
+    if log.response == ''
+        log.response = '{}'
     logString = '
                             <div style="display: none" class="accordion-group" id="' + id + '">
                                 <div class="accordion-heading">
@@ -415,6 +419,8 @@ class ActivityLog
       logString += '<div style="' + padding + '">'
 
       if message.json?
+        if message.json == ''
+            message.json = '{}'
         hasResponse = ((i + 1) < (log.messages.length - 1)) and
           log.messages[i + 1].text.indexOf('Response') != -1 and
           log.messages[i + 1].json
