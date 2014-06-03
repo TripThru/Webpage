@@ -253,6 +253,7 @@ class PartnersManager
                 continue
             @partnersById[fleet.fleetName] = fleet
             $('#' + @selectorId).append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
+        #$('#loadingImage').hide()
         @update()
         @updatePartner(null)
 
