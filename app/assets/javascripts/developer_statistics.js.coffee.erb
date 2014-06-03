@@ -715,7 +715,11 @@ class TimeSeries
       taxiData = []
       weight = 0
       if @realtime
-        weight = series[0].historicData.data[0][1] * 100
+          if not @percentageDisplay
+             weightValue = series[0].historicData.data[0][1] * 20
+             weight = if weightValue > 100 then 100 else weightValue
+          else
+             weight = series[0].historicData.data[0][1]
       else
         for serie in series
             if serie.name == @selectedStat
@@ -737,7 +741,7 @@ class TimeSeries
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
-          radius: 20,
+          radius: 30,
           maxIntensity: 100,
           gradient: gradient
       })
