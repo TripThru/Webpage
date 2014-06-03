@@ -1148,6 +1148,7 @@
         #chart-type-buttons-container {
           display: inline-block;
           margin-right: 10px;
+
           .image-wrapper {
             background-color: #aeafab;
             height: 48px;
@@ -1171,6 +1172,7 @@
           }
           #time-series-display-button {
             display: inline-block;
+            vertical-align: bottom;
             img {
               width: 32px;
               margin: 0;
@@ -1180,6 +1182,7 @@
 
           #heat-map-display-button {
             display: inline-block;
+            vertical-align: bottom;
             img {
               width: 32px;
               margin: -7px 0 0 0;
