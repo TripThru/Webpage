@@ -24,7 +24,6 @@ $('.developer.report').ready ->
         tripsCount += rejectedTrips.length
         tripsCount += cancelledTrips.length
         tripsCount += errorTrips.length
-
         $('#spanReport').html(tripsCount)
 
         $('#listTripsComplete').html('<%= image_tag('loadingSmall.gif') %>')
