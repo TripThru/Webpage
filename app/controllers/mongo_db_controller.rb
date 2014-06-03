@@ -44,6 +44,7 @@ class MongoDbController < ApplicationController
         var startDate = new Date("' + params[:startDate] + '");
         var trips = db.trips.aggregate(
           { $match : { LastUpdate : { $gt: startDate } } },
+          { $sort: { LastUpdate : 1 } },
           { $project : {
               Status : "$Status",
               Interval : { ' + interval +' }

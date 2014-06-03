@@ -507,7 +507,7 @@ class TimeSeries
           )
       
   updateRealTime: () =>
-    [startDate, intervalName, bucketSize, datesByInterval] = @getRealTimeQueryParams()
+    [startDate, intervalName, bucketSize, dates, intervals] = @getRealTimeQueryParams()
     $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
       @tripsCompleted.data = []
       @tripsCompletedF.data = []
@@ -518,13 +518,11 @@ class TimeSeries
       @tripsError.data = []
       @tripsErrorF.data = []
 
-      @data = data.sort( (a, b) ->
-        ((b._id.Interval < a._id.Interval) ? -1 : ((b._id.Interval > a._id.Interval) ? 1 : 0));
-      )
-
       @YAxisMax = 0
-      for id of datesByInterval
-        date = datesByInterval[id]
+      i = 0
+      for interval in intervals
+        date = dates[i]
+        id = interval
 
         count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
         countComplete = if count.length == 0 then 0 else count[0].count
@@ -555,6 +553,8 @@ class TimeSeries
         if @tripsErrorSelected
           @tripsError.data.push [date, countError]
           @tripsErrorF.data.push [date, countError]
+
+        i++
 
       updateData = []
       if @tripsCompletedSelected
@@ -618,31 +618,37 @@ class TimeSeries
           bucketSize = 7
       returnDate = new Date(startDate)
 
-      datesByInterval = {}
+      dates = []
+      intervalIds = []
       for i in [0..intervals]
           interval = 0
           if @realtimeInterval.seconds
               interval = startDate.getUTCHours()*3600 + startDate.getUTCMinutes()*60 + startDate.getUTCSeconds()
-              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              dates.push startDate.getTime()
+              intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setSeconds(startDate.getSeconds() + bucketSize)
           else if @realtimeInterval.minutes
               interval = startDate.getUTCHours()*60 + startDate.getUTCMinutes()
-              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              dates.push startDate.getTime()
+              intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setMinutes(startDate.getMinutes() + bucketSize)
           else if @realtimeInterval.hours
               interval = startDate.getDayOfYear() * 24 + startDate.getUTCHours()
-              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              dates.push startDate.getTime()
+              intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setHours(startDate.getHours() + bucketSize)
           else if @realtimeInterval.days
               interval = startDate.getDayOfYear()
-              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              dates.push startDate.getTime()
+              intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setDate(startDate.getDate() + bucketSize)
           else if @realtimeInterval.weeks
               interval = startDate.getUTCMonth() * 30.5 + startDate.getDayOfYear()
-              datesByInterval[(interval/bucketSize).toFixed(0)] = startDate.getTime()
+              dates.push startDate.getTime()
+              intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setDate(startDate.getDate() + bucketSize)
 
-      return [returnDate, intervalName, bucketSize, datesByInterval]
+      return [returnDate, intervalName, bucketSize, dates, intervalIds]
 
   update: (series) =>
     if @chartTypeChanged and @chartType == 'series'
