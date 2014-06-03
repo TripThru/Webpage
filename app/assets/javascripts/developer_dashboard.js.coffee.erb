@@ -124,10 +124,10 @@ class TripTracker
             strokeOpacity: 1
             strokeWeight: 5
 
-    @directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions)
-    @directionsDisplay2 = new google.maps.DirectionsRenderer(rendererOptions2)
+    @directionsDisplay = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions) else null
+    @directionsDisplay2 = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions) else null
 
-    @directionsService = new google.maps.DirectionsService()
+    @directionsService = if typeof google isnt "undefined" then new google.maps.DirectionsService() else null
 
     @driverPreviousLocation = null
     @setTripInfoBool = false
@@ -153,7 +153,8 @@ class TripTracker
 
   updateActiveTrip: (trip) =>
     @updateTripInfo(trip)
-    @updateMap(trip)
+    if typeof @directionsDisplay isnt "undefined" and typeof @directionsDisplay2 isnt "undefined" and typeof @directionsService isnt "undefined"
+        @updateMap(trip)
     if trip?
       @tripId = trip.getId()
 
