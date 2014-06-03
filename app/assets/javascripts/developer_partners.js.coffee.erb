@@ -281,13 +281,13 @@ $('.developer.partners').ready ->
         'partner-info'
         'partner-select'
     )
-
+    clearInterval(window.tripthruinterval)
 
     update = ->
         partnersManager.update()
 
     update()
-    setInterval ->
+    window.tripthruinterval = setInterval ->
         update()
     , 10000
 
