@@ -125,7 +125,7 @@ class TripTracker
             strokeWeight: 5
 
     @directionsDisplay = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions) else null
-    @directionsDisplay2 = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions) else null
+    @directionsDisplay2 = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions2) else null
 
     @directionsService = if typeof google isnt "undefined" then new google.maps.DirectionsService() else null
 
