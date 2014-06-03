@@ -1467,6 +1467,7 @@
 
     .container {
       padding: 0;
+      margin: 20px 0 0 0;
       width: 100%;
     }
 
@@ -1746,8 +1747,12 @@
     }
 
     @media (min-width: 1400px) {
-      margin-top: 40px;
       padding-right: 10px;
+
+      .container{
+        padding: 0;
+        margin: 40px 0 0 0;
+      }
 
       #statistics-panel-container {
         margin-top: 15px;
@@ -1840,8 +1845,10 @@
     }
 
     @media (max-width: 991px) {
-      margin-top: 30px;
-
+      .container{
+        padding: 0;
+        margin: 20px 0 0 0;
+      }
       .col-sm-9 {
         margin: 0;
         padding: 0 0 0 5px;
@@ -1863,22 +1870,27 @@
         width: 74.5%;
         float: left;
         margin: 0 0 20px 0;
+        text-align: center;
         #statistics-panel {
+          display: inline-block;
+          text-align: center;
+          padding-bottom: 0;
           #statistics-gauges-container {
             display: inline-block;
+            text-align: center;
             padding-top: 0;
-            margin: -10px 0 10px 15%;
+            margin: -10px 0 10px 0;
             height: 102px;
-            width: 80%;
+            width: 300px;
             .dashboard-statistics-pie-chart {
-              float: left;
+              display: inline-block;
               height: 110px;
               width: 110px;
               margin: 0 18px 0 0;
 
               .title {
                 padding: 0;
-                margin: 10px 10px -10px 0;
+                margin: 10px 0 -10px 0;
                 font-size: 12px;
               }
 
@@ -1946,34 +1958,34 @@
           text-align: center;
           display: inline-block;
           width: 100%;
+          margin: 0;
           #statistics-gauges-container {
             display: inline-block;
             text-align: center;
-            padding-top: 0;
-            margin-top: 0;
-            margin-bottom: 10px;
-            width: 100%;
+            padding: 0 0 0 0;
+            margin: 0 0 10px -20px;
+            width: 300px;
 
             .dashboard-statistics-pie-chart {
               display: inline-block;
-              margin: 0 0 10px -10px;
+              margin: 0 0 10px 0;
               height: 100px;
-              width: 90px;
+              width: 100px;
               .title {
                 padding: 0;
-                margin: 20px 0 -15px 0;
+                margin: 10px 0 -5px 0;
                 font-size: 10px;
               }
               svg {
                 margin: 0 auto;
                 padding: 0;
                 height: 100px;
-                width: 90px;
+                width: 100px;
               }
 
               .chart {
                 height: 100px;
-                width: 90px;
+                width: 100px;
               }
             }
 
