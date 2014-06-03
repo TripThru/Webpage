@@ -1,5 +1,6 @@
 class money
     constructor: (@gateway, @selectorId) ->
+        document.getElementById("imageLoad").style.visibility = "visible"
         @gateway.getPartners(@partnersList)
 
     partnersList: (fleets) =>
