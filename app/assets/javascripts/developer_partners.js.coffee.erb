@@ -23,7 +23,7 @@ class Stats
                                           <div class="pie-chart" id="' + @tripsPieChartId + '"></div>
                                       </div>
                                       <div  class="dashboard-statistics-pie-chart" >
-                                          <div class="title">Service</div>
+                                          <div class="title">Service level</div>
                                           <div class="pie-chart" id="' + @servicePieChartId + '"></div>
                                       </div>
                                   ')
@@ -112,8 +112,8 @@ class Stats
             Morris.Donut({
                 element: @servicePieChartId,
                 data: [
-                    {label: "Level", value: withinServiceGoal}
-                    {label: "Lateness", value: lateness}
+                    {label: "In service", value: withinServiceGoal}
+                    {label: "Out service", value: lateness}
                 ]
                 colors: [
                     '#0BA462'

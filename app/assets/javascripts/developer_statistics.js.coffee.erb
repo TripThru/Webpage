@@ -60,8 +60,8 @@ class TimeSeries
     @timeIdle =         { name: 'Time idle', id: 'Time idle', data: []}
     @mileageEnroute =   { name: 'Mileage enroute', id: 'Mileage enroute', data: []}
     @mileageOccupied =  { name: 'Mileage occupied', id: 'Mileage occupied', data: []}
-    @serviceGoal =      { name: 'Service level', id: 'Service level', data: []}
-    @serviceLateness =  { name: 'Service lateness', id: 'Service lateness', data: []}
+    @serviceGoal =      { name: 'In service', id: 'In service', data: []}
+    @serviceLateness =  { name: 'Out service', id: 'Out service', data: []}
     @ratingDrivers =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
     @ratingPassengers = { name: 'Passengers rating', id: 'Passengers rating', data: []}
 
@@ -74,8 +74,8 @@ class TimeSeries
     @timeIdleF =         { name: 'Time idle', id: 'Time idle', data: []}
     @mileageEnrouteF =   { name: 'Mileage enroute', id: 'Mileage enroute', data: []}
     @mileageOccupiedF =  { name: 'Mileage occupied', id: 'Mileage occupied', data: []}
-    @serviceGoalF =      { name: 'Service level', id: 'Service level', data: []}
-    @serviceLatenessF =  { name: 'Service lateness', id: 'Service lateness', data: []}
+    @serviceGoalF =      { name: 'In service', id: 'In service', data: []}
+    @serviceLatenessF =  { name: 'Out service', id: 'Out service', data: []}
     @ratingDriversF =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
     @ratingPassengersF = { name: 'Passengers rating', id: 'Passengers rating', data: []}
 
@@ -362,7 +362,7 @@ class TimeSeries
               $('#service-goal-filter-button').toggleClass('active')
               @serviceGoalSelected = not @serviceGoalSelected
               @update([{
-                  name: 'Service level'
+                  name: 'In service'
                   historicData: @serviceGoal
                   forecastData: @serviceGoalF
                   load: @serviceGoalSelected
@@ -372,7 +372,7 @@ class TimeSeries
               $('#service-lateness-filter-button').toggleClass('active')
               @serviceLatenessSelected = not @serviceLatenessSelected
               @update([{
-                  name: 'Service lateness'
+                  name: 'Out service'
                   historicData: @serviceLateness
                   forecastData: @serviceLatenessF
                   load: @serviceLatenessSelected
@@ -485,7 +485,7 @@ class TimeSeries
               if @selectedStat != 'serviceLateness'
                   $('.filter-button').removeClass('active')
                   $('#service-lateness-filter-button').addClass('active')
-                  @selectedStat = 'Service lateness'
+                  @selectedStat = 'Out service'
                   @update()
           )
 
@@ -817,13 +817,13 @@ class TimeSeries
             load: @mileageOccupiedSelected
         },
         {
-            name: 'Service level'
+            name: 'In service'
             historicData: @serviceGoal
             forecastData: @serviceGoalF
             load: @serviceGoalSelected
         },
         {
-            name: 'Service lateness'
+            name: 'Out service'
             historicData: @serviceLateness
             forecastData: @serviceLatenessF
             load: @serviceLatenessSelected
