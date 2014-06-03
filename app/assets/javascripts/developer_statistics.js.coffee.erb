@@ -255,7 +255,8 @@ class TimeSeries
             @chartTypeChanged = false
 
     @update()
-    setInterval =>
+    clearInterval(window.tripthruinterval)
+    window.tripthruinterval = setInterval =>
       if @realtime and not @updatingRealTime
         @updatingRealTime = true
         @update()

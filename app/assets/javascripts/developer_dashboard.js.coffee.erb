@@ -858,12 +858,12 @@ $('.developer.dashboard').ready ->
       new ActivityLog('activity-log')
     ]
   )
-
+  clearInterval(window.tripthruinterval)
   update = ->
     dashboardManager.update()
 
   update()
-  setInterval ->
+  window.tripthruinterval = setInterval ->
     update()
   , 10000
 
