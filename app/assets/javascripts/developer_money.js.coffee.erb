@@ -78,6 +78,7 @@ class money
             document.getElementById("imageLoad").style.visibility = "hidden"
 
 $('.developer.money').ready ->
+    clearInterval(window.tripthruinterval)
     moneyV = new money(
         new TripThru($('#access_token').val())
         'partners-select'

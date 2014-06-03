@@ -986,6 +986,7 @@ class TimeSeries
 
 
 $('.developer.statistics').ready ->
+  clearInterval(window.tripthruinterval)
   timeSeries = new TimeSeries(new TripThru($('#access_token').val()), 'historic-chart', 'forecast-chart', 'heat-map')
   $('#datepicker').datepicker(
     format: "yyyy/mm/dd"

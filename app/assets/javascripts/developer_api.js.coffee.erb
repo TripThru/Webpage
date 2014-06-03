@@ -1,6 +1,7 @@
 ########## API #########
 
 $('.developer.api').ready ->
+  clearInterval(window.tripthruinterval)
   window.swaggerUi = new SwaggerUi({
     discoveryUrl: new TripThru('').getBaseUrl() + 'resources'
     apiKey: ""

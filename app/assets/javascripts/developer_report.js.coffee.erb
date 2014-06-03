@@ -1,4 +1,5 @@
 $('.developer.report').ready ->
+    clearInterval(window.tripthruinterval)
     lastHour = new Date();
     lastHour.setMinutes(lastHour.getMinutes()-60);
     date = +lastHour / 1000;
