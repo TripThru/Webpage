@@ -346,9 +346,11 @@ class ActivityLog
     @tripId = ''
     @latestAddedLogDate = null
     @tcurrentTripIdripId = null
+    @lastLogId = 0
 
   tripChanged: (trip) =>
     $('#' + @containerId).html('<%= image_tag('loading.gif') %>')
+    @lastLogId = 0
 
   updateLog: (logList, currentTripId) =>
     if logList? and logList.length > 0
@@ -367,13 +369,13 @@ class ActivityLog
             break
 
       if logs.length > 0
-        i = 0
         for log in logs.reverse()
-          [id, logString] = @getLogTag(i, log)
+          @lastLogId++
+          [id, logString] = @getLogTag(@lastLogId, log)
           $('#' + @containerId).prepend(logString)
-          $('#' + id).slideDown();
-          i++
-        Prism.highlightAll();@latestAddedLogDate = logList[logList.length-1].time
+          $('#' + id).slideDown()
+        Prism.highlightAll()
+        @latestAddedLogDate = logList[logList.length-1].time
 
       @tripId = currentTripId
       @latestAddedLogDate = newLatest
