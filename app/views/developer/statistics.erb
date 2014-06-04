@@ -17,6 +17,20 @@
             </div>
           </a>
         </div>
+        <div id="mode-buttons-container">
+          <a id="historic-mode-button" href="#">
+            <i class="icon-home icon-1x"></i>
+            <div class="image-wrapper">
+              <%= image_tag('historic.png', alt: 'Historic data') %>
+            </div>
+          </a>
+          <a id="forecast-mode-button" href="#">
+            <i class="icon-home icon-1x"></i>
+            <div class="image-wrapper">
+              <%= image_tag('forecast.png', alt: 'Forecast data') %>
+            </div>
+          </a>
+        </div>
         <div class="panel panel-default filter-button-group">
           <div class="panel-heading text-center ">
             <h3 class="panel-title">Trips</h3>
@@ -68,15 +82,13 @@
       </div>
     </div>
     <div class="row">
+        <h2 id="chart-title">Historic</h2>
+        <br/>
         <div id="time-series-container" class="col-md-9 col-md-push-0 col-sm-10 col-sm-push-2 col-xs-10 col-xs-push-2">
           <div id="historic-chart-container">
-              <h2>Historic</h2>
-              <br/>
               <div id="historic-chart"></div>
           </div>
           <div id="forecast-chart-container">
-              <h2>Forecasted</h2>
-              <br/>
               <div id="forecast-chart"></div>
           </div>
         </div>

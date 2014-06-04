@@ -10,6 +10,8 @@ class TimeSeries
 
     @chartType = 'series'
     @chartTypeChanged = true
+    @historicChart = null
+    @forecastChart = null
     @selectedStat = 'tripsCompleted'
     @selectedFleet = 'All'
     @map = null
@@ -17,9 +19,11 @@ class TimeSeries
     @fleets = {}
     @tripsById = {}
 
-    @realtime = true
-    @percentageDisplay = true
-    @realtimeInterval  = {
+    @realtimeMode = true
+    @percentageMode = true
+    @forecastDataMode = false
+    @dataModeChanged = false
+    @realtimeModeInterval  = {
         seconds: true
         hours: false
         days: false
@@ -42,13 +46,14 @@ class TimeSeries
     @ratingPassengersSelected = false
 
     $('#time-series-display-button>.image-wrapper').addClass('active')
-    $('#trips-completed-filter-button').toggleClass('active')
-    $('#trips-rejected-filter-button').toggleClass('active')
-    $('#trips-cancelled-filter-button').toggleClass('active')
-    $('#trips-error-filter-button').toggleClass('active')
-    $('#realtime-button').toggleClass('active')
-    $('#percentage-button').toggleClass('active')
-    $('#seconds-button').toggleClass('active')
+    $('#historic-mode-button>.image-wrapper').addClass('active')
+    $('#trips-completed-filter-button').addClass('active')
+    $('#trips-rejected-filter-button').addClass('active')
+    $('#trips-cancelled-filter-button').addClass('active')
+    $('#trips-error-filter-button').addClass('active')
+    $('#realtime-button').addClass('active')
+    $('#percentage-button').addClass('active')
+    $('#seconds-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
 
     @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
@@ -106,127 +111,83 @@ class TimeSeries
       Date.UTC(2014, 5, 25, 23, 0, 0)
     ]
 
+    @loadCharts()
     @generateRandomData(@dates)
 
-    @historicChart = new Highcharts.Chart
-      chart:
-        renderTo: @historicChartContainerId
-        type: 'spline'
-      title:
-        text: ''
-      xAxis:
-        type: 'datetime',
-        dateTimeLabelFormats:
-          hour: '%I %p',
-          minute: '%I:%M %p'
-        title:
-          text: ''
-      yAxis:
-        title:
-          text: ''
-        min: 0
-        max: 100
-      tooltip:
-        headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: '{point.x:%I:%M %p}: {point.y:.2f}'
-      series: []
-
-    @forecastChart = new Highcharts.Chart
-      chart:
-        renderTo: @forecastChartContainerId
-        type: 'spline'
-      title:
-        text: ''
-      xAxis:
-        type: 'datetime',
-        dateTimeLabelFormats:
-          hour: '%I %p',
-          minute: '%I:%M %p'
-        title:
-          text: ''
-      yAxis:
-        title:
-          text: ''
-        min: 0
-        max: 100
-      tooltip:
-        headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: '{point.x:%I:%M %p}: {point.y:.2f}'
-      series: []
-
+    $('#forecast-chart-container').hide()
     @setFilterEvents()
 
     $('#percentage-button').click =>
       if not $('#percentage-button').hasClass('active')
-        @percentageDisplay = true
+        @percentageMode = true
         $('#absolute-button').toggleClass('active')
         $('#percentage-button').toggleClass('active')
         @update()
 
     $('#seconds-button').click =>
-        if @realtime and not $('#seconds-button').hasClass('active')
+        if @realtimeMode and not $('#seconds-button').hasClass('active')
             $('#realtime-intervals-container').find('.active').removeClass('active')
-            for name of @realtimeInterval
-                @realtimeInterval[name] = false
+            for name of @realtimeModeInterval
+                @realtimeModeInterval[name] = false
             $('#seconds-button').addClass('active')
-            @realtimeInterval.seconds = true
+            @realtimeModeInterval.seconds = true
             @update()
 
     $('#minutes-button').click =>
-      if @realtime and  not $('#minutes-button').hasClass('active')
+      if @realtimeMode and  not $('#minutes-button').hasClass('active')
           $('#realtime-intervals-container').find('.active').removeClass('active')
-          for name of @realtimeInterval
-            @realtimeInterval[name] = false
+          for name of @realtimeModeInterval
+            @realtimeModeInterval[name] = false
           $('#minutes-button').addClass('active')
-          @realtimeInterval.minutes = true
+          @realtimeModeInterval.minutes = true
           @update()
 
     $('#hours-button').click =>
-      if @realtime and  not $('#hours-button').hasClass('active')
+      if @realtimeMode and  not $('#hours-button').hasClass('active')
           $('#realtime-intervals-container').find('.active').removeClass('active')
-          for name of @realtimeInterval
-            @realtimeInterval[name] = false
+          for name of @realtimeModeInterval
+            @realtimeModeInterval[name] = false
           $('#hours-button').addClass('active')
-          @realtimeInterval.hours = true
+          @realtimeModeInterval.hours = true
           @update()
 
     $('#days-button').click =>
-      if @realtime and  not $('#days-button').hasClass('active')
+      if @realtimeMode and  not $('#days-button').hasClass('active')
           $('#realtime-intervals-container').find('.active').removeClass('active')
-          for name of @realtimeInterval
-            @realtimeInterval[name] = false
+          for name of @realtimeModeInterval
+            @realtimeModeInterval[name] = false
           $('#days-button').addClass('active')
-          @realtimeInterval.days = true
+          @realtimeModeInterval.days = true
           @update()
 
     $('#weeks-button').click =>
-      if @realtime and  not $('#weeks-button').hasClass('active')
+      if @realtimeMode and  not $('#weeks-button').hasClass('active')
           $('#realtime-intervals-container').find('.active').removeClass('active')
-          for name of @realtimeInterval
-            @realtimeInterval[name] = false
+          for name of @realtimeModeInterval
+            @realtimeModeInterval[name] = false
           $('#weeks-button').addClass('active')
-          @realtimeInterval.weeks = true
+          @realtimeModeInterval.weeks = true
           @update()
 
 
     $('#absolute-button').click =>
       if not $('#absolute-button').hasClass('active')
-        @percentageDisplay = false
+        @percentageMode = false
         $('#absolute-button').toggleClass('active')
         $('#percentage-button').toggleClass('active')
         @update()
 
     $('#realtime-button').click =>
       if $('#realtime-button').hasClass('active')
-        @realtime = false
+        @realtimeMode = false
         $('#datepicker>input').attr("disabled", false)
         $('#realtime-intervals-container>input').addClass('disabled')
         @update()
       else
-        @realtime = true
+        @realtimeMode = true
         $('#datepicker>input').attr("disabled", true)
         $('#realtime-intervals-container>input').removeClass('disabled')
-        @clearCharts()
+        @loadCharts()
         @update()
       $('#realtime-button').toggleClass('active')
 
@@ -254,10 +215,29 @@ class TimeSeries
             @update()
             @chartTypeChanged = false
 
+    $('#historic-mode-button').click =>
+        if @forecastDataMode
+            @forecastDataMode = false
+            $('#historic-mode-button>.image-wrapper').addClass('active')
+            $('#forecast-mode-button>.image-wrapper').removeClass('active')
+            @dataModeChanged = true
+            @update()
+            @dataModeChanged = false
+
+    $('#forecast-mode-button').click =>
+        if not @forecastDataMode
+           @forecastDataMode = true
+           $('#forecast-mode-button>.image-wrapper').addClass('active')
+           $('#historic-mode-button>.image-wrapper').removeClass('active')
+           @dataModeChanged = true
+           @update()
+           @dataModeChanged = false
+
+
     @update()
     clearInterval(window.tripthruinterval)
     window.tripthruinterval = setInterval =>
-      if @realtime and not @updatingRealTime
+      if @realtimeMode and not @updatingRealTime
         @updatingRealTime = true
         @update()
     , 15000
@@ -535,7 +515,7 @@ class TimeSeries
         total = countComplete + countCancelled + countRejected + countError
         @YAxisMax = if total > @YAxisMax then total else @YAxisMax
 
-        if @percentageDisplay
+        if @percentageMode
           countComplete = if countComplete > 0 then countComplete*100/total else 0
           countCancelled = if countCancelled > 0 then countCancelled*100/total else 0
           countRejected = if countRejected > 0 then countRejected*100/total else 0
@@ -593,25 +573,25 @@ class TimeSeries
       intervals = 0
       bucketSize = 1
       intervalName = ''
-      if @realtimeInterval.seconds
+      if @realtimeModeInterval.seconds
           startDate.setMinutes(startDate.getMinutes()-10)
           intervals = 41
           bucketSize = 15
           intervalName = 'second'
-      else if @realtimeInterval.minutes
+      else if @realtimeModeInterval.minutes
           startDate.setHours(startDate.getHours()-10)
           intervals = 41
           bucketSize = 15
           intervalName = 'minute'
-      else if @realtimeInterval.hours
+      else if @realtimeModeInterval.hours
           startDate.setDate(startDate.getDate()-2)
           intervals = 49
           intervalName = 'hour'
-      else if @realtimeInterval.days
+      else if @realtimeModeInterval.days
           startDate.setMonth(startDate.getMonth()-1)
           intervals = 33
           intervalName = 'day'
-      else if @realtimeInterval.weeks
+      else if @realtimeModeInterval.weeks
           startDate.setMonth(startDate.getMonth()-3)
           intervals = 14
           intervalName = 'week'
@@ -622,27 +602,27 @@ class TimeSeries
       intervalIds = []
       for i in [0..intervals]
           interval = 0
-          if @realtimeInterval.seconds
+          if @realtimeModeInterval.seconds
               interval = startDate.getUTCHours()*3600 + startDate.getUTCMinutes()*60 + startDate.getUTCSeconds()
               dates.push startDate.getTime()
               intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setSeconds(startDate.getSeconds() + bucketSize)
-          else if @realtimeInterval.minutes
+          else if @realtimeModeInterval.minutes
               interval = startDate.getUTCHours()*60 + startDate.getUTCMinutes()
               dates.push startDate.getTime()
               intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setMinutes(startDate.getMinutes() + bucketSize)
-          else if @realtimeInterval.hours
+          else if @realtimeModeInterval.hours
               interval = startDate.getDayOfYear() * 24 + startDate.getUTCHours()
               dates.push startDate.getTime()
               intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setHours(startDate.getHours() + bucketSize)
-          else if @realtimeInterval.days
+          else if @realtimeModeInterval.days
               interval = startDate.getDayOfYear()
               dates.push startDate.getTime()
               intervalIds.push (interval/bucketSize).toFixed(0)
               startDate.setDate(startDate.getDate() + bucketSize)
-          else if @realtimeInterval.weeks
+          else if @realtimeModeInterval.weeks
               interval = startDate.getUTCMonth() * 30.5 + startDate.getDayOfYear()
               dates.push startDate.getTime()
               intervalIds.push (interval/bucketSize).toFixed(0)
@@ -654,7 +634,7 @@ class TimeSeries
     if @chartTypeChanged and @chartType == 'series'
         $('#map-container').hide()
         $('#time-series-container').show()
-        @refreshCharts()
+        @loadCharts()
     else if @chartTypeChanged and @chartType == 'map'
         $('#time-series-container').hide()
         $('#map-container').show()
@@ -664,33 +644,54 @@ class TimeSeries
                 google.maps.event.addDomListenerOnce(@map, "tilesloaded", @update(series)))
         else
             google.maps.event.trigger(@map,'resize')
-    if @realtime
+
+    if @dataModeChanged
+        if @forecastDataMode
+            $('#chart-title').html 'Forecast'
+            if @chartType == 'series'
+                $('#historic-chart-container').hide()
+                $('#forecast-chart-container').show()
+                @loadCharts()
+        else
+            $('#chart-title').html 'Historic'
+            if @chartType == 'series'
+                $('#forecast-chart-container').hide()
+                $('#historic-chart-container').show()
+                @loadCharts()
+
+    if @realtimeMode
         @updateRealTime()
     else if series?
         @setSeries(series)
     else
-        @clearCharts()
+        @loadCharts()
         @setSeries(@generateSeries())
 
   setSeries: (series) =>
     if @chartType == 'series'
         for serie in series
-            hserie = @historicChart.get(serie.historicData.name)
-            fserie = @forecastChart.get(serie.forecastData.name)
-            if hserie?
-                hserie.remove(false)
-            if fserie?
-                fserie.remove(false)
-            if serie.load
-                @historicChart.addSeries(serie.historicData, false, false)
-                @forecastChart.addSeries(serie.forecastData, false, false)
-
-        if not @percentageDisplay
-            @historicChart.yAxis[0].setExtremes(0, @YAxisMax)
-            @forecastChart.yAxis[0].setExtremes(0, @YAxisMax)
+            if @forecastDataMode
+                fserie = @forecastChart.get(serie.forecastData.name)
+                if fserie?
+                    fserie.remove(false)
+                if serie.load
+                    @forecastChart.addSeries(serie.forecastData, false, false)
+            else
+                hserie = @historicChart.get(serie.historicData.name)
+                if hserie?
+                    hserie.remove(false)
+                if serie.load
+                    @historicChart.addSeries(serie.historicData, false, false)
+        if not @percentageMode
+            if @forecastDataMode
+                @forecastChart.yAxis[0].setExtremes(0, @YAxisMax)
+            else
+                @historicChart.yAxis[0].setExtremes(0, @YAxisMax)
         else
-            @historicChart.yAxis[0].setExtremes(0, 100)
-            @forecastChart.yAxis[0].setExtremes(0, 100)
+            if @forecastDataMode
+                @forecastChart.yAxis[0].setExtremes(0, 100)
+            else
+                @historicChart.yAxis[0].setExtremes(0, 100)
         @refreshCharts()
     else
         last10Minutes = new Date();
@@ -714,8 +715,8 @@ class TimeSeries
   drawHeatMap: (series) =>
       taxiData = []
       weight = 0
-      if @realtime
-          if not @percentageDisplay
+      if @realtimeMode
+          if not @percentageMode
              weightValue = series[0].historicData.data[0][1] * 20
              weight = if weightValue > 100 then 100 else weightValue
           else
@@ -875,58 +876,61 @@ class TimeSeries
           @fleets[fleet.fleetName] =  fleet
           $('#partners-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
 
-  clearCharts: () =>
-    @historicChart = new Highcharts.Chart
-      chart:
-        renderTo: @historicChartContainerId
-        type: 'spline'
-      title:
-        text: ''
-      xAxis:
-        type: 'datetime',
-        dateTimeLabelFormats:
-          month: '%e. %b',
-          year: '%b'
-        title:
-          text: ''
-      yAxis:
-        title:
-          text: ''
-        max: 100
-      tooltip:
-        headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
-      series: [
+  loadCharts: () =>
+    if @forecastDataMode
+        @forecastChart = new Highcharts.Chart
+          chart:
+              renderTo: @forecastChartContainerId
+              type: 'spline'
+          title:
+              text: ''
+          xAxis:
+              type: 'datetime',
+              dateTimeLabelFormats:
+                  month: '%e. %b',
+                  year: '%b'
+              title:
+                  text: ''
+          yAxis:
+              title:
+                  text: ''
+              max: 100
+          tooltip:
+              headerFormat: '<b>{series.name}</b><br>',
+              pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+          series: [
 
-      ]
+          ]
+    else
+        @historicChart = new Highcharts.Chart
+          chart:
+            renderTo: @historicChartContainerId
+            type: 'spline'
+          title:
+            text: ''
+          xAxis:
+            type: 'datetime',
+            dateTimeLabelFormats:
+              month: '%e. %b',
+              year: '%b'
+            title:
+              text: ''
+          yAxis:
+            title:
+              text: ''
+            max: 100
+          tooltip:
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+          series: [
 
-    @forecastChart = new Highcharts.Chart
-      chart:
-        renderTo: @forecastChartContainerId
-        type: 'spline'
-      title:
-        text: ''
-      xAxis:
-        type: 'datetime',
-        dateTimeLabelFormats:
-          month: '%e. %b',
-          year: '%b'
-        title:
-          text: ''
-      yAxis:
-        title:
-          text: ''
-        max: 100
-      tooltip:
-        headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
-      series: [
-
-      ]
+          ]
 
   refreshCharts: () =>
-    @historicChart.redraw()
-    @forecastChart.redraw()
+    if @historicChart?
+        @historicChart.redraw()
+    if @forecastChart?
+        @forecastChart.redraw()
 
 
   generateRandomData: (dates) =>
@@ -989,8 +993,8 @@ class TimeSeries
       @ratingPassengersF.data.push @r(date)
 
   r: (date) =>
-    value = if @percentageDisplay then ((Math.random() * 70) + 30) else ((Math.random() * 40) + 10)
-    if not @percentageDisplay
+    value = if @percentageMode then ((Math.random() * 70) + 30) else ((Math.random() * 40) + 10)
+    if not @percentageMode
       @YAxisMax = if value > @YAxisMax then value else @YAxisMax
     [date, value]
 

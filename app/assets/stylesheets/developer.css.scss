@@ -1089,6 +1089,10 @@
     .row {
       width: 100%;
     }
+    #chart-title{
+      margin: -10px 0 0 50px;
+      padding: 0;
+    }
     #chart-container {
       width: 100%;
       margin: 40px auto 0;
@@ -1107,19 +1111,18 @@
         margin: 0;
         #historic-chart-container {
           #historic-chart {
-            height: 400px;
+            height: 500px;
           }
         }
         #forecast-chart-container {
-          margin-top: 10px;
           #forecast-chart {
-            height: 400px;
+            height: 500px;
           }
         }
       }
 
       #map-container {
-        height: 860px;
+        height: 500px;
         text-align: center;
         margin: 0 0 0 40px;
         #heat-map {
@@ -1127,10 +1130,6 @@
           height: 100%;
           width: 100%;
         }
-      }
-
-      h2 {
-        margin: -10px 0 0 50px;
       }
 
       .panel-heading {
@@ -1145,51 +1144,71 @@
       #filters-container {
         margin: 0 2% 30px 2%;
 
+        .image-wrapper {
+          background-color: #aeafab;
+          height: 48px;
+          width: 48px;
+          text-align: center;
+          display: inline-block;
+          vertical-align: bottom;
+          padding-top: 15px;
+          &:active {
+            position: relative;
+            top: 1px;
+          }
+        }
+
+        img {
+          width: 32px;
+          margin: 0;
+          padding: 0;
+        }
+
+
+        a{
+          display: inline-block;
+          vertical-align: bottom;
+        }
+
+        #mode-buttons-container{
+          display: inline-block;
+          margin-right: 10px;
+          img{
+            margin: -7px 0 0 0;
+          }
+
+          .image-wrapper {
+            &:hover {
+              background-color: #0f11af;
+              color: #ffffff;
+            }
+          }
+          .active{
+            background-color: #0f11af !important;
+          }
+        }
+
         #chart-type-buttons-container {
           display: inline-block;
           margin-right: 10px;
 
           .image-wrapper {
-            background-color: #aeafab;
-            height: 48px;
-            width: 48px;
-            text-align: center;
-            display: inline-block;
-            vertical-align: bottom;
-            padding-top: 15px;
-
             &:hover {
               background-color: #19af1f;
               color: #ffffff;
-            }
-            &:active {
-              position: relative;
-              top: 1px;
             }
           }
           .active {
             background-color: #19af1f !important;
           }
           #time-series-display-button {
-            display: inline-block;
-            vertical-align: bottom;
-            img {
-              width: 32px;
-              margin: 0;
-              padding: 0;
-            }
           }
 
           #heat-map-display-button {
-            display: inline-block;
-            vertical-align: bottom;
             img {
-              width: 32px;
               margin: -7px 0 0 0;
-              padding: 0;
             }
           }
-
         }
 
         .panel {
@@ -1237,6 +1256,7 @@
       #selectors-container {
         height: 100%;
         float: right;
+        margin-top: -50px;
         .panel {
           margin: 0 0 10px 0;
         }
@@ -1407,7 +1427,40 @@
       }
     }
 
+    @media(min-width: 1400px){
+      #chart-container{
+        #time-series-container {
+          margin: 0;
+          #historic-chart-container {
+            #historic-chart {
+              height: 700px;
+            }
+          }
+          #forecast-chart-container {
+            #forecast-chart {
+              height: 700px;
+            }
+          }
+        }
+
+        #map-container {
+          height: 700px;
+          text-align: center;
+          margin: 0 0 0 40px;
+          #heat-map {
+            display: inline-block;
+            height: 100%;
+            width: 100%;
+          }
+        }
+      }
+    }
+
     @media (max-width: 991px) {
+      #chart-title{
+        margin: -10px 0 0 100px;
+        width: 50%;
+      }
       #chart-container {
         h2 {
           margin: 0 auto;
@@ -1416,14 +1469,37 @@
         #filters-container {
           margin: 0 0 10px 0;
           float: left;
-          .filter-button {
-            font-size: 12px;
+          .panel {
+            width: 100%;
           }
+
+          .panel-body {
+            width: 100%;
+          }
+
+          .filter-button {
+            width: 85px;
+            float: left;
+            margin-left: 2%;
+          }
+        }
+        .image-wrapper{
+          margin-bottom: 10px;
         }
 
         #selectors-container {
           #datepicker {
             margin: 0 10px 10px 0;
+          }
+        }
+        #map-container {
+          height: 500px;
+          text-align: center;
+          margin: 0 0 0 0;
+          #heat-map {
+            display: inline-block;
+            height: 100%;
+            width: 100%;
           }
         }
       }
@@ -1433,6 +1509,9 @@
       #chart-container {
         h2 {
           margin: 0 auto;
+        }
+        .image-wrapper{
+          margin-bottom: 10px;
         }
 
         #filters-container {
@@ -1457,6 +1536,16 @@
           float: left;
           #datepicker {
             margin-bottom: 10px;
+          }
+        }
+        #map-container {
+          height: 400px;
+          text-align: center;
+          margin: 0 0 0 0;
+          #heat-map {
+            display: inline-block;
+            height: 100%;
+            width: 100%;
           }
         }
       }
