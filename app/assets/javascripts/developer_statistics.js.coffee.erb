@@ -515,29 +515,25 @@ class TimeSeries
         i++
 
       updateData = []
-      if @tripsCompletedSelected
-        updateData.push({
+      updateData.push({
           name: 'Completed trips'
           historicData: @tripsCompleted
           forecastData: @tripsCompletedF
           load: @tripsCompletedSelected
         })
-      if @tripsRejectedSelected
-        updateData.push({
+      updateData.push({
           name: 'Rejected trips'
           historicData: @tripsRejectedF
           forecastData: @tripsRejectedF
           load: @tripsRejectedSelected
         })
-      if @tripsCancelledSelected
-        updateData.push({
+      updateData.push({
           name: 'Cancelled trips'
           historicData: @tripsCancelled
           forecastData: @tripsCancelledF
           load: @tripsCancelledSelected
         })
-      if @tripsErrorSelected
-        updateData.push({
+      updateData.push({
           name: 'Error trips'
           historicData: @tripsError
           forecastData: @tripsErrorF
