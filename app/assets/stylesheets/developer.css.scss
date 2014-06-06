@@ -1090,7 +1090,7 @@
       width: 100%;
     }
     #chart-title{
-      margin: -10px 0 0 50px;
+      margin: -10px 0 -10px 50px;
       padding: 0;
     }
     #chart-container {
@@ -1111,18 +1111,18 @@
         margin: 0;
         #historic-chart-container {
           #historic-chart {
-            height: 500px;
+            height: 400px;
           }
         }
         #forecast-chart-container {
           #forecast-chart {
-            height: 500px;
+            height: 400px;
           }
         }
       }
 
       #map-container {
-        height: 500px;
+        height: 400px;
         text-align: center;
         margin: 0 0 0 40px;
         #heat-map {
@@ -1170,44 +1170,51 @@
           vertical-align: bottom;
         }
 
-        #mode-buttons-container{
+        #historic-toggle-container{
           display: inline-block;
-          margin-right: 10px;
+          margin-right: 5px;
           img{
             margin: -7px 0 0 0;
           }
 
           .image-wrapper {
-            &:hover {
-              background-color: #0f11af;
-              color: #ffffff;
-            }
-          }
-          .active{
-            background-color: #0f11af !important;
+            background-color: #0f11af;
+            color: #ffffff;
           }
         }
 
-        #chart-type-buttons-container {
+        #chart-type-toggle-container {
           display: inline-block;
-          margin-right: 10px;
+          margin-right: 5px;
 
           .image-wrapper {
-            &:hover {
-              background-color: #19af1f;
-              color: #ffffff;
-            }
-          }
-          .active {
             background-color: #19af1f !important;
+            color: #ffffff;
           }
-          #time-series-display-button {
+          #statistics-toggle {
+            margin: -7px 0 0 0;
           }
 
-          #heat-map-display-button {
-            img {
-              margin: -7px 0 0 0;
-            }
+          #heatmap-toggle {
+            margin: -7px 0 0 0;
+          }
+        }
+
+        #data-mode-toggle-container{
+          display: inline-block;
+          margin-right: 5px;
+          img{
+            margin: -7px 0 0 0;
+          }
+
+          .image-wrapper {
+            background-color: #aeafab;
+            color: #ffffff;
+          }
+
+          .active{
+            background-color: #670f96;
+            color: #ffffff;
           }
         }
 

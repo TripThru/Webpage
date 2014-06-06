@@ -8,17 +8,18 @@ class TimeSeries
 
     @YAxisMax = 100
 
-    @chartType = 'series'
-    @chartTypeChanged = false
     @historicChart = null
     @forecastChart = null
-    @selectedStat = 'tripsCompleted'
-    @selectedFleet = 'All'
     @map = null
     @heatmap = null
     @fleets = {}
     @tripsById = {}
 
+
+    @selectedStat = 'tripsCompleted'
+    @selectedFleet = 'All'
+    @chartType = 'series'
+    @chartTypeChanged = false
     @realtimeMode = true
     @percentageMode = true
     @forecastDataMode = false
@@ -45,8 +46,6 @@ class TimeSeries
     @ratingDriversSelected =    false
     @ratingPassengersSelected = false
 
-    $('#time-series-display-button>.image-wrapper').addClass('active')
-    $('#historic-mode-button>.image-wrapper').addClass('active')
     $('#trips-completed-filter-button').addClass('active')
     $('#trips-rejected-filter-button').addClass('active')
     $('#trips-cancelled-filter-button').addClass('active')
@@ -55,6 +54,7 @@ class TimeSeries
     $('#percentage-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
+    $('#data-mode-toggle-container>#toggle-button>.image-wrapper').addClass('active')
 
     @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
     @tripsCancelled = { name: 'Cancelled trips', id: 'Cancelled trips', data: []}
@@ -117,13 +117,6 @@ class TimeSeries
     $('#forecast-chart-container').hide()
     @setFilterEvents()
 
-    $('#percentage-button').click =>
-      if not $('#percentage-button').hasClass('active')
-        @percentageMode = true
-        $('#absolute-button').toggleClass('active')
-        $('#percentage-button').toggleClass('active')
-        @update()
-
     $('#seconds-button').click =>
         if @realtimeMode and not $('#seconds-button').hasClass('active')
             $('#realtime-intervals-container').find('.active').removeClass('active')
@@ -169,14 +162,6 @@ class TimeSeries
           @realtimeModeInterval.weeks = true
           @update()
 
-
-    $('#absolute-button').click =>
-      if not $('#absolute-button').hasClass('active')
-        @percentageMode = false
-        $('#absolute-button').toggleClass('active')
-        $('#percentage-button').toggleClass('active')
-        @update()
-
     $('#realtime-button').click =>
       if $('#realtime-button').hasClass('active')
         @realtimeMode = false
@@ -195,44 +180,37 @@ class TimeSeries
       @selectedFleet = $('#partners-select option:selected').val()
       @update()
 
-    $('#heat-map-display-button').click =>
+    $('#chart-type-toggle-container>#toggle-button').click =>
         if @chartType == 'series'
             @chartType = 'map'
-            $('#time-series-display-button>.image-wrapper').removeClass('active')
-            $('#heat-map-display-button>.image-wrapper').addClass('active')
-            @chartTypeChanged = true
-            @setFilterEvents()
-            @update()
-            @chartTypeChanged = false
-
-    $('#time-series-display-button').click =>
-        if @chartType == 'map'
+            $('#statistics-toggle').hide()
+            $('#heatmap-toggle').show()
+        else
             @chartType = 'series'
-            $('#time-series-display-button>.image-wrapper').addClass('active')
-            $('#heat-map-display-button>.image-wrapper').removeClass('active')
-            @chartTypeChanged = true
-            @setFilterEvents()
-            @update()
-            @chartTypeChanged = false
+            $('#heatmap-toggle').hide()
+            $('#statistics-toggle').show()
+        @chartTypeChanged = true
+        @setFilterEvents()
+        @update()
+        @chartTypeChanged = false
 
-    $('#historic-mode-button').click =>
+    $('#historic-toggle-container>#toggle-button').click =>
         if @forecastDataMode
             @forecastDataMode = false
-            $('#historic-mode-button>.image-wrapper').addClass('active')
-            $('#forecast-mode-button>.image-wrapper').removeClass('active')
-            @dataModeChanged = true
-            @update()
-            @dataModeChanged = false
+            $('#forecast-toggle').hide()
+            $('#historic-toggle').show()
+        else
+            @forecastDataMode = true
+            $('#historic-toggle').hide()
+            $('#forecast-toggle').show()
+        @dataModeChanged = true
+        @update()
+        @dataModeChanged = false
 
-    $('#forecast-mode-button').click =>
-        if not @forecastDataMode
-           @forecastDataMode = true
-           $('#forecast-mode-button>.image-wrapper').addClass('active')
-           $('#historic-mode-button>.image-wrapper').removeClass('active')
-           @dataModeChanged = true
-           @update()
-           @dataModeChanged = false
-
+    $('#data-mode-toggle-container>#toggle-button').click =>
+        @percentageMode = not @percentageMode
+        $('#data-mode-toggle-container>#toggle-button>.image-wrapper').toggleClass('active')
+        @update()
 
     @update()
     clearInterval(window.tripthruinterval)

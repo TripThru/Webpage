@@ -3,31 +3,29 @@
   <div id="chart-container" class="container">
     <div class="row">
       <div id="filters-container">
-        <div id="chart-type-buttons-container">
-          <a id="time-series-display-button" href="#">
+        <div id="chart-type-toggle-container">
+          <a id="toggle-button" href="#">
             <i class="icon-home icon-1x"></i>
             <div class="image-wrapper">
-              <%= image_tag('statistics.png', alt: 'Time series') %>
-            </div>
-          </a>
-          <a id="heat-map-display-button" href="#">
-            <i class="icon-home icon-1x"></i>
-            <div class="image-wrapper">
-              <%= image_tag('map.png', alt: 'Heat map') %>
+              <%= image_tag('statistics.png', alt: 'Time series', :id => 'statistics-toggle') %>
+              <%= image_tag('map.png', alt: 'Heat map', :id => 'heatmap-toggle', style: 'display: none;') %>
             </div>
           </a>
         </div>
-        <div id="mode-buttons-container">
-          <a id="historic-mode-button" href="#">
+        <div id="historic-toggle-container">
+          <a id="toggle-button" href="#">
             <i class="icon-home icon-1x"></i>
             <div class="image-wrapper">
-              <%= image_tag('historic.png', alt: 'Historic data') %>
+              <%= image_tag('historic.png', alt: 'Historic data', :id => 'historic-toggle') %>
+              <%= image_tag('forecast.png', alt: 'Forecast data', :id => 'forecast-toggle', style: 'display: none;') %>
             </div>
           </a>
-          <a id="forecast-mode-button" href="#">
+        </div>
+        <div id="data-mode-toggle-container">
+          <a id="toggle-button" href="#">
             <i class="icon-home icon-1x"></i>
             <div class="image-wrapper">
-              <%= image_tag('forecast.png', alt: 'Forecast data') %>
+              <%= image_tag('percentage.png', alt: 'Percentage display', :id => 'percentage-toggle') %>
             </div>
           </a>
         </div>
@@ -97,10 +95,6 @@
         </div>
 
         <div id="selectors-container" class="col-md-2 col-md-pull-0 col-sm-2 col-sm-pull-10 col-xs-2 col-xs-pull-10">
-          <div id="display-modes-container">
-            <input type="submit" id="percentage-button" value="Percentage"/>
-            <input type="submit" id="absolute-button" value="Absolute"/>
-          </div>
           <div id="realtime-intervals-container">
             <input type="submit" id="seconds-button" value="S"/>
             <input type="submit" id="minutes-button" value="M"/>
