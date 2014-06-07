@@ -34,26 +34,21 @@ class MongoDbController < ApplicationController
       when 'day'
         interval = '$dayOfYear : "$LastUpdate"'
       when 'week'
-        interval = '$divide: [
-                        { $add: [
-                           { $multiply : [ { $month : "$LastUpdate"}, 30.5 ]},
-                           { $dayOfYear : "$LastUpdate"}
-                        ]}, ' + params[:bucketSize] + '
-                    ]'
+        interval = '$week : "$LastUpdate"'
     end
 
     if params[:endDate] != nil
-      match = '{ $match : { LastUpdate : { $gt: startDate, $lt: endDate } } }'
+      match = '{ $match : { LastUpdate : { $gte: startDate, $lte: endDate } } }'
     else
-      match = '{ $match : { LastUpdate : { $gt: startDate } } }'
+      match = '{ $match : { LastUpdate : { $gte: startDate } } }'
     end
 
     get_trips = '
       function () {
         var startDate = new Date("' + params[:startDate] + '");
-        var endDate = new Date("' + params[:endDate] + '");
+        var endDate = new Date("' + (params[:endDate] != nil ? params[:endDate] : '') + '");
         var trips = db.trips.aggregate(
-          '+ match +',
+          ' + match + ',
           { $sort: { LastUpdate : 1 } },
           { $project : {
               Status : "$Status",

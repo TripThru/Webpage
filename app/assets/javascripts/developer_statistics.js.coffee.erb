@@ -22,6 +22,8 @@ class TimeSeries
     @percentageMode = true
     @forecastDataMode = false
     @dataModeChanged = false
+    @togglesChanged  = false
+    @dateChanged = false
     @realtimeModeInterval  = {
         seconds: true
         hours: false
@@ -139,6 +141,7 @@ class TimeSeries
           @update()
 
     $('#realtime-button').click =>
+      @togglesChanged = true
       if $('#realtime-button').hasClass('active')
         @realtimeMode = false
         $('#datepicker>input').attr("disabled", false)
@@ -151,18 +154,25 @@ class TimeSeries
         @loadCharts()
         @update()
       $('#realtime-button').toggleClass('active')
+      @togglesChanged = false
 
     $('#start-date').on 'changeDate', (e) =>
         @startDate = e.date
+        @dateChanged = true
         @update()
+        @dateChanged = false
 
     $('#end-date').on 'changeDate', (e) =>
         @endDate = e.date
+        @dateChanged = true
         @update()
+        @dateChanged = false
 
     $('#partners-select').change =>
       @selectedFleet = $('#partners-select option:selected').val()
+      @togglesChanged = true
       @update()
+      @togglesChanged = false
 
     $('#chart-type-toggle-container>#toggle-button').click =>
         if @chartType == 'series'
@@ -194,7 +204,9 @@ class TimeSeries
     $('#data-mode-toggle-container>#toggle-button').click =>
         @percentageMode = not @percentageMode
         $('#data-mode-toggle-container>#toggle-button>.image-wrapper').toggleClass('active')
+        @togglesChanged = true
         @update()
+        @togglesChanged = false
 
     @update()
 
@@ -205,231 +217,232 @@ class TimeSeries
           $('#trips-rejected-filter-button').toggleClass('active')
           $('#trips-cancelled-filter-button').toggleClass('active')
           $('#trips-error-filter-button').toggleClass('active')
-          $('#trips-completed-filter-button').off('click').on('click', =>
+
+          $('#trips-completed-filter-button').off('click').on 'click', =>
               $('#trips-completed-filter-button').toggleClass('active')
               @tripsCompletedSelected= not @tripsCompletedSelected
-              @update([{
-                  name: 'Completed trips'
-                  data: @tripsCompleted
-                  load: @tripsCompletedSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#trips-rejected-filter-button').off('click').on('click', =>
+          $('#trips-rejected-filter-button').off('click').on 'click', =>
               $('#trips-rejected-filter-button').toggleClass('active')
               @tripsRejectedSelected= not @tripsRejectedSelected
-              @update([{
-                  name: 'Rejected trips'
-                  data: @tripsRejected
-                  load: @tripsRejectedSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#trips-cancelled-filter-button').off('click').on('click', =>
+          $('#trips-cancelled-filter-button').off('click').on 'click', =>
               $('#trips-cancelled-filter-button').toggleClass('active')
               @tripsCancelledSelected= not @tripsCancelledSelected
-              @update([{
-                  name: 'Cancelled trips'
-                  data: @tripsCancelled
-                  load: @tripsCancelledSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#trips-error-filter-button').off('click').on('click', =>
+          $('#trips-error-filter-button').off('click').on 'click', =>
               $('#trips-error-filter-button').toggleClass('active')
               @tripsErrorSelected= not @tripsErrorSelected
-              @update([{
-                  name: 'Error trips'
-                  data: @tripsError
-                  load: @tripsErrorSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#time-enroute-filter-button').off('click').on('click', =>
+          $('#time-enroute-filter-button').off('click').on 'click', =>
               $('#time-enroute-filter-button').toggleClass('active')
               @timeEnrouteSelected = not @timeEnrouteSelected
-              @update([{
-                  name: 'Time enroute'
-                  data: @timeEnroute
-                  load: @timeEnrouteSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#time-occupied-filter-button').off('click').on('click', =>
+          $('#time-occupied-filter-button').off('click').on 'click', =>
               $('#time-occupied-filter-button').toggleClass('active')
               @timeOccupiedSelected = not @timeOccupiedSelected
-              @update([{
-                  name: 'Time occupied'
-                  data: @timeOccupied
-                  load: @timeOccupiedSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#time-idle-filter-button').off('click').on('click', =>
+          $('#time-idle-filter-button').off('click').on 'click', =>
               $('#time-idle-filter-button').toggleClass('active')
               @timeIdleSelected = not @timeIdleSelected
-              @update([{
-                  name: 'Time idle'
-                  data: @timeIdle
-                  load: @timeIdleSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#mileage-enroute-filter-button').off('click').on('click', =>
+          $('#mileage-enroute-filter-button').off('click').on 'click', =>
               $('#mileage-enroute-filter-button').toggleClass('active')
               @mileageEnrouteSelected = not @mileageEnrouteSelected
-              @update([{
-                  name: 'Mileage enroute'
-                  data: @mileageEnroute
-                  load: @mileageEnrouteSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#mileage-occupied-filter-button').off('click').on('click', =>
+          $('#mileage-occupied-filter-button').off('click').on 'click', =>
               $('#mileage-occupied-filter-button').toggleClass('active')
               @mileageOccupiedSelected = not @mileageOccupiedSelected
-              @update([{
-                  name: 'Mileage occupied'
-                  data: @mileageOccupied
-                  load: @mileageOccupiedSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#service-goal-filter-button').off('click').on('click', =>
+          $('#service-goal-filter-button').off('click').on 'click', =>
               $('#service-goal-filter-button').toggleClass('active')
               @serviceGoalSelected = not @serviceGoalSelected
-              @update([{
-                  name: 'In service'
-                  data: @serviceGoal
-                  load: @serviceGoalSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#service-lateness-filter-button').off('click').on('click', =>
+          $('#service-lateness-filter-button').off('click').on 'click', =>
               $('#service-lateness-filter-button').toggleClass('active')
               @serviceLatenessSelected = not @serviceLatenessSelected
-              @update([{
-                  name: 'Out service'
-                  data: @serviceLateness
-                  load: @serviceLatenessSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#ratings-drivers-filter-button').off('click').on('click', =>
+          $('#ratings-drivers-filter-button').off('click').on 'click', =>
               $('#ratings-drivers-filter-button').toggleClass('active')
               @ratingDriversSelected = not @ratingDriversSelected
-              @update([{
-                  name: 'Rating drivers'
-                  data: @ratingDrivers
-                  load: @ratingDriversSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
-          $('#ratings-passengers-filter-button').off('click').on('click', =>
+          $('#ratings-passengers-filter-button').off('click').on 'click', =>
               $('#ratings-passengers-filter-button').toggleClass('active')
               @ratingPassengersSelected = not @ratingPassengersSelected
-              @update([{
-                  name: 'Rating passengers'
-                  data: @ratingPassengers
-                  load: @ratingPassengersSelected
-              }]))
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
       else
           @selectedStat = 'Completed trips'
           $('.filter-button').removeClass('active')
           $('#trips-completed-filter-button').addClass('active')
-          $('#trips-completed-filter-button').off('click').on('click', =>
+          $('#trips-completed-filter-button').off('click').on 'click', =>
               if @selectedStat != 'tripsCompleted'
                   $('.filter-button').removeClass('active')
                   $('#trips-completed-filter-button').addClass('active')
                   @selectedStat = 'Completed trips'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#trips-rejected-filter-button').off('click').on('click', =>
+
+          $('#trips-rejected-filter-button').off('click').on 'click', =>
               if @selectedStat != 'tripsRejected'
                   $('.filter-button').removeClass('active')
                   $('#trips-rejected-filter-button').addClass('active')
                   @selectedStat = 'Rejected trips'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#trips-cancelled-filter-button').off('click').on('click', =>
+
+          $('#trips-cancelled-filter-button').off('click').on 'click', =>
               if @selectedStat != 'tripsCancelled'
                   $('.filter-button').removeClass('active')
                   $('#trips-cancelled-filter-button').addClass('active')
                   @selectedStat = 'Cancelled trips'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#trips-error-filter-button').off('click').on('click', =>
+
+          $('#trips-error-filter-button').off('click').on 'click', =>
               if @selectedStat != 'tripsError'
                   $('.filter-button').removeClass('active')
                   $('#trips-error-filter-button').addClass('active')
                   @selectedStat = 'Error trips'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#time-enroute-filter-button').off('click').on('click', =>
+
+          $('#time-enroute-filter-button').off('click').on 'click', =>
               if @selectedStat != 'timeEnroute'
                   $('.filter-button').removeClass('active')
                   $('#time-enroute-filter-button').addClass('active')
                   @selectedStat = 'Time enroute'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#time-occupied-filter-button').off('click').on('click', =>
+
+          $('#time-occupied-filter-button').off('click').on 'click', =>
               if @selectedStat != 'timeOccupied'
                   $('.filter-button').removeClass('active')
                   $('#time-occupied-filter-button').addClass('active')
                   @selectedStat = 'Time occupied'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#time-idle-filter-button').off('click').on('click', =>
+
+          $('#time-idle-filter-button').off('click').on 'click', =>
               if @selectedStat != 'timeIdle'
                   $('.filter-button').removeClass('active')
                   $('#time-idle-filter-button').addClass('active')
                   @selectedStat = 'Time idle'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#mileage-enroute-filter-button').off('click').on('click', =>
+
+          $('#mileage-enroute-filter-button').off('click').on 'click', =>
               if @selectedStat != 'mileageEnroute'
                   $('.filter-button').removeClass('active')
                   $('#mileage-enroute-filter-button').addClass('active')
                   @selectedStat = 'Mileage enroute'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#mileage-occupied-filter-button').off('click').on('click', =>
+
+          $('#mileage-occupied-filter-button').off('click').on 'click', =>
               if @selectedStat != 'mileageOccupied'
                   $('.filter-button').removeClass('active')
                   $('#mileage-occupied-filter-button').addClass('active')
                   @selectedStat = 'Mileage occupied'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#service-goal-filter-button').off('click').on('click', =>
+
+          $('#service-goal-filter-button').off('click').on 'click', =>
               if @selectedStat != 'serviceGoal'
                   $('.filter-button').removeClass('active')
                   $('#service-goal-filter-button').addClass('active')
                   @selectedStat = 'Service goal'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#service-lateness-filter-button').off('click').on('click', =>
+
+          $('#service-lateness-filter-button').off('click').on 'click', =>
               if @selectedStat != 'serviceLateness'
                   $('.filter-button').removeClass('active')
                   $('#service-lateness-filter-button').addClass('active')
                   @selectedStat = 'Out service'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#ratings-drivers-filter-button').off('click').on('click', =>
+
+          $('#ratings-drivers-filter-button').off('click').on 'click', =>
               if @selectedStat != 'ratingDrivers'
                   $('.filter-button').removeClass('active')
                   $('#ratings-drivers-filter-button').addClass('active')
                   @selectedStat = 'Rating drivers'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-          $('#ratings-passengers-filter-button').off('click').on('click', =>
+
+          $('#ratings-passengers-filter-button').off('click').on 'click', =>
               if @selectedStat != 'ratingPassengers'
                   $('.filter-button').removeClass('active')
                   $('#ratings-passengers-filter-button').addClass('active')
                   @selectedStat = 'Rating passengers'
+                  @togglesChanged = true
                   @update()
-          )
+                  @togglesChanged = false
 
-  update: (series) =>
+
+  update: () =>
       if @chartTypeChanged and @chartType == 'series'
           $('#map-container').hide()
           $('#time-series-container').show()
@@ -461,15 +474,110 @@ class TimeSeries
       if @realtimeMode and not @updatingRealTime
           @updatingRealTime = true
           @updateRealTime()
-      else if series?
-          @setSeries(series)
-      else
-          @loadCharts()
-          @setSeries(@generateSeries())
+      else if @dateChanged or @togglesChanged
+          @updateTimeRange()
       
   updateRealTime: () =>
     [startDate, intervalName, bucketSize, dates, intervals] = @getRealTimeQueryParams()
     $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
+      @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
+      @updatingRealTime = false
+
+  getRealTimeQueryParams: () =>
+      startDate = new Date()
+      intervalCount = 0
+      bucketSize = 1
+      intervalName = ''
+      if @realtimeModeInterval.seconds
+          startDate.setMinutes(startDate.getMinutes()-10)
+          intervalCount = 41
+          bucketSize = 15
+          intervalName = 'second'
+      else if @realtimeModeInterval.minutes
+          startDate.setHours(startDate.getHours()-10)
+          intervalCount = 41
+          bucketSize = 15
+          intervalName = 'minute'
+      else if @realtimeModeInterval.hours
+          startDate.setDate(startDate.getDate()-2)
+          intervalCount = 49
+          intervalName = 'hour'
+      else if @realtimeModeInterval.days
+          startDate.setMonth(startDate.getMonth()-1)
+          intervalCount = 33
+          intervalName = 'day'
+      else if @realtimeModeInterval.weeks
+          startDate.setMonth(startDate.getMonth()-3)
+          intervalCount = 14
+          intervalName = 'week'
+      returnDate = new Date(startDate)
+
+      [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
+      return [returnDate, intervalName, bucketSize, dates, intervalIds]
+
+  updateTimeRange: () =>
+      [intervalName, bucketSize, dates, intervals] = @getTimeRangeQueryParams(new Date(@startDate), new Date(@endDate))
+      $.get '/mongo_db/trips_count?startDate=' + @startDate + '&endDate=' + @endDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
+        @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
+
+  getTimeRangeQueryParams: (startDate, endDate) =>
+    days = daysBetween(startDate, endDate)
+    intervalCount = 0
+    bucketSize = 1
+    intervalName = ''
+
+    if days < 3
+        intervalCount = days * 24
+        intervalName = 'hour'
+    else if days >= 3 and days < 7
+        bucketSize = 8
+        intervalCount = days * 24 / bucketSize
+        intervalName = 'hour'
+    else if days < 61
+        intervalCount = days
+        intervalName = 'day'
+    else
+        intervalCount = (days / 7).toFixed(0)
+        intervalName = 'week'
+
+    [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
+    return [intervalName, bucketSize, dates, intervalIds]
+
+
+  getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>
+      dates = []
+      intervalIds = []
+      for i in [0..intervalCount]
+          interval = 0
+          switch intervalName
+              when 'second'
+                  interval = startDate.getUTCHours()*3600 + startDate.getUTCMinutes()*60 + startDate.getUTCSeconds()
+                  dates.push startDate.getTime()
+                  intervalIds.push (interval/bucketSize).toFixed(0)
+                  startDate.setSeconds(startDate.getSeconds() + bucketSize)
+              when 'minute'
+                  interval = startDate.getUTCHours()*60 + startDate.getUTCMinutes()
+                  dates.push startDate.getTime()
+                  intervalIds.push (interval/bucketSize).toFixed(0)
+                  startDate.setMinutes(startDate.getMinutes() + bucketSize)
+              when 'hour'
+                  interval = startDate.getDayOfYear() * 24 + startDate.getUTCHours()
+                  dates.push startDate.getTime()
+                  intervalIds.push (interval/bucketSize).toFixed(0)
+                  startDate.setHours(startDate.getHours() + bucketSize)
+              when 'day'
+                  interval = startDate.getDayOfYear()
+                  dates.push startDate.getTime()
+                  intervalIds.push (interval/bucketSize).toFixed(0)
+                  startDate.setDate(startDate.getDate() + bucketSize)
+              when 'week'
+                  interval = startDate.getWeek()
+                  dates.push startDate.getTime()
+                  intervalIds.push (interval/bucketSize).toFixed(0)
+                  startDate.setDate(startDate.getDate() + 7)
+      return [dates, intervalIds]
+
+  mongoDbTripCountToSeries: (data, dates, intervals) =>
       @tripsCompleted.data = []
       @tripsRejected.data = []
       @tripsCancelled.data = []
@@ -478,122 +586,59 @@ class TimeSeries
       @YAxisMax = 0
       i = 0
       for interval in intervals
-        date = dates[i]
-        id = interval
+          date = dates[i]
+          id = interval
 
-        count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
-        countComplete = if count.length == 0 then 0 else count[0].count
-        count = data.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
-        countCancelled = if count.length == 0 then 0 else count[0].count
-        count = data.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
-        countRejected = if count.length == 0 then 0 else count[0].count
-        count = data.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
-        countError = if count.length == 0 then 0 else count[0].count
-        total = countComplete + countCancelled + countRejected + countError
-        @YAxisMax = if total > @YAxisMax then total else @YAxisMax
+          count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
+          countComplete = if count.length == 0 then 0 else count[0].count
+          count = data.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
+          countCancelled = if count.length == 0 then 0 else count[0].count
+          count = data.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
+          countRejected = if count.length == 0 then 0 else count[0].count
+          count = data.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
+          countError = if count.length == 0 then 0 else count[0].count
+          total = countComplete + countCancelled + countRejected + countError
+          @YAxisMax = if total > @YAxisMax then total else @YAxisMax
 
-        if @percentageMode
-          countComplete = if countComplete > 0 then countComplete*100/total else 0
-          countCancelled = if countCancelled > 0 then countCancelled*100/total else 0
-          countRejected = if countRejected > 0 then countRejected*100/total else 0
-          countError = if countError > 0 then countError*100/total else 0
+          if @percentageMode
+              countComplete = if countComplete > 0 then countComplete*100/total else 0
+              countCancelled = if countCancelled > 0 then countCancelled*100/total else 0
+              countRejected = if countRejected > 0 then countRejected*100/total else 0
+              countError = if countError > 0 then countError*100/total else 0
 
-        if @tripsCompletedSelected
-          @tripsCompleted.data.push [date, countComplete]
-        if @tripsRejectedSelected
-          @tripsRejected.data.push [date, countRejected]
-        if @tripsCancelledSelected
-          @tripsCancelled.data.push [date, countCancelled]
-        if @tripsErrorSelected
-          @tripsError.data.push [date, countError]
+          if @tripsCompletedSelected
+              @tripsCompleted.data.push [date, countComplete]
+          if @tripsRejectedSelected
+              @tripsRejected.data.push [date, countRejected]
+          if @tripsCancelledSelected
+              @tripsCancelled.data.push [date, countCancelled]
+          if @tripsErrorSelected
+              @tripsError.data.push [date, countError]
 
-        i++
+          i++
 
       updateData = []
       updateData.push({
           name: 'Completed trips'
           data: @tripsCompleted
           load: @tripsCompletedSelected
-        })
+      })
       updateData.push({
           name: 'Rejected trips'
           data: @tripsRejected
           load: @tripsRejectedSelected
-        })
+      })
       updateData.push({
           name: 'Cancelled trips'
           data: @tripsCancelled
           load: @tripsCancelledSelected
-        })
+      })
       updateData.push({
           name: 'Error trips'
           data: @tripsError
           load: @tripsErrorSelected
-        })
-      @setSeries updateData
-      @updatingRealTime = false
-
-  getRealTimeQueryParams: () =>
-      startDate = new Date()
-      intervals = 0
-      bucketSize = 1
-      intervalName = ''
-      if @realtimeModeInterval.seconds
-          startDate.setMinutes(startDate.getMinutes()-10)
-          intervals = 41
-          bucketSize = 15
-          intervalName = 'second'
-      else if @realtimeModeInterval.minutes
-          startDate.setHours(startDate.getHours()-10)
-          intervals = 41
-          bucketSize = 15
-          intervalName = 'minute'
-      else if @realtimeModeInterval.hours
-          startDate.setDate(startDate.getDate()-2)
-          intervals = 49
-          intervalName = 'hour'
-      else if @realtimeModeInterval.days
-          startDate.setMonth(startDate.getMonth()-1)
-          intervals = 33
-          intervalName = 'day'
-      else if @realtimeModeInterval.weeks
-          startDate.setMonth(startDate.getMonth()-3)
-          intervals = 14
-          intervalName = 'week'
-          bucketSize = 7
-      returnDate = new Date(startDate)
-
-      dates = []
-      intervalIds = []
-      for i in [0..intervals]
-          interval = 0
-          if @realtimeModeInterval.seconds
-              interval = startDate.getUTCHours()*3600 + startDate.getUTCMinutes()*60 + startDate.getUTCSeconds()
-              dates.push startDate.getTime()
-              intervalIds.push (interval/bucketSize).toFixed(0)
-              startDate.setSeconds(startDate.getSeconds() + bucketSize)
-          else if @realtimeModeInterval.minutes
-              interval = startDate.getUTCHours()*60 + startDate.getUTCMinutes()
-              dates.push startDate.getTime()
-              intervalIds.push (interval/bucketSize).toFixed(0)
-              startDate.setMinutes(startDate.getMinutes() + bucketSize)
-          else if @realtimeModeInterval.hours
-              interval = startDate.getDayOfYear() * 24 + startDate.getUTCHours()
-              dates.push startDate.getTime()
-              intervalIds.push (interval/bucketSize).toFixed(0)
-              startDate.setHours(startDate.getHours() + bucketSize)
-          else if @realtimeModeInterval.days
-              interval = startDate.getDayOfYear()
-              dates.push startDate.getTime()
-              intervalIds.push (interval/bucketSize).toFixed(0)
-              startDate.setDate(startDate.getDate() + bucketSize)
-          else if @realtimeModeInterval.weeks
-              interval = startDate.getUTCMonth() * 30.5 + startDate.getDayOfYear()
-              dates.push startDate.getTime()
-              intervalIds.push (interval/bucketSize).toFixed(0)
-              startDate.setDate(startDate.getDate() + bucketSize)
-
-      return [returnDate, intervalName, bucketSize, dates, intervalIds]
+      })
+      return updateData
 
   setSeries: (series) =>
     if @chartType == 'series'
@@ -742,7 +787,7 @@ class TimeSeries
               max: 100
           tooltip:
               headerFormat: '<b>{series.name}</b><br>',
-              pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+              pointFormat: '{point.x:%e. %b}: {point.y:.2f}'
           series: [
 
           ]
@@ -766,7 +811,7 @@ class TimeSeries
             max: 100
           tooltip:
             headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+            pointFormat: '{point.x:%e. %b}: {point.y:.2f}'
           series: [
 
           ]
