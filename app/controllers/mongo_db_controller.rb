@@ -6,6 +6,8 @@ class MongoDbController < ApplicationController
 
   def trips_count
     interval = ''
+    match = ''
+
     case params[:interval]
       when 'second'
         interval = '$divide: [
@@ -39,11 +41,19 @@ class MongoDbController < ApplicationController
                         ]}, ' + params[:bucketSize] + '
                     ]'
     end
+
+    if params[:endDate] != nil
+      match = '{ $match : { LastUpdate : { $gt: startDate, $lt: endDate } } }'
+    else
+      match = '{ $match : { LastUpdate : { $gt: startDate } } }'
+    end
+
     get_trips = '
       function () {
         var startDate = new Date("' + params[:startDate] + '");
+        var endDate = new Date("' + params[:endDate] + '");
         var trips = db.trips.aggregate(
-          { $match : { LastUpdate : { $gt: startDate } } },
+          '+ match +',
           { $sort: { LastUpdate : 1 } },
           { $project : {
               Status : "$Status",

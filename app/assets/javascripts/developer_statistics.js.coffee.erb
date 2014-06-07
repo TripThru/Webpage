@@ -428,6 +428,44 @@ class TimeSeries
                   @selectedStat = 'Rating passengers'
                   @update()
           )
+
+  update: (series) =>
+      if @chartTypeChanged and @chartType == 'series'
+          $('#map-container').hide()
+          $('#time-series-container').show()
+          @loadCharts()
+      else if @chartTypeChanged and @chartType == 'map'
+          $('#time-series-container').hide()
+          $('#map-container').show()
+          if !@map?
+              @loadMap()
+              google.maps.event.addDomListenerOnce(@map, "tilesloaded", () =>
+                  google.maps.event.addDomListenerOnce(@map, "tilesloaded", @update(series)))
+          else
+              google.maps.event.trigger(@map,'resize')
+
+      if @dataModeChanged
+          if @forecastDataMode
+              $('#chart-title').html 'Forecast'
+              if @chartType == 'series'
+                  $('#historic-chart-container').hide()
+                  $('#forecast-chart-container').show()
+                  @loadCharts()
+          else
+              $('#chart-title').html 'Historic'
+              if @chartType == 'series'
+                  $('#forecast-chart-container').hide()
+                  $('#historic-chart-container').show()
+                  @loadCharts()
+
+      if @realtimeMode and not @updatingRealTime
+          @updatingRealTime = true
+          @updateRealTime()
+      else if series?
+          @setSeries(series)
+      else
+          @loadCharts()
+          @setSeries(@generateSeries())
       
   updateRealTime: () =>
     [startDate, intervalName, bucketSize, dates, intervals] = @getRealTimeQueryParams()
@@ -556,44 +594,6 @@ class TimeSeries
               startDate.setDate(startDate.getDate() + bucketSize)
 
       return [returnDate, intervalName, bucketSize, dates, intervalIds]
-
-  update: (series) =>
-    if @chartTypeChanged and @chartType == 'series'
-        $('#map-container').hide()
-        $('#time-series-container').show()
-        @loadCharts()
-    else if @chartTypeChanged and @chartType == 'map'
-        $('#time-series-container').hide()
-        $('#map-container').show()
-        if !@map?
-            @loadMap()
-            google.maps.event.addDomListenerOnce(@map, "tilesloaded", () =>
-                google.maps.event.addDomListenerOnce(@map, "tilesloaded", @update(series)))
-        else
-            google.maps.event.trigger(@map,'resize')
-
-    if @dataModeChanged
-        if @forecastDataMode
-            $('#chart-title').html 'Forecast'
-            if @chartType == 'series'
-                $('#historic-chart-container').hide()
-                $('#forecast-chart-container').show()
-                @loadCharts()
-        else
-            $('#chart-title').html 'Historic'
-            if @chartType == 'series'
-                $('#forecast-chart-container').hide()
-                $('#historic-chart-container').show()
-                @loadCharts()
-
-    if @realtimeMode and not @updatingRealTime
-        @updatingRealTime = true
-        @updateRealTime()
-    else if series?
-        @setSeries(series)
-    else
-        @loadCharts()
-        @setSeries(@generateSeries())
 
   setSeries: (series) =>
     if @chartType == 'series'
