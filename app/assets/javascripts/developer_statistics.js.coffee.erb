@@ -12,6 +12,7 @@ class TimeSeries
     @forecastChart = null
     @map = null
     @heatmap = null
+    window.circle = null
     @fleets = {}
     @tripsById = {}
 
@@ -702,26 +703,39 @@ class TimeSeries
                 break
       for key of @tripsById
           if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
-              taxiData.push {
-                  location: new google.maps.LatLng(@tripsById[key].pickupLocation.lat,@tripsById[key].pickupLocation.lng),
-                  weight: weight
-              }
-              taxiData.push {
-                  location: new google.maps.LatLng(@tripsById[key].dropoffLocation.lat,@tripsById[key].dropoffLocation.lng),
-                  weight: weight
-              }
+              locationPickUp = new google.maps.LatLng(@tripsById[key].pickupLocation.lat,@tripsById[key].pickupLocation.lng)
+              locationDropoff =  new google.maps.LatLng(@tripsById[key].dropoffLocation.lat,@tripsById[key].dropoffLocation.lng)
+              if window.circle is null
+                  taxiData.push {
+                      location: locationPickUp,
+                      weight: weight
+                  }
+                  taxiData.push {
+                      location: locationDropoff,
+                      weight: weight
+                  }
+              else
+                  if window.circle.isHere(locationPickUp)
+                      taxiData.push {
+                          location: locationPickUp,
+                          weight: weight
+                      }
+                  if window.circle.isHere(locationDropoff)
+                      taxiData.push {
+                          location: locationDropoff,
+                          weight: weight
+                      }
       if @selectedFleet != 'All'
           @map.panTo(new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng))
       @heatmap.setMap null
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
-          radius: 30,
+          radius: 20,
           maxIntensity: 100,
           gradient: gradient
       })
       @heatmap.setMap @map
-
 
   processTrip: (newTrip) =>
       driverLocation =
@@ -842,6 +856,29 @@ class TimeSeries
           disableDoubleClickZoom: false
       @map = new google.maps.Map(document.getElementById(@mapContainer), mapOptions)
       @heatmap = new google.maps.visualization.HeatmapLayer()
+      drawingManager = new google.maps.drawing.DrawingManager(
+          drawingMode: google.maps.drawing.OverlayType.CIRCLE
+          drawingControl: true
+          drawingControlOptions:
+              position: google.maps.ControlPosition.TOP_CENTER
+              drawingModes: [google.maps.drawing.OverlayType.CIRCLE ]
+
+          circleOptions:
+              fillColor: "#ffff00"
+              fillOpacity: .13
+              strokeWeight: 2
+              clickable: false
+              zIndex: 1
+              editable: true
+      )
+      drawingManager.setMap @map
+      google.maps.event.addListener drawingManager, "circlecomplete", (circle) ->
+         circle.isHere = (latLng) ->
+            @getBounds().contains(latLng) and google.maps.geometry.spherical.computeDistanceBetween(@getCenter(), latLng) <= @getRadius()
+         if window.circle isnt null
+            window.circle.setMap null
+         window.circle = circle
+         window.timeSeries.updateRealTime()
 
   loadSelectorFleets: (fleets) =>
       for fleet in fleets.fleets
@@ -905,7 +942,6 @@ class TimeSeries
         @historicChart.redraw()
     if @forecastChart?
         @forecastChart.redraw()
-
 
   generateRandomData: (dates) =>
     @YAxisMax = 0
@@ -975,7 +1011,7 @@ class TimeSeries
 
 $('.developer.statistics').ready ->
   clearInterval(window.tripthruinterval)
-  timeSeries = new TimeSeries(new TripThru($('#access_token').val()), 'historic-chart', 'forecast-chart', 'heat-map')
+  window.timeSeries = new TimeSeries(new TripThru($('#access_token').val()), 'historic-chart', 'forecast-chart', 'heat-map')
   $('#datepicker').datepicker(
     format: "yyyy/mm/dd"
     startDate: "2012-01-01"
