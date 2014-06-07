@@ -80,7 +80,15 @@
       </div>
     </div>
     <div class="row">
-        <h2 id="chart-title">Historic</h2>
+        <div id="chart-title" class="col-md-9 col-md-push-0 col-sm-10 col-sm-push-2 col-xs-10 col-xs-push-2">
+          <h2>Historic</h2>
+          <a href="#">
+            <i class="icon-home icon-1x"></i>
+            <div class="image-wrapper pull-right">
+              <%= image_tag('upload.png', alt: 'Load data') %>
+            </div>
+          </a>
+        </div>
         <br/>
         <div id="time-series-container" class="col-md-9 col-md-push-0 col-sm-10 col-sm-push-2 col-xs-10 col-xs-push-2">
           <div id="historic-chart-container">
