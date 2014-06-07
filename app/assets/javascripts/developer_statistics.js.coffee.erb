@@ -453,7 +453,7 @@ class TimeSeries
           if !@map?
               @loadMap()
               google.maps.event.addDomListenerOnce(@map, "tilesloaded", () =>
-                  google.maps.event.addDomListenerOnce(@map, "tilesloaded", @update(series)))
+                  google.maps.event.addDomListenerOnce(@map, "tilesloaded", @update()))
           else
               google.maps.event.trigger(@map,'resize')
 
@@ -690,14 +690,14 @@ class TimeSeries
       weight = 0
       if @realtimeMode
           if not @percentageMode
-             weightValue = series[0].data[0][1] * 20
+             weightValue = series[0].data.data[0][1] * 20
              weight = if weightValue > 100 then 100 else weightValue
           else
-             weight = series[0].data[0][1]
+             weight = series[0].data.data[0][1]
       else
         for serie in series
             if serie.name == @selectedStat
-                weight = series[0].data[0][1]
+                weight = series[0].data.data[0][1]
                 break
       for key of @tripsById
           if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
