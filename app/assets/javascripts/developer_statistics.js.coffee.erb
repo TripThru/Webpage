@@ -2,8 +2,6 @@ class TimeSeries
 
   constructor: (@gateway, @historicChartContainerId, @forecastChartContainerId, @mapContainer) ->
     @gateway.getPartners(@loadSelectorFleets)
-    @startDate = new Date()
-    @endDate = new Date()
     @data = null
 
     @YAxisMax = 100
@@ -31,6 +29,26 @@ class TimeSeries
         weeks: false
         months: false
     }
+
+    $('#start-date').datepicker(
+      format: "yyyy/mm/dd"
+      endDate: '+1d'
+      todayBtn: "linked"
+      autoclose: true
+      todayHighlight: true
+    )
+    $('#end-date').datepicker(
+      format: "yyyy/mm/dd"
+      endDate: '+1d'
+      todayBtn: "linked"
+      autoclose: true
+      todayHighlight: true
+    )
+    @startDate = new Date()
+    @startDate.setDate(@startDate.getDate()-7)
+    @endDate = new Date()
+    $('#start-date').datepicker('update', @startDate)
+    $('#end-date').datepicker('update', @endDate)
 
     @tripsCompletedSelected =   true
     @tripsCancelledSelected =   true
@@ -70,49 +88,7 @@ class TimeSeries
     @ratingDrivers =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
     @ratingPassengers = { name: 'Passengers rating', id: 'Passengers rating', data: []}
 
-    @tripsCompletedF = { name: 'Completed trips', id: 'Completed trips', data: []}
-    @tripsCancelledF = { name: 'Cancelled trips', id: 'Cancelled trips', data: []}
-    @tripsRejectedF =  { name: 'Rejected trips', id: 'Rejected trips', data: []}
-    @tripsErrorF =     { name: 'Error trips', id: 'Error trips', data: []}
-    @timeEnrouteF =      { name: 'Time enroute', id: 'Time enroute', data: []}
-    @timeOccupiedF =     { name: 'Time occupied', id: 'Time occupied', data: []}
-    @timeIdleF =         { name: 'Time idle', id: 'Time idle', data: []}
-    @mileageEnrouteF =   { name: 'Mileage enroute', id: 'Mileage enroute', data: []}
-    @mileageOccupiedF =  { name: 'Mileage occupied', id: 'Mileage occupied', data: []}
-    @serviceGoalF =      { name: 'In service', id: 'In service', data: []}
-    @serviceLatenessF =  { name: 'Out service', id: 'Out service', data: []}
-    @ratingDriversF =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
-    @ratingPassengersF = { name: 'Passengers rating', id: 'Passengers rating', data: []}
-
-    @dates = [
-      Date.UTC(2014, 5, 25, 0, 0, 0)
-      Date.UTC(2014, 5, 25, 1, 0, 0)
-      Date.UTC(2014, 5, 25, 2, 0, 0)
-      Date.UTC(2014, 5, 25, 3, 0, 0)
-      Date.UTC(2014, 5, 25, 4, 0, 0)
-      Date.UTC(2014, 5, 25, 5, 0, 0)
-      Date.UTC(2014, 5, 25, 6, 0, 0)
-      Date.UTC(2014, 5, 25, 7, 0, 0)
-      Date.UTC(2014, 5, 25, 8, 0, 0)
-      Date.UTC(2014, 5, 25, 9, 0, 0)
-      Date.UTC(2014, 5, 25, 10, 0, 0)
-      Date.UTC(2014, 5, 25, 11, 0, 0)
-      Date.UTC(2014, 5, 25, 12, 0, 0)
-      Date.UTC(2014, 5, 25, 13, 0, 0)
-      Date.UTC(2014, 5, 25, 14, 0, 0)
-      Date.UTC(2014, 5, 25, 15, 0, 0)
-      Date.UTC(2014, 5, 25, 16, 0, 0)
-      Date.UTC(2014, 5, 25, 17, 0, 0)
-      Date.UTC(2014, 5, 25, 18, 0, 0)
-      Date.UTC(2014, 5, 25, 19, 0, 0)
-      Date.UTC(2014, 5, 25, 20, 0, 0)
-      Date.UTC(2014, 5, 25, 21, 0, 0)
-      Date.UTC(2014, 5, 25, 22, 0, 0)
-      Date.UTC(2014, 5, 25, 23, 0, 0)
-    ]
-
     @loadCharts()
-    @generateRandomData(@dates)
 
     $('#forecast-chart-container').hide()
     @setFilterEvents()
@@ -176,6 +152,14 @@ class TimeSeries
         @update()
       $('#realtime-button').toggleClass('active')
 
+    $('#start-date').on 'changeDate', (e) =>
+        @startDate = e.date
+        @update()
+
+    $('#end-date').on 'changeDate', (e) =>
+        @endDate = e.date
+        @update()
+
     $('#partners-select').change =>
       @selectedFleet = $('#partners-select option:selected').val()
       @update()
@@ -213,12 +197,6 @@ class TimeSeries
         @update()
 
     @update()
-    clearInterval(window.tripthruinterval)
-    window.tripthruinterval = setInterval =>
-      if @realtimeMode and not @updatingRealTime
-        @updatingRealTime = true
-        @update()
-    , 15000
 
   setFilterEvents: () =>
       if @chartType == 'series'
@@ -232,8 +210,7 @@ class TimeSeries
               @tripsCompletedSelected= not @tripsCompletedSelected
               @update([{
                   name: 'Completed trips'
-                  historicData: @tripsCompleted
-                  forecastData: @tripsCompletedF
+                  data: @tripsCompleted
                   load: @tripsCompletedSelected
               }]))
 
@@ -242,8 +219,7 @@ class TimeSeries
               @tripsRejectedSelected= not @tripsRejectedSelected
               @update([{
                   name: 'Rejected trips'
-                  historicData: @tripsRejectedF
-                  forecastData: @tripsRejectedF
+                  data: @tripsRejected
                   load: @tripsRejectedSelected
               }]))
 
@@ -252,8 +228,7 @@ class TimeSeries
               @tripsCancelledSelected= not @tripsCancelledSelected
               @update([{
                   name: 'Cancelled trips'
-                  historicData: @tripsCancelled
-                  forecastData: @tripsCancelledF
+                  data: @tripsCancelled
                   load: @tripsCancelledSelected
               }]))
 
@@ -262,8 +237,7 @@ class TimeSeries
               @tripsErrorSelected= not @tripsErrorSelected
               @update([{
                   name: 'Error trips'
-                  historicData: @tripsError
-                  forecastData: @tripsErrorF
+                  data: @tripsError
                   load: @tripsErrorSelected
               }]))
 
@@ -272,8 +246,7 @@ class TimeSeries
               @timeEnrouteSelected = not @timeEnrouteSelected
               @update([{
                   name: 'Time enroute'
-                  historicData: @timeEnroute
-                  forecastData: @timeEnrouteF
+                  data: @timeEnroute
                   load: @timeEnrouteSelected
               }]))
 
@@ -282,8 +255,7 @@ class TimeSeries
               @timeOccupiedSelected = not @timeOccupiedSelected
               @update([{
                   name: 'Time occupied'
-                  historicData: @timeOccupied
-                  forecastData: @timeOccupiedF
+                  data: @timeOccupied
                   load: @timeOccupiedSelected
               }]))
 
@@ -292,8 +264,7 @@ class TimeSeries
               @timeIdleSelected = not @timeIdleSelected
               @update([{
                   name: 'Time idle'
-                  historicData: @timeIdle
-                  forecastData: @timeIdleF
+                  data: @timeIdle
                   load: @timeIdleSelected
               }]))
 
@@ -302,8 +273,7 @@ class TimeSeries
               @mileageEnrouteSelected = not @mileageEnrouteSelected
               @update([{
                   name: 'Mileage enroute'
-                  historicData: @mileageEnroute
-                  forecastData: @mileageEnrouteF
+                  data: @mileageEnroute
                   load: @mileageEnrouteSelected
               }]))
 
@@ -312,8 +282,7 @@ class TimeSeries
               @mileageOccupiedSelected = not @mileageOccupiedSelected
               @update([{
                   name: 'Mileage occupied'
-                  historicData: @mileageOccupied
-                  forecastData: @mileageOccupiedF
+                  data: @mileageOccupied
                   load: @mileageOccupiedSelected
               }]))
 
@@ -322,8 +291,7 @@ class TimeSeries
               @serviceGoalSelected = not @serviceGoalSelected
               @update([{
                   name: 'In service'
-                  historicData: @serviceGoal
-                  forecastData: @serviceGoalF
+                  data: @serviceGoal
                   load: @serviceGoalSelected
               }]))
 
@@ -332,8 +300,7 @@ class TimeSeries
               @serviceLatenessSelected = not @serviceLatenessSelected
               @update([{
                   name: 'Out service'
-                  historicData: @serviceLateness
-                  forecastData: @serviceLatenessF
+                  data: @serviceLateness
                   load: @serviceLatenessSelected
               }]))
 
@@ -342,8 +309,7 @@ class TimeSeries
               @ratingDriversSelected = not @ratingDriversSelected
               @update([{
                   name: 'Rating drivers'
-                  historicData: @ratingDrivers
-                  forecastData: @ratingDriversF
+                  data: @ratingDrivers
                   load: @ratingDriversSelected
               }]))
 
@@ -352,8 +318,7 @@ class TimeSeries
               @ratingPassengersSelected = not @ratingPassengersSelected
               @update([{
                   name: 'Rating passengers'
-                  historicData: @ratingPassengers
-                  forecastData: @ratingPassengersF
+                  data: @ratingPassengers
                   load: @ratingPassengersSelected
               }]))
       else
@@ -468,13 +433,9 @@ class TimeSeries
     [startDate, intervalName, bucketSize, dates, intervals] = @getRealTimeQueryParams()
     $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
       @tripsCompleted.data = []
-      @tripsCompletedF.data = []
       @tripsRejected.data = []
-      @tripsRejectedF.data = []
       @tripsCancelled.data = []
-      @tripsCancelledF.data = []
       @tripsError.data = []
-      @tripsErrorF.data = []
 
       @YAxisMax = 0
       i = 0
@@ -501,42 +462,34 @@ class TimeSeries
 
         if @tripsCompletedSelected
           @tripsCompleted.data.push [date, countComplete]
-          @tripsCompletedF.data.push [date, countComplete]
         if @tripsRejectedSelected
           @tripsRejected.data.push [date, countRejected]
-          @tripsRejectedF.data.push [date, countRejected]
         if @tripsCancelledSelected
           @tripsCancelled.data.push [date, countCancelled]
-          @tripsCancelledF.data.push [date, countCancelled]
         if @tripsErrorSelected
           @tripsError.data.push [date, countError]
-          @tripsErrorF.data.push [date, countError]
 
         i++
 
       updateData = []
       updateData.push({
           name: 'Completed trips'
-          historicData: @tripsCompleted
-          forecastData: @tripsCompletedF
+          data: @tripsCompleted
           load: @tripsCompletedSelected
         })
       updateData.push({
           name: 'Rejected trips'
-          historicData: @tripsRejectedF
-          forecastData: @tripsRejectedF
+          data: @tripsRejected
           load: @tripsRejectedSelected
         })
       updateData.push({
           name: 'Cancelled trips'
-          historicData: @tripsCancelled
-          forecastData: @tripsCancelledF
+          data: @tripsCancelled
           load: @tripsCancelledSelected
         })
       updateData.push({
           name: 'Error trips'
-          historicData: @tripsError
-          forecastData: @tripsErrorF
+          data: @tripsError
           load: @tripsErrorSelected
         })
       @setSeries updateData
@@ -633,7 +586,8 @@ class TimeSeries
                 $('#historic-chart-container').show()
                 @loadCharts()
 
-    if @realtimeMode
+    if @realtimeMode and not @updatingRealTime
+        @updatingRealTime = true
         @updateRealTime()
     else if series?
         @setSeries(series)
@@ -645,17 +599,17 @@ class TimeSeries
     if @chartType == 'series'
         for serie in series
             if @forecastDataMode
-                fserie = @forecastChart.get(serie.forecastData.name)
-                if fserie?
-                    fserie.remove(false)
+                s = @forecastChart.get(serie.data.name)
+                if s?
+                    s.remove(false)
                 if serie.load
-                    @forecastChart.addSeries(serie.forecastData, false, false)
+                    @forecastChart.addSeries(serie.data, false, false)
             else
-                hserie = @historicChart.get(serie.historicData.name)
-                if hserie?
-                    hserie.remove(false)
+                s = @historicChart.get(serie.data.name)
+                if s?
+                    s.remove(false)
                 if serie.load
-                    @historicChart.addSeries(serie.historicData, false, false)
+                    @historicChart.addSeries(serie.data, false, false)
         if not @percentageMode
             if @forecastDataMode
                 @forecastChart.yAxis[0].setExtremes(0, @YAxisMax)
@@ -691,14 +645,14 @@ class TimeSeries
       weight = 0
       if @realtimeMode
           if not @percentageMode
-             weightValue = series[0].historicData.data[0][1] * 20
+             weightValue = series[0].data[0][1] * 20
              weight = if weightValue > 100 then 100 else weightValue
           else
-             weight = series[0].historicData.data[0][1]
+             weight = series[0].data[0][1]
       else
         for serie in series
             if serie.name == @selectedStat
-                weight = series[0].historicData.data[0][1]
+                weight = series[0].data[0][1]
                 break
       for key of @tripsById
           if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
@@ -744,89 +698,6 @@ class TimeSeries
               driverInitialLocation
       )
       @tripsById[trip.getId()] = trip
-
-  generateSeries: () =>
-    @generateRandomData(@dates)
-    [
-        {
-            name: 'Completed trips'
-            historicData: @tripsCompleted
-            forecastData: @tripsCompletedF
-            load: @tripsCompletedSelected
-        },
-        {
-            name: 'Rejected trips'
-            historicData: @tripsRejectedF
-            forecastData: @tripsRejectedF
-            load: @tripsRejectedSelected
-        },
-        {
-            name: 'Cancelled trips'
-            historicData: @tripsCancelled
-            forecastData: @tripsCancelledF
-            load: @tripsCancelledSelected
-        },
-        {
-            name: 'Error trips'
-            historicData: @tripsError
-            forecastData: @tripsErrorF
-            load: @tripsErrorSelected
-        },
-        {
-            name: 'Time enroute'
-            historicData: @timeEnroute
-            forecastData: @timeEnrouteF
-            load: @timeEnrouteSelected
-        },
-        {
-            name: 'Time occupied'
-            historicData: @timeOccupied
-            forecastData: @timeOccupiedF
-            load: @timeOccupiedSelected
-        },
-        {
-            name: 'Time idle'
-            historicData: @timeIdle
-            forecastData: @timeIdleF
-            load: @timeIdleSelected
-        },
-        {
-            name: 'Mileage enroute'
-            historicData: @mileageEnroute
-            forecastData: @mileageEnrouteF
-            load: @mileageEnrouteSelected
-        },
-        {
-            name: 'Mileage occupied'
-            historicData: @mileageOccupied
-            forecastData: @mileageOccupiedF
-            load: @mileageOccupiedSelected
-        },
-        {
-            name: 'In service'
-            historicData: @serviceGoal
-            forecastData: @serviceGoalF
-            load: @serviceGoalSelected
-        },
-        {
-            name: 'Out service'
-            historicData: @serviceLateness
-            forecastData: @serviceLatenessF
-            load: @serviceLatenessSelected
-        },
-        {
-            name: 'Rating drivers'
-            historicData: @ratingDrivers
-            forecastData: @ratingDriversF
-            load: @ratingDriversSelected
-        },
-        {
-            name: 'Rating passengers'
-            historicData: @ratingPassengers
-            forecastData: @ratingPassengersF
-            load: @ratingPassengersSelected
-        }
-    ]
 
   loadMap: () =>
       mapOptions =
@@ -907,80 +778,10 @@ class TimeSeries
         @forecastChart.redraw()
 
 
-  generateRandomData: (dates) =>
-    @YAxisMax = 0
-    @tripsCompleted.data = []
-    @tripsCancelled.data = []
-    @tripsRejected.data = []
-    @tripsError.data = []
-    @timeEnroute.data = []
-    @timeOccupied.data = []
-    @timeIdle.data = []
-    @mileageEnroute.data = []
-    @mileageOccupied.data = []
-    @serviceGoal.data = []
-    @serviceLateness.data = []
-    @ratingDrivers.data = []
-    @ratingPassengers.data = []
-
-    @tripsCompletedF.data = []
-    @tripsCancelledF.data = []
-    @tripsRejectedF.data = []
-    @tripsErrorF.data = []
-    @timeEnrouteF.data = []
-    @timeOccupiedF.data = []
-    @timeIdleF.data = []
-    @mileageEnrouteF.data = []
-    @mileageOccupiedF.data = []
-    @serviceGoalF.data = []
-    @serviceLatenessF.data = []
-    @ratingDriversF.data = []
-    @ratingPassengersF.data = []
-
-    for date in dates
-      @tripsCompleted.data.push @r(date)
-      @tripsCancelled.data.push @r(date)
-      @tripsRejected.data.push  @r(date)
-      @tripsError.data.push     @r(date)
-      @timeEnroute.data.push      @r(date)
-      @timeOccupied.data.push     @r(date)
-      @timeIdle.data.push         @r(date)
-      @mileageEnroute.data.push   @r(date)
-      @mileageOccupied.data.push  @r(date)
-      @serviceGoal.data.push      @r(date)
-      @serviceLateness.data.push  @r(date)
-      @ratingDrivers.data.push    @r(date)
-      @ratingPassengers.data.push @r(date)
-
-      @tripsCompletedF.data.push @r(date)
-      @tripsCancelledF.data.push @r(date)
-      @tripsRejectedF.data.push  @r(date)
-      @tripsErrorF.data.push     @r(date)
-      @timeEnrouteF.data.push      @r(date)
-      @timeOccupiedF.data.push     @r(date)
-      @timeIdleF.data.push         @r(date)
-      @mileageEnrouteF.data.push   @r(date)
-      @mileageOccupiedF.data.push  @r(date)
-      @serviceGoalF.data.push      @r(date)
-      @serviceLatenessF.data.push  @r(date)
-      @ratingDriversF.data.push    @r(date)
-      @ratingPassengersF.data.push @r(date)
-
-  r: (date) =>
-    value = if @percentageMode then ((Math.random() * 70) + 30) else ((Math.random() * 40) + 10)
-    if not @percentageMode
-      @YAxisMax = if value > @YAxisMax then value else @YAxisMax
-    [date, value]
-
-
 $('.developer.statistics').ready ->
-  clearInterval(window.tripthruinterval)
   timeSeries = new TimeSeries(new TripThru($('#access_token').val()), 'historic-chart', 'forecast-chart', 'heat-map')
-  $('#datepicker').datepicker(
-    format: "yyyy/mm/dd"
-    startDate: "2012-01-01"
-    endDate: "2015-01-01"
-    todayBtn: "linked"
-    autoclose: true
-    todayHighlight: true
-  );
+
+  clearInterval(window.tripthruinterval)
+  window.tripthruinterval = setInterval =>
+    timeSeries.update()
+  , 15000
