@@ -803,7 +803,7 @@ class TimeSeries
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
-          radius: 20,
+          radius: 30,
           maxIntensity: 100,
           gradient: gradient
       })
@@ -874,6 +874,8 @@ class TimeSeries
               window.selectedGeographicZone.setMap null
               window.selectedGeographicZone = null
               window.timeSeries.updateRealTime()
+              window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
+              window.map.setZoom 4
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
