@@ -10,6 +10,7 @@ class Stats
         @lastValues =
             passengerRating: -1
             driverRating: -1
+            arrival: -1
             cancelled: -1
             completed: -1
             error: -1
@@ -43,18 +44,21 @@ class Stats
                                       </div>
                                   ')
 
-        @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     updateStats: (stats) =>
         lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate()-7);
         $.get '/mongo_db/trips_count?startDate=' + lastWeek + '&interval=week&bucketSize=1', (data) =>
+            arrival = 0
             completed = 0
             rejected = 0
             cancelled = 0
             error = 0
             for entry in data
                 switch entry._id.Status
+                    when 'Arrival'
+                        arrival += entry.count
                     when 'Complete'
                         completed += entry.count
                     when 'Cancelled'
@@ -63,13 +67,13 @@ class Stats
                         rejected += entry.count
                     when 'Error'
                         error += entry.count
-            @update(80, 90, cancelled, completed, rejected, error, 15, 95)
+            @update(80, 90, arrival, cancelled, completed, rejected, error, 15, 95)
 
-    update: (passengerRating, driverRating, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
+    update: (passengerRating, driverRating, arrival, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
 
 
-        if @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
-
+        if @lastValues.arrival != arrival or @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
+            @lastValues.arrival = arrival
             @lastValues.completed = completed
             @lastValues.cancelled = cancelled
             @lastValues.rejected = rejected
@@ -77,12 +81,14 @@ class Stats
             Morris.Donut({
                 element: @tripsPieChartId,
                 data: [
+                    {label: "Arrival", value: arrival}
                     {label: "Completed", value: completed}
                     {label: "Rejected", value: rejected}
                     {label: "Cancelled", value: cancelled}
                     {label: "Error", value: error}
                 ]
                 colors: [
+                    '#2922DD'
                     '#0BA462'
                     '#DADD0F'
                     '#DD1D18'
