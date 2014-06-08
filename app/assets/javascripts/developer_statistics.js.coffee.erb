@@ -10,7 +10,7 @@ class TimeSeries
     @forecastChart = null
     @map = null
     @heatmap = null
-    window.circle = null
+    window.selectedGeographicZone = null
     @networks = {}
     @fleets = {}
     @drivers = {}
@@ -776,7 +776,7 @@ class TimeSeries
           if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
               locationPickUp = new google.maps.LatLng(@tripsById[key].pickupLocation.lat,@tripsById[key].pickupLocation.lng)
               locationDropoff =  new google.maps.LatLng(@tripsById[key].dropoffLocation.lat,@tripsById[key].dropoffLocation.lng)
-              if window.circle is null
+              if window.selectedGeographicZone is null
                   taxiData.push {
                       location: locationPickUp,
                       weight: weight
@@ -786,12 +786,12 @@ class TimeSeries
                       weight: weight
                   }
               else
-                  if window.circle.isHere(locationPickUp)
+                  if window.selectedGeographicZone.isHere(locationPickUp)
                       taxiData.push {
                           location: locationPickUp,
                           weight: weight
                       }
-                  if window.circle.isHere(locationDropoff)
+                  if window.selectedGeographicZone.isHere(locationDropoff)
                       taxiData.push {
                           location: locationDropoff,
                           weight: weight
@@ -863,9 +863,9 @@ class TimeSeries
       google.maps.event.addListener drawingManager, "circlecomplete", (circle) ->
          circle.isHere = (latLng) ->
             @getBounds().contains(latLng) and google.maps.geometry.spherical.computeDistanceBetween(@getCenter(), latLng) <= @getRadius()
-         if window.circle isnt null
-            window.circle.setMap null
-         window.circle = circle
+         if window.selectedGeographicZone isnt null
+            window.selectedGeographicZone.setMap null
+         window.selectedGeographicZone = circle
          window.timeSeries.updateRealTime()
 
   loadSelectorFilters: (fleets) =>
