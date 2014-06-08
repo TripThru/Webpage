@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   get 'developer/settings', to: 'developer#settings'
   get 'developer/statistics', to: 'developer#statistics'
   get 'developer/api', to: 'developer#api'
-  get 'developer/partners', to: 'developer#partners'
+  get 'developer/networks', to: 'developer#networks'
   get 'developer/money', to: 'developer#money'
   get 'developer/report', to: 'developer#report'
 

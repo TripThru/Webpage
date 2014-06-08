@@ -41,9 +41,9 @@ class DeveloperController < ApplicationController
     end
   end
 
-  def partners
+  def networks
     if userAccessToken
-      render 'partners'
+      render 'networks'
     else
       redirect_to signin_path
     end
