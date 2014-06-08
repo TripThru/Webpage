@@ -508,13 +508,13 @@ class TimeSeries
 
       if @dataModeChanged
           if @forecastDataMode
-              $('#chart-title').html 'Forecast'
+              $('#chart-title>h2').html 'Forecast'
               if @chartType == 'series'
                   $('#historic-chart-container').hide()
                   $('#forecast-chart-container').show()
                   @loadCharts()
           else
-              $('#chart-title').html 'Historic'
+              $('#chart-title>h2').html 'Historic'
               if @chartType == 'series'
                   $('#forecast-chart-container').hide()
                   $('#historic-chart-container').show()
