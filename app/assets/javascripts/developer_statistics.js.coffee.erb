@@ -78,7 +78,6 @@ class TimeSeries
     $('#trips-cancelled-filter-button').addClass('active')
     $('#trips-error-filter-button').addClass('active')
     $('#realtime-button').addClass('active')
-    $('#percentage-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
     $('#data-mode-toggle-container>#toggle-button>.image-wrapper').addClass('active')
@@ -218,20 +217,24 @@ class TimeSeries
 
     $('#historic-toggle-container>#toggle-button').click =>
         if @forecastDataMode
-            @forecastDataMode = false
             $('#forecast-toggle').hide()
             $('#historic-toggle').show()
         else
-            @forecastDataMode = true
             $('#historic-toggle').hide()
             $('#forecast-toggle').show()
+        @forecastDataMode = not @forecastDataMode
         @dataModeChanged = true
         @update()
         @dataModeChanged = false
 
     $('#data-mode-toggle-container>#toggle-button').click =>
+        if @percentageMode
+            $('#percentage-toggle').hide()
+            $('#absolute-toggle').show()
+        else
+            $('#absolute-toggle').hide()
+            $('#percentage-toggle').show()
         @percentageMode = not @percentageMode
-        $('#data-mode-toggle-container>#toggle-button>.image-wrapper').toggleClass('active')
         @togglesChanged = true
         @update()
         @togglesChanged = false
