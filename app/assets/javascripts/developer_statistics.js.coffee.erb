@@ -589,17 +589,24 @@ class TimeSeries
       for interval in intervals
           date = dates[i]
           id = interval
+          countComplete = 0
+          countCancelled = 0
+          countRejected = 0
+          countError = 0
 
-          count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
-          countComplete = if count.length == 0 then 0 else count[0].count
-          count = data.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
-          countCancelled = if count.length == 0 then 0 else count[0].count
-          count = data.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
-          countRejected = if count.length == 0 then 0 else count[0].count
-          count = data.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
-          countError = if count.length == 0 then 0 else count[0].count
+          if @tripsCompletedSelected
+            count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
+            countComplete = if count.length == 0 then 0 else count[0].count
+          if @tripsCancelledSelected
+            count = data.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
+            countCancelled = if count.length == 0 then 0 else count[0].count
+          if @tripsRejectedSelected
+            count = data.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
+            countRejected = if count.length == 0 then 0 else count[0].count
+          if @tripsErrorSelected
+            count = data.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
+            countError = if count.length == 0 then 0 else count[0].count
           total = countComplete + countCancelled + countRejected + countError
-          @YAxisMax = if total > @YAxisMax then total else @YAxisMax
 
           if @percentageMode
               countComplete = if countComplete > 0 then countComplete*100/total else 0
@@ -609,12 +616,16 @@ class TimeSeries
 
           if @tripsCompletedSelected
               @tripsCompleted.data.push [date, countComplete]
+              @YAxisMax = if countComplete > @YAxisMax then countComplete else @YAxisMax
           if @tripsRejectedSelected
               @tripsRejected.data.push [date, countRejected]
+              @YAxisMax = if countRejected > @YAxisMax then countRejected else @YAxisMax
           if @tripsCancelledSelected
               @tripsCancelled.data.push [date, countCancelled]
+              @YAxisMax = if countCancelled > @YAxisMax then countCancelled else @YAxisMax
           if @tripsErrorSelected
               @tripsError.data.push [date, countError]
+              @YAxisMax = if countError > @YAxisMax then countError else @YAxisMax
 
           i++
 
