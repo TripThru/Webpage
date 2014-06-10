@@ -79,8 +79,6 @@ class MongoDbController < ApplicationController
       }
     '
 
-    puts get_trips
-
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     res = db.eval(get_trips)
