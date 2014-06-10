@@ -8,7 +8,7 @@ class TimeSeries
 
     @historicChart = null
     @forecastChart = null
-    @map = null
+    window.map = null
     @heatmap = null
     window.selectedGeographicZone = null
     @networks = {}
@@ -499,12 +499,12 @@ class TimeSeries
       else if @chartTypeChanged and @chartType == 'map'
           $('#time-series-container').hide()
           $('#map-container').show()
-          if !@map?
+          if !window.map?
               @loadMap()
-              google.maps.event.addDomListenerOnce(@map, "tilesloaded", () =>
-                  google.maps.event.addDomListenerOnce(@map, "tilesloaded", @update()))
+              google.maps.event.addDomListenerOnce(window.map, "tilesloaded", () =>
+                  google.maps.event.addDomListenerOnce(window.map, "tilesloaded", @update()))
           else
-              google.maps.event.trigger(@map,'resize')
+              google.maps.event.trigger(window.map,'resize')
 
       if @dataModeChanged
           if @forecastDataMode
@@ -798,16 +798,17 @@ class TimeSeries
                           weight: weight
                       }
       if @selectedFleet != 'All'
-          @map.panTo(new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng))
+          window.map.panTo(new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng))
+          window.map.setZoom 8
       @heatmap.setMap null
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
-          radius: 20,
+          radius: 30,
           maxIntensity: 100,
           gradient: gradient
       })
-      @heatmap.setMap @map
+      @heatmap.setMap window.map
 
   processTrip: (newTrip) =>
       driverLocation =
@@ -843,7 +844,7 @@ class TimeSeries
           mapTypeControl: false
           scaleControl: true
           disableDoubleClickZoom: false
-      @map = new google.maps.Map(document.getElementById(@mapContainer), mapOptions)
+      window.map = new google.maps.Map(document.getElementById(@mapContainer), mapOptions)
       @heatmap = new google.maps.visualization.HeatmapLayer()
       drawingManager = new google.maps.drawing.DrawingManager(
           drawingMode: google.maps.drawing.OverlayType.CIRCLE
@@ -860,7 +861,7 @@ class TimeSeries
               zIndex: 1
               editable: true
       )
-      drawingManager.setMap @map
+      drawingManager.setMap window.map
       google.maps.event.addListener drawingManager, "circlecomplete", (circle) ->
          circle.isHere = (latLng) ->
             @getBounds().contains(latLng) and google.maps.geometry.spherical.computeDistanceBetween(@getCenter(), latLng) <= @getRadius()
@@ -868,6 +869,14 @@ class TimeSeries
             window.selectedGeographicZone.setMap null
          window.selectedGeographicZone = circle
          window.timeSeries.updateRealTime()
+         window.map.fitBounds circle.getBounds()
+      $('#clearMap').click =>
+          if window.selectedGeographicZone isnt null
+              window.selectedGeographicZone.setMap null
+              window.selectedGeographicZone = null
+              window.timeSeries.updateRealTime()
+              window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
+              window.map.setZoom 4
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
