@@ -6,7 +6,6 @@ class MongoDbController < ApplicationController
 
   def trips_count
     interval = ''
-    match = ''
 
     case params[:interval]
       when 'second'
@@ -37,16 +36,28 @@ class MongoDbController < ApplicationController
         interval = '$week : "$LastUpdate"'
     end
 
+    match = '{ $match : {'
+
     if params[:endDate] != nil
-      match = '{ $match : { LastUpdate : { $gte: startDate, $lte: endDate } } }'
+      match += 'LastUpdate : { $gte: startDate, $lte: endDate }'
     else
-      match = '{ $match : { LastUpdate : { $gte: startDate } } }'
+      match += 'LastUpdate : { $gte: startDate }'
     end
+
+    if params[:servicingNetworkId] != nil
+      match += ', ServicingPartnerId : "' + params[:servicingNetworkId] +'"'
+    end
+
+    if params[:originatingNetworkId] != nil
+      match += ', OriginatingPartnerId : "' + params[:originatingNetworkId] + '"'
+    end
+
+    match += '}}'
 
     get_trips = '
       function () {
         var startDate = new Date("' + params[:startDate] + '");
-        var endDate = new Date("' + (params[:endDate] != nil ? params[:endDate] : '') + '");
+        var endDate = new Date(' + (params[:endDate] != nil ? '"' + params[:endDate] + '"' : '') + ');
         var trips = db.trips.aggregate(
           ' + match + ',
           { $sort: { LastUpdate : 1 } },
@@ -67,6 +78,8 @@ class MongoDbController < ApplicationController
         return trips;
       }
     '
+
+    puts get_trips
 
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')

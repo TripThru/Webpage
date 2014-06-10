@@ -183,7 +183,7 @@ class TimeSeries
         for id, fleet of @fleets
           $('#fleets-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
       else
-        for fleet in @networks[@selectedNetwork]
+        for fleet in @networks[@selectedNetwork].fleets
           $('#fleets-select').append('<option value="' + fleet + '">' + fleet + '</option>')
       @togglesChanged = true
       @update()
@@ -528,7 +528,8 @@ class TimeSeries
       
   updateRealTime: () =>
     [startDate, intervalName, bucketSize, dates, intervals] = @getRealTimeQueryParams()
-    $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
+    servicingId = if @selectedNetwork != 'All' then '&servicingNetworkId=' + @networks[@selectedNetwork].id else ''
+    $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + servicingId, (data) =>
       @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
       @updatingRealTime = false
 
@@ -873,9 +874,9 @@ class TimeSeries
           if fleet.partnerName == "TDispatch"
               continue
           if fleet.partnerName of @networks
-              @networks[fleet.partnerName].push fleet.fleetName
+              @networks[fleet.partnerName].fleets.push fleet.fleetName
           else
-              @networks[fleet.partnerName] =  [fleet.fleetName]
+              @networks[fleet.partnerName] =  {id: fleet.partnerId, fleets: [fleet.fleetName]}
           @fleets[fleet.fleetName] = fleet
           $('#networks-select').append('<option value="' + fleet.partnerName + '">' + fleet.partnerName + '</option>')
           $('#fleets-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
