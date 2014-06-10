@@ -103,52 +103,67 @@ class TimeSeries
 
     $('#seconds-button').click =>
         if (@realtimeMode and not $('#seconds-button').hasClass('active')) or not @realtimeMode
+            $('#realtime-intervals-container').find('.active').removeClass('active')
             for name of @realtimeModeInterval
                 @realtimeModeInterval[name] = false
             $('#seconds-button').addClass('active')
             @realtimeModeInterval.seconds = true
+            @realtimeMode = true
         else
             $('#realtime-intervals-container').find('.active').removeClass('active')
+            @realtimeMode = false
         @toggleRealTime()
 
     $('#minutes-button').click =>
       if (@realtimeMode and not $('#minutes-button').hasClass('active')) or not @realtimeMode
+          $('#realtime-intervals-container').find('.active').removeClass('active')
           for name of @realtimeModeInterval
             @realtimeModeInterval[name] = false
           $('#minutes-button').addClass('active')
           @realtimeModeInterval.minutes = true
+          @realtimeMode = true
       else
           $('#realtime-intervals-container').find('.active').removeClass('active')
+          @realtimeMode = false
       @toggleRealTime()
 
     $('#hours-button').click =>
       if (@realtimeMode and not $('#hours-button').hasClass('active')) or not @realtimeMode
+          $('#realtime-intervals-container').find('.active').removeClass('active')
           for name of @realtimeModeInterval
             @realtimeModeInterval[name] = false
           $('#hours-button').addClass('active')
           @realtimeModeInterval.hours = true
+          @realtimeMode = true
       else
           $('#realtime-intervals-container').find('.active').removeClass('active')
+          @realtimeMode = false
       @toggleRealTime()
 
     $('#days-button').click =>
       if (@realtimeMode and not $('#days-button').hasClass('active')) or not @realtimeMode
+          $('#realtime-intervals-container').find('.active').removeClass('active')
           for name of @realtimeModeInterval
             @realtimeModeInterval[name] = false
           $('#days-button').addClass('active')
           @realtimeModeInterval.days = true
+          @realtimeMode = true
       else
           $('#realtime-intervals-container').find('.active').removeClass('active')
+          @realtimeMode = false
       @toggleRealTime()
 
     $('#weeks-button').click =>
       if (@realtimeMode and not $('#weeks-button').hasClass('active')) or not @realtimeMode
+          $('#realtime-intervals-container').find('.active').removeClass('active')
           for name of @realtimeModeInterval
             @realtimeModeInterval[name] = false
           $('#weeks-button').addClass('active')
           @realtimeModeInterval.weeks = true
+          @realtimeMode = true
       else
           $('#realtime-intervals-container').find('.active').removeClass('active')
+          @realtimeMode = false
       @toggleRealTime()
 
     $('#start-date').on 'changeDate', (e) =>
@@ -244,13 +259,11 @@ class TimeSeries
 
   toggleRealTime: () =>
       @togglesChanged = true
-      if not @realtimeMode
-          @realtimeMode = true
+      if @realtimeMode
           $('#datepicker>input').attr("disabled", true)
           @loadCharts()
           @update()
       else
-          @realtimeMode = false
           $('#datepicker>input').attr("disabled", false)
           @update()
       @togglesChanged = false
