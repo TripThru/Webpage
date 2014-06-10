@@ -1164,6 +1164,8 @@
         }
       }
 
+
+
       #filters-container {
         margin: 0 2% 30px 2%;
 
@@ -1294,7 +1296,7 @@
       #selectors-container {
         height: 100%;
         float: right;
-        margin-top: -50px;
+        margin-top: -43px;
         .panel {
           margin: 0 0 10px 0;
         }
@@ -1308,6 +1310,21 @@
           font-size: 12px;
           width: 100%;
         }
+
+        #realtime-panel{
+          .panel-body{
+            padding: 8px 2px 3px 2px;
+            margin: 0;
+          }
+        }
+
+        #time-range-panel{
+          .panel-body{
+            padding: 8px 8px 0 8px;
+            margin: 0;
+          }
+        }
+
 
         #realtime-button {
           margin: 0 0 10px 0;

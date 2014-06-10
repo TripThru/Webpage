@@ -78,7 +78,6 @@ class TimeSeries
     $('#trips-rejected-filter-button').addClass('active')
     $('#trips-cancelled-filter-button').addClass('active')
     $('#trips-error-filter-button').addClass('active')
-    $('#realtime-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
 
@@ -103,65 +102,54 @@ class TimeSeries
     @setFilterEvents()
 
     $('#seconds-button').click =>
-        if @realtimeMode and not $('#seconds-button').hasClass('active')
-            $('#realtime-intervals-container').find('.active').removeClass('active')
+        if (@realtimeMode and not $('#seconds-button').hasClass('active')) or not @realtimeMode
             for name of @realtimeModeInterval
                 @realtimeModeInterval[name] = false
             $('#seconds-button').addClass('active')
             @realtimeModeInterval.seconds = true
-            @update()
+        else
+            $('#realtime-intervals-container').find('.active').removeClass('active')
+        @toggleRealTime()
 
     $('#minutes-button').click =>
-      if @realtimeMode and  not $('#minutes-button').hasClass('active')
-          $('#realtime-intervals-container').find('.active').removeClass('active')
+      if (@realtimeMode and not $('#minutes-button').hasClass('active')) or not @realtimeMode
           for name of @realtimeModeInterval
             @realtimeModeInterval[name] = false
           $('#minutes-button').addClass('active')
           @realtimeModeInterval.minutes = true
-          @update()
+      else
+          $('#realtime-intervals-container').find('.active').removeClass('active')
+      @toggleRealTime()
 
     $('#hours-button').click =>
-      if @realtimeMode and  not $('#hours-button').hasClass('active')
-          $('#realtime-intervals-container').find('.active').removeClass('active')
+      if (@realtimeMode and not $('#hours-button').hasClass('active')) or not @realtimeMode
           for name of @realtimeModeInterval
             @realtimeModeInterval[name] = false
           $('#hours-button').addClass('active')
           @realtimeModeInterval.hours = true
-          @update()
+      else
+          $('#realtime-intervals-container').find('.active').removeClass('active')
+      @toggleRealTime()
 
     $('#days-button').click =>
-      if @realtimeMode and  not $('#days-button').hasClass('active')
-          $('#realtime-intervals-container').find('.active').removeClass('active')
+      if (@realtimeMode and not $('#days-button').hasClass('active')) or not @realtimeMode
           for name of @realtimeModeInterval
             @realtimeModeInterval[name] = false
           $('#days-button').addClass('active')
           @realtimeModeInterval.days = true
-          @update()
+      else
+          $('#realtime-intervals-container').find('.active').removeClass('active')
+      @toggleRealTime()
 
     $('#weeks-button').click =>
-      if @realtimeMode and  not $('#weeks-button').hasClass('active')
-          $('#realtime-intervals-container').find('.active').removeClass('active')
+      if (@realtimeMode and not $('#weeks-button').hasClass('active')) or not @realtimeMode
           for name of @realtimeModeInterval
             @realtimeModeInterval[name] = false
           $('#weeks-button').addClass('active')
           @realtimeModeInterval.weeks = true
-          @update()
-
-    $('#realtime-button').click =>
-      @togglesChanged = true
-      if $('#realtime-button').hasClass('active')
-        @realtimeMode = false
-        $('#datepicker>input').attr("disabled", false)
-        $('#realtime-intervals-container>input').addClass('disabled')
-        @update()
       else
-        @realtimeMode = true
-        $('#datepicker>input').attr("disabled", true)
-        $('#realtime-intervals-container>input').removeClass('disabled')
-        @loadCharts()
-        @update()
-      $('#realtime-button').toggleClass('active')
-      @togglesChanged = false
+          $('#realtime-intervals-container').find('.active').removeClass('active')
+      @toggleRealTime()
 
     $('#start-date').on 'changeDate', (e) =>
         @startDate = e.date
@@ -247,11 +235,25 @@ class TimeSeries
           $('#farmedin-toggle').hide()
           $('#farmedout-toggle').show()
       @farmedInMode = not @farmedInMode
-      @togglesChanged = true
-      @update()
-      @togglesChanged = false
+      if @selectedNetwork != 'All'
+          @togglesChanged = true
+          @update()
+          @togglesChanged = false
 
     @update()
+
+  toggleRealTime: () =>
+      @togglesChanged = true
+      if not @realtimeMode
+          @realtimeMode = true
+          $('#datepicker>input').attr("disabled", true)
+          @loadCharts()
+          @update()
+      else
+          @realtimeMode = false
+          $('#datepicker>input').attr("disabled", false)
+          @update()
+      @togglesChanged = false
 
   setFilterEvents: () =>
       if @chartType == 'series'
