@@ -1236,6 +1236,19 @@
           }
         }
 
+        #farmed-toggle-container{
+          display: inline-block;
+          margin-right: 5px;
+          img{
+            margin: -7px 0 0 0;
+          }
+
+          .image-wrapper {
+            background-color: #960907;
+            color: #ffffff;
+          }
+        }
+
         .panel {
           display: inline-block;
           margin: 0 0 10px 0;

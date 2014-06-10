@@ -30,6 +30,15 @@
             </div>
           </a>
         </div>
+        <div id="farmed-toggle-container">
+          <a id="toggle-button" href="#">
+            <i class="icon-home icon-1x"></i>
+            <div class="image-wrapper">
+              <%= image_tag('farmedout.png', alt: 'Farmed out', :id => 'farmedout-toggle') %>
+              <%= image_tag('farmedin.png', alt: 'Farmed in', :id => 'farmedin-toggle', style: 'display: none;') %>
+            </div>
+          </a>
+        </div>
         <div class="panel panel-default filter-button-group">
           <div class="panel-heading text-center ">
             <h3 class="panel-title">Trips</h3>

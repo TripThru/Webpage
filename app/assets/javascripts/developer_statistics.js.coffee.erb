@@ -26,6 +26,7 @@ class TimeSeries
     @realtimeMode = true
     @percentageMode = true
     @forecastDataMode = false
+    @farmedInMode = true
     @dataModeChanged = false
     @togglesChanged  = false
     @dateChanged = false
@@ -237,6 +238,18 @@ class TimeSeries
         @togglesChanged = true
         @update()
         @togglesChanged = false
+
+    $('#farmed-toggle-container>#toggle-button').click =>
+      if @farmedInMode
+          $('#farmedout-toggle').hide()
+          $('#farmedin-toggle').show()
+      else
+          $('#farmedin-toggle').hide()
+          $('#farmedout-toggle').show()
+      @farmedInMode = not @farmedInMode
+      @togglesChanged = true
+      @update()
+      @togglesChanged = false
 
     @update()
 
@@ -526,9 +539,8 @@ class TimeSeries
           @updateTimeRange()
       
   updateRealTime: () =>
-    [startDate, intervalName, bucketSize, dates, intervals] = @getRealTimeQueryParams()
-    servicingId = if @selectedNetwork != 'All' then '&servicingNetworkId=' + @networks[@selectedNetwork].id else ''
-    $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + servicingId, (data) =>
+    [startDate, intervalName, bucketSize, dates, intervals, networkId] = @getRealTimeQueryParams()
+    $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId, (data) =>
       @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
       @updatingRealTime = false
 
@@ -562,11 +574,17 @@ class TimeSeries
       returnDate = new Date(startDate)
 
       [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
-      return [returnDate, intervalName, bucketSize, dates, intervalIds]
+
+      networkId = ''
+      if @farmedInMode
+        networkId = if @selectedNetwork != 'All' then '&servicingNetworkId=' + @networks[@selectedNetwork].id else ''
+      else
+        networkId = if @selectedNetwork != 'All' then '&originatingNetworkId=' + @networks[@selectedNetwork].id else ''
+      return [returnDate, intervalName, bucketSize, dates, intervalIds, networkId]
 
   updateTimeRange: () =>
-      [intervalName, bucketSize, dates, intervals] = @getTimeRangeQueryParams(new Date(@startDate), new Date(@endDate))
-      $.get '/mongo_db/trips_count?startDate=' + @startDate + '&endDate=' + @endDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize, (data) =>
+      [intervalName, bucketSize, dates, intervals, networkId] = @getTimeRangeQueryParams(new Date(@startDate), new Date(@endDate))
+      $.get '/mongo_db/trips_count?startDate=' + @startDate + '&endDate=' + @endDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId, (data) =>
         @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
 
   getTimeRangeQueryParams: (startDate, endDate) =>
@@ -590,7 +608,13 @@ class TimeSeries
         intervalName = 'week'
 
     [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
-    return [intervalName, bucketSize, dates, intervalIds]
+
+    networkId = ''
+    if @farmedInMode
+      networkId = if @selectedNetwork != 'All' then '&servicingNetworkId=' + @networks[@selectedNetwork].id else ''
+    else
+      networkId = if @selectedNetwork != 'All' then '&originatingNetworkId=' + @networks[@selectedNetwork].id else ''
+    return [intervalName, bucketSize, dates, intervalIds, networkId]
 
 
   getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>
