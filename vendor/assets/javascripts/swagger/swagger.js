@@ -726,6 +726,7 @@
           url: this.url,
           data: JSON.stringify(this.body),
           dataType: 'json',
+          contentType: "application/json",
           error: function(xhr, textStatus, error) {
             return _this.errorCallback(xhr, textStatus, error);
           },
@@ -733,9 +734,6 @@
             return _this.successCallback(data);
           }
         };
-        if (obj.type.toLowerCase() === "post" || obj.type.toLowerCase() === "put") {
-          obj.contentType = "application/json";
-        }
         jQuery.ajax(obj);
       }
     }
