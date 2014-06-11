@@ -11,6 +11,11 @@ class TimeSeries
     window.map = null
     @heatmap = null
     window.selectedGeographicZone = null
+    @selectedGeographicZone = {
+        lat: null
+        lng: null
+        radius: null
+    }
     @networks = {}
     @fleets = {}
     @drivers = {}
@@ -554,8 +559,8 @@ class TimeSeries
           @updateTimeRange()
       
   updateRealTime: () =>
-    [startDate, intervalName, bucketSize, dates, intervals, networkId] = @getRealTimeQueryParams()
-    $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId, (data) =>
+    [query, dates, intervals] = @getRealTimeQueryParams()
+    $.get '/mongo_db/trips_count?' + query, (data) =>
       @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
       @updatingRealTime = false
 
@@ -595,7 +600,17 @@ class TimeSeries
         networkId = if @selectedNetwork != 'All' then '&servicingNetworkId=' + @networks[@selectedNetwork].id else ''
       else
         networkId = if @selectedNetwork != 'All' then '&originatingNetworkId=' + @networks[@selectedNetwork].id else ''
-      return [returnDate, intervalName, bucketSize, dates, intervalIds, networkId]
+
+      selectedGeographicZone = ''
+      if window.selectedGeographicZone?
+        lat = window.selectedGeographicZone.getCenter().lat()
+        lng = window.selectedGeographicZone.getCenter().lng()
+        radius = window.selectedGeographicZone.getRadius()
+        selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
+
+      query = 'startDate=' + returnDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+
+      return [query, dates, intervalIds]
 
   updateTimeRange: () =>
       [intervalName, bucketSize, dates, intervals, networkId] = @getTimeRangeQueryParams(new Date(@startDate), new Date(@endDate))
@@ -908,6 +923,7 @@ class TimeSeries
          window.selectedGeographicZone = circle
          window.timeSeries.updateRealTime()
          window.map.fitBounds circle.getBounds()
+
       $('#clearMap').click =>
           if window.selectedGeographicZone isnt null
               window.selectedGeographicZone.setMap null
