@@ -144,6 +144,7 @@ class CoverageMap
   updatePartner: (partner) =>
     if partner?
      @mapCanvas.panTo(new google.maps.LatLng(partner.coverage[0].center.lat, partner.coverage[0].center.lng))
+     @mapCanvas.setZoom 8
 
   loadMap: () =>
       mapOptions =
