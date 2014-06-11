@@ -898,6 +898,11 @@ class TimeSeries
               zIndex: 1
               editable: true
       )
+      homeControlDiv = document.createElement("div")
+      homeControl = new HomeControl(homeControlDiv, window.map)
+      homeControlDiv.index = 1
+      window.map.controls[google.maps.ControlPosition.TOP_RIGHT].push homeControlDiv
+
       drawingManager.setMap window.map
       google.maps.event.addListener drawingManager, "circlecomplete", (circle) ->
          circle.isHere = (latLng) ->
@@ -907,13 +912,6 @@ class TimeSeries
          window.selectedGeographicZone = circle
          window.timeSeries.updateRealTime()
          window.map.fitBounds circle.getBounds()
-      $('#clearMap').click =>
-          if window.selectedGeographicZone isnt null
-              window.selectedGeographicZone.setMap null
-              window.selectedGeographicZone = null
-              window.timeSeries.updateRealTime()
-              window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
-              window.map.setZoom 4
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
@@ -926,6 +924,37 @@ class TimeSeries
           @fleets[fleet.fleetName] = fleet
           $('#networks-select').append('<option value="' + fleet.partnerName + '">' + fleet.partnerName + '</option>')
           $('#fleets-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
+
+  HomeControl = (controlDiv, map) ->
+        controlDiv.style.padding = "5px"
+
+        controlUI = document.createElement("div")
+        controlUI.style.backgroundColor = "white"
+        controlUI.style.borderStyle = "solid"
+        controlUI.style.borderWidth = "2px"
+        controlUI.style.cursor = "pointer"
+        controlUI.style.textAlign = "center"
+        controlUI.title = "Click to set the map to Home"
+        controlDiv.appendChild controlUI
+
+        controlText = document.createElement("div")
+        controlText.style.fontFamily = "Arial,sans-serif"
+        controlText.style.fontSize = "12px"
+        controlText.style.paddingLeft = "4px"
+        controlText.style.paddingRight = "4px"
+        controlText.innerHTML = "<b>Reset</b>"
+        controlUI.appendChild controlText
+
+        # Setup the click event listeners: simply set the map to
+        # Chicago
+
+        google.maps.event.addDomListener controlUI, "click", ->
+            if window.selectedGeographicZone isnt null
+              window.selectedGeographicZone.setMap null
+              window.selectedGeographicZone = null
+              window.timeSeries.updateRealTime()
+              window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
+              window.map.setZoom 4
 
   loadCharts: () =>
     if @forecastDataMode
