@@ -7,7 +7,7 @@ $('.developer.api').ready ->
     apiKey: ""
     dom_id: "swagger-ui-container"
     supportHeaderParams: false
-    supportedSubmitMethods: ['get', 'post', 'put']
+    supportedSubmitMethods: ['get', 'post', 'put', 'options']
     onComplete: (swaggerApi, swaggerUi) ->
       if (console)
         console.log("Loaded SwaggerUI")
