@@ -30,15 +30,6 @@
             </div>
           </a>
         </div>
-        <div id="farmed-toggle-container">
-          <a id="toggle-button" href="#">
-            <i class="icon-home icon-1x"></i>
-            <div class="image-wrapper">
-              <%= image_tag('farmedout.png', alt: 'Farmed out', :id => 'farmedout-toggle') %>
-              <%= image_tag('farmedin.png', alt: 'Farmed in', :id => 'farmedin-toggle', style: 'display: none;') %>
-            </div>
-          </a>
-        </div>
         <div class="panel panel-default filter-button-group">
           <div class="panel-heading text-center ">
             <h3 class="panel-title">Trips</h3>
@@ -114,6 +105,8 @@
         </div>
 
         <div id="selectors-container" class="col-md-2 col-md-pull-0 col-sm-2 col-sm-pull-10 col-xs-2 col-xs-pull-10">
+          <input type="submit" id="farmed-button" value="Farmed-Out"/>
+          <input type="submit" id="realtime-button" value="Real-time"/>
           <div class="panel panel-default" id="realtime-panel">
             <div class="panel-heading text-center ">
               <h3 class="panel-title">Real-time</h3>

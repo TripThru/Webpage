@@ -78,7 +78,9 @@ class TimeSeries
     $('#trips-rejected-filter-button').addClass('active')
     $('#trips-cancelled-filter-button').addClass('active')
     $('#trips-error-filter-button').addClass('active')
+    $('#farmed-button').addClass('active')
     $('#seconds-button').addClass('active')
+    $('#realtime-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
 
     @tripsArrival =   { name: 'Arrival trips', id: 'Arrival trips', data: []}
@@ -166,6 +168,24 @@ class TimeSeries
           @realtimeMode = false
       @toggleRealTime()
 
+    $('#realtime-button').click =>
+        if $('#realtime-button').hasClass('active')
+            @realtimeMode = false
+            $('#datepicker>input').attr("disabled", false)
+            $('#realtime-intervals-container>input').addClass('disabled')
+            $('#realtime-panel').addClass('hidden')
+            $('#time-range-panel').removeClass('hidden')
+            @update()
+        else
+            @realtimeMode = true
+            $('#datepicker>input').attr("disabled", true)
+            $('#realtime-intervals-container>input').removeClass('disabled')
+            $('#realtime-panel').removeClass('hidden')
+            $('#time-range-panel').addClass('hidden')
+            @loadCharts()
+            @update()
+        $('#realtime-button').toggleClass('active')
+
     $('#start-date').on 'changeDate', (e) =>
         @startDate = e.date
         @dateChanged = true
@@ -242,13 +262,8 @@ class TimeSeries
         @update()
         @togglesChanged = false
 
-    $('#farmed-toggle-container>#toggle-button').click =>
-      if @farmedInMode
-          $('#farmedout-toggle').hide()
-          $('#farmedin-toggle').show()
-      else
-          $('#farmedin-toggle').hide()
-          $('#farmedout-toggle').show()
+    $('#farmed-button').click =>
+      $('#farmed-button').toggleClass('active')
       @farmedInMode = not @farmedInMode
       if @selectedNetwork != 'All'
           @togglesChanged = true

@@ -70,8 +70,6 @@ class Stats
             @update(80, 90, arrival, cancelled, completed, rejected, error, 15, 95)
 
     update: (passengerRating, driverRating, arrival, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
-
-
         if @lastValues.arrival != arrival or @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
             @lastValues.arrival = arrival
             @lastValues.completed = completed
