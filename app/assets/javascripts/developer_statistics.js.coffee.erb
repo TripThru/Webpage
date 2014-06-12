@@ -20,6 +20,7 @@ class TimeSeries
     @selectedStat = 'tripsCompleted'
     @selectedNetwork = 'All'
     @selectedFleet = 'All'
+    @selectedFleetTemp = ''
     @selectedDriver = 'All'
     @chartType = 'series'
     @chartTypeChanged = false
@@ -78,10 +79,11 @@ class TimeSeries
     $('#trips-rejected-filter-button').addClass('active')
     $('#trips-cancelled-filter-button').addClass('active')
     $('#trips-error-filter-button').addClass('active')
-    $('#farmed-button').addClass('active')
+    $('#farmedout-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#realtime-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
+    $('#time-range-panel').addClass('hidden')
 
     @tripsArrival =   { name: 'Arrival trips', id: 'Arrival trips', data: []}
     @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
@@ -262,8 +264,18 @@ class TimeSeries
         @update()
         @togglesChanged = false
 
-    $('#farmed-button').click =>
-      $('#farmed-button').toggleClass('active')
+    $('#farmedin-button').click =>
+      $('#farmedout-button').removeClass('active')
+      $('#farmedin-button').addClass('active')
+      @farmedInMode = not @farmedInMode
+      if @selectedNetwork != 'All'
+          @togglesChanged = true
+          @update()
+          @togglesChanged = false
+
+    $('#farmedout-button').click =>
+      $('#farmedin-button').removeClass('active')
+      $('#farmedout-button').addClass('active')
       @farmedInMode = not @farmedInMode
       if @selectedNetwork != 'All'
           @togglesChanged = true
@@ -849,9 +861,16 @@ class TimeSeries
                           location: locationDropoff,
                           weight: weight
                       }
-      if @selectedFleet != 'All'
-          window.map.panTo(new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng))
+      if @selectedFleet != 'All' and @selectedFleet isnt @selectedFleetTemp
+          @selectedFleetTemp = @selectedFleet
+          partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
+          if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
+                window.selectedGeographicZone.setMap null
+                window.selectedGeographicZone = null
+          window.map.panTo partnerPosition
           window.map.setZoom 8
+
+
       @heatmap.setMap null
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
       @heatmap = new google.maps.visualization.HeatmapLayer({
@@ -964,12 +983,12 @@ class TimeSeries
         # Chicago
 
         google.maps.event.addDomListener controlUI, "click", ->
-            if window.selectedGeographicZone isnt null
+          if window.selectedGeographicZone isnt null
               window.selectedGeographicZone.setMap null
               window.selectedGeographicZone = null
-              window.timeSeries.updateRealTime()
-              window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
-              window.map.setZoom 4
+          window.timeSeries.updateRealTime()
+          window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
+          window.map.setZoom 4
 
   loadCharts: () =>
     if @forecastDataMode
