@@ -2301,11 +2301,63 @@
         width: 100%;
       }
     }
+    #farmed-intervals-container {
+      text-align: center;
+      width: 100%;
+      input {
+        display: inline-block;
+        margin: 0 0 1px 0;
+        width: 47%;
+        height: 28px;
+
+        background-color: #ededed;
+        -webkit-border-radius: 0px;
+        -moz-border-radius: 0px;
+        border-radius: 0px;
+        text-indent: 0;
+        border: 1px solid #dcdcdc;
+        color: #888888;
+        text-decoration: none;
+        text-align: center;
+        font-size: 12px;
+
+        &:hover {
+          background-color: rgb(255, 76, 63) !important;
+          color: #ffffff;
+        }
+        &:active {
+          position: relative;
+          top: 1px;
+        }
+      }
+
+      .active {
+        background-color: rgb(255, 76, 63) !important;
+        color: #ffffff !important;
+      }
+
+      .disabled {
+        background-color: #ededed !important;
+        color: #888888 !important;
+        &:hover {
+          background-color: #ededed !important;
+          color: #888888 !important;
+        }
+      }
+
+      #percentage-button {
+        float: left;
+      }
+
+      #absolute-button {
+        float: right;
+      }
+    }
     #farmed-in-container {
-      width: 27%;
+      width: 47%;
     }
     #farmed-out-container {
-      width: 27%;
+      width: 47%;
       overflow-x: hidden;
       overflow-y: hidden;
       .panel-footer{

@@ -2,6 +2,27 @@ class money
     constructor: (@gateway, @selectorId) ->
         document.getElementById("imageLoad").style.visibility = "visible"
         @gateway.getPartners(@partnersList)
+        @farmedA = 'out'
+        $('#farmed-in-container').addClass('hidden')
+        $('#farmedout-button').addClass('active')
+
+        $('#farmedin-button').click =>
+            $('#farmedout-button').removeClass('active')
+            $('#farmedin-button').addClass('active')
+            $('#farmed-in-container').removeClass('hidden')
+            $('#farmed-out-container').addClass('hidden')
+            @farmedA = 'in'
+            @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+            @updateStats(@selectedFleet, @farmedA)
+
+        $('#farmedout-button').click =>
+            $('#farmedin-button').removeClass('active')
+            $('#farmedout-button').addClass('active')
+            $('#farmed-out-container').removeClass('hidden')
+            $('#farmed-in-container').addClass('hidden')
+            @farmedA = 'out'
+            @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+            @updateStats(@selectedFleet, @farmedA)
 
     partnersList: (fleets) =>
         firstFleet = null
@@ -15,11 +36,11 @@ class money
                 $('#' + @selectorId).append('<option value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
         $('#' + @selectorId).change =>
             @selectedFleet = $('#' + @selectorId + ' option:selected').val()
-            @updateStats(@selectedFleet)
+            @updateStats(@selectedFleet, @farmedA)
         if firstFleet?
-            @updateStats(firstFleet)
+            @updateStats(firstFleet, @farmedA)
 
-    updateStats: (iD) =>
+    updateStats: (iD, farmed) =>
         document.getElementById("imageLoad").style.visibility = "visible"
         day = new Date();
         day.setHours(day.getHours()-24);
@@ -70,11 +91,19 @@ class money
                               '
             $('#farmedOutDiv').html content
 
-            $('#balance-due').html (farmedOut.length + farmedIn.length)
-            content = '<row><h2>Balance due</h2></row>
-                       <row><h2><strong> $' + ((farmedOut.length + farmedIn.length)/2).toFixed(2) + '</strong></h2></row>
-                       <row><button type="button" class="btn btn-info">Make payment</button></row>'
-            $('#balanceDiv').html content
+            if farmed is 'out'
+
+                $('#balance-due').html (farmedOut.length)
+                content = '<row><h2>Balance due</h2></row>
+                           <row><h2><strong> $' + ((farmedOut.length)/2).toFixed(2) + '</strong></h2></row>
+                           <row><button type="button" class="btn btn-info">Make payment</button></row>'
+                $('#balanceDiv').html content
+            else
+                $('#balance-due').html (farmedIn.length)
+                content = '<row><h2>Balance due</h2></row>
+                           <row><h2><strong> $' + ((farmedIn.length)/2).toFixed(2) + '</strong></h2></row>
+                           <row><button type="button" class="btn btn-info">Make payment</button></row>'
+                $('#balanceDiv').html content
             document.getElementById("imageLoad").style.visibility = "hidden"
 
 $('.developer.money').ready ->
