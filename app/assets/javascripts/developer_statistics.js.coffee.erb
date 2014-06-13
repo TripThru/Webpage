@@ -171,6 +171,7 @@ class TimeSeries
       @toggleRealTime()
 
     $('#realtime-button').click =>
+        @togglesChanged = true
         if $('#realtime-button').hasClass('active')
             @realtimeMode = false
             $('#datepicker>input').attr("disabled", false)
@@ -184,8 +185,8 @@ class TimeSeries
             $('#realtime-intervals-container>input').removeClass('disabled')
             $('#realtime-panel').removeClass('hidden')
             $('#time-range-panel').addClass('hidden')
-            @loadCharts()
             @update()
+        @togglesChanged = false
         $('#realtime-button').toggleClass('active')
 
     $('#start-date').on 'changeDate', (e) =>
