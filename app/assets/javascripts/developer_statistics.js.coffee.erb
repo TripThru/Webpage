@@ -79,7 +79,7 @@ class TimeSeries
     $('#trips-rejected-filter-button').addClass('active')
     $('#trips-cancelled-filter-button').addClass('active')
     $('#trips-error-filter-button').addClass('active')
-    $('#farmedout-button').addClass('active')
+    $('#farmedin-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#realtime-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
@@ -184,6 +184,7 @@ class TimeSeries
             $('#datepicker>input').attr("disabled", true)
             $('#realtime-intervals-container>input').removeClass('disabled')
             $('#realtime-panel').removeClass('hidden')
+            @togglesChanged = true
             $('#time-range-panel').addClass('hidden')
             @update()
         @togglesChanged = false
@@ -266,22 +267,24 @@ class TimeSeries
         @togglesChanged = false
 
     $('#farmedin-button').click =>
-      $('#farmedout-button').removeClass('active')
-      $('#farmedin-button').addClass('active')
-      @farmedInMode = not @farmedInMode
-      if @selectedNetwork != 'All'
-          @togglesChanged = true
-          @update()
-          @togglesChanged = false
+      if not @farmedInMode
+          $('#farmedout-button').removeClass('active')
+          $('#farmedin-button').addClass('active')
+          @farmedInMode = not @farmedInMode
+          if @selectedNetwork != 'All'
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
     $('#farmedout-button').click =>
-      $('#farmedin-button').removeClass('active')
-      $('#farmedout-button').addClass('active')
-      @farmedInMode = not @farmedInMode
-      if @selectedNetwork != 'All'
-          @togglesChanged = true
-          @update()
-          @togglesChanged = false
+      if @farmedInMode
+          $('#farmedin-button').removeClass('active')
+          $('#farmedout-button').addClass('active')
+          @farmedInMode = not @farmedInMode
+          if @selectedNetwork != 'All'
+              @togglesChanged = true
+              @update()
+              @togglesChanged = false
 
     @update()
 
