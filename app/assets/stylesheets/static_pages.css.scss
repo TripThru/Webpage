@@ -5,7 +5,9 @@
     color: #fff;
 
     p {
+      margin-top: 20px;
       color: #ffffff;
+      font-weight: bold;
     }
   }
 
@@ -44,6 +46,7 @@
     background-color: rgba(0, 0, 0, 0);
     padding: 12px 18px;
     text-shadow: black 0.1em 0.1em 0.2em;
+    font-weight: bold;
   }
   .flickerplate ul.flicks > li .flick-sub-text {
     color: rgb(255, 255, 255) !important;
