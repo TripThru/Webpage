@@ -107,12 +107,12 @@ class TripTracker
     @driverMarker = null
     @initialMarker = null
     @mapOptions =
-      center: new google.maps.LatLng(40.32004,-98.9290212)
+      center: if typeof google isnt "undefined" then new google.maps.LatLng(40.32004,-98.9290212) else null
       zoom: 4
       mapTypeControl: false
       mapTypeId: google.maps.MapTypeId.ROADMAP
 
-    @map = new google.maps.Map(document.getElementById("map-canvas"), @mapOptions)
+    @map = if typeof google isnt "undefined" then new google.maps.Map(document.getElementById("map-canvas"), @mapOptions) else null
 
     rendererOptions =
         preserveViewport: true

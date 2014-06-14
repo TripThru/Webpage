@@ -661,7 +661,6 @@ class TimeSeries
       networkId = if @selectedNetwork != 'All' then '&originatingNetworkId=' + @networks[@selectedNetwork].id else ''
     return [intervalName, bucketSize, dates, intervalIds, networkId]
 
-
   getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>
       dates = []
       intervalIds = []
@@ -830,16 +829,17 @@ class TimeSeries
   drawHeatMap: (series) =>
       taxiData = []
       weight = 0
+      maxIntensity = 0
       if @realtimeMode
           if not @percentageMode
-             weightValue = series[0].data.data[0][1] * 20
+             weightValue = series[1].data.data[0][1] * 20
              weight = if weightValue > 100 then 100 else weightValue
           else
-             weight = series[0].data.data[0][1]
+             weight = series[1].data.data[0][1]
       else
         for serie in series
             if serie.name == @selectedStat
-                weight = series[0].data.data[0][1]
+                weight = series[1].data.data[0][1]
                 break
       for key of @tripsById
           if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
@@ -880,7 +880,7 @@ class TimeSeries
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
           radius: 30,
-          maxIntensity: 100,
+          maxIntensity: weight * 2,
           gradient: gradient
       })
       @heatmap.setMap window.map
@@ -922,12 +922,11 @@ class TimeSeries
       window.map = new google.maps.Map(document.getElementById(@mapContainer), mapOptions)
       @heatmap = new google.maps.visualization.HeatmapLayer()
       drawingManager = new google.maps.drawing.DrawingManager(
-          drawingMode: google.maps.drawing.OverlayType.CIRCLE
+          drawingMode: null
           drawingControl: true
           drawingControlOptions:
               position: google.maps.ControlPosition.TOP_CENTER
               drawingModes: [google.maps.drawing.OverlayType.CIRCLE ]
-
           circleOptions:
               fillColor: "#ffff00"
               fillOpacity: .13
