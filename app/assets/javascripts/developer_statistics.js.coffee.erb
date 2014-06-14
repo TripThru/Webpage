@@ -28,6 +28,7 @@ class TimeSeries
     @percentageMode = true
     @forecastDataMode = false
     @farmedInMode = true
+    @farmedOutMode = true
     @dataModeChanged = false
     @togglesChanged  = false
     @dateChanged = false
@@ -80,6 +81,7 @@ class TimeSeries
     $('#trips-cancelled-filter-button').addClass('active')
     $('#trips-error-filter-button').addClass('active')
     $('#farmedin-button').addClass('active')
+    $('#farmedout-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#realtime-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
@@ -268,9 +270,8 @@ class TimeSeries
         @togglesChanged = false
 
     $('#farmedin-button').click =>
-      if not @farmedInMode
-          $('#farmedout-button').removeClass('active')
-          $('#farmedin-button').addClass('active')
+      if not @farmedInMode or @farmedOutMode
+          $('#farmedin-button').toggleClass('active')
           @farmedInMode = not @farmedInMode
           if @selectedNetwork != 'All'
               @togglesChanged = true
@@ -278,14 +279,13 @@ class TimeSeries
               @togglesChanged = false
 
     $('#farmedout-button').click =>
-      if @farmedInMode
-          $('#farmedin-button').removeClass('active')
-          $('#farmedout-button').addClass('active')
-          @farmedInMode = not @farmedInMode
+      if not @farmedOutMode or @farmedInMode
+          $('#farmedout-button').toggleClass('active')
+          @farmedOutMode = not @farmedOutMode
           if @selectedNetwork != 'All'
-              @togglesChanged = true
-              @update()
-              @togglesChanged = false
+            @togglesChanged = true
+            @update()
+            @togglesChanged = false
 
     @update()
 
@@ -622,10 +622,11 @@ class TimeSeries
       [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
 
       networkId = ''
-      if @farmedInMode
-        networkId = if @selectedNetwork != 'All' then '&servicingNetworkId=' + @networks[@selectedNetwork].id else ''
-      else
-        networkId = if @selectedNetwork != 'All' then '&originatingNetworkId=' + @networks[@selectedNetwork].id else ''
+      if @selectedNetwork != 'All'
+          if @farmedInMode
+            networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
+          if @farmedOutMode
+              networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
       return [returnDate, intervalName, bucketSize, dates, intervalIds, networkId]
 
   updateTimeRange: () =>
@@ -656,10 +657,11 @@ class TimeSeries
     [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
 
     networkId = ''
-    if @farmedInMode
-      networkId = if @selectedNetwork != 'All' then '&servicingNetworkId=' + @networks[@selectedNetwork].id else ''
-    else
-      networkId = if @selectedNetwork != 'All' then '&originatingNetworkId=' + @networks[@selectedNetwork].id else ''
+    if @selectedNetwork != 'All'
+      if @farmedInMode
+          networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
+      if @farmedOutMode
+          networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
     return [intervalName, bucketSize, dates, intervalIds, networkId]
 
   getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>

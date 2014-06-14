@@ -44,12 +44,16 @@ class MongoDbController < ApplicationController
       match += 'LastUpdate : { $gte: startDate }'
     end
 
-    if params[:servicingNetworkId] != nil
+    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] == nil
       match += ', ServicingPartnerId : "' + params[:servicingNetworkId] +'"'
     end
 
-    if params[:originatingNetworkId] != nil
+    if params[:originatingNetworkId] != nil and params[:servicingNetworkId] == nil
       match += ', OriginatingPartnerId : "' + params[:originatingNetworkId] + '"'
+    end
+
+    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+      match += ',$or:[{ServicingPartnerId : "' + params[:servicingNetworkId] +'"},{OriginatingPartnerId : "' + params[:originatingNetworkId] + '"}]'
     end
 
     match += '}}'
@@ -78,6 +82,8 @@ class MongoDbController < ApplicationController
         return trips;
       }
     '
+
+    puts get_trips
 
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
