@@ -5,7 +5,9 @@
     color: #fff;
 
     p {
+      margin-top: 20px;
       color: #ffffff;
+      font-weight: bold;
     }
   }
 
@@ -15,7 +17,76 @@
       height: 90vh !important;
     }
   }
+  .blurb {
+    padding: 120px 0;
+    min-height: 500px;
+    background-color:#fefefe;
+  }
 
+  .blurb .panel {
+    background-color: transparent;
+  }
+
+
+  .bright {
+    background: #7fbbda url('home.jpg') no-repeat fixed;
+    color:#fff;
+  }
+
+  .featurette {
+    background: #545455;
+    padding: 50px 0;
+    color: #ffffff;
+    min-height: 600px;
+    text-align: center;
+
+    .container {
+
+      width: 80%;
+    }
+
+    .featurette-item {
+      padding-bottom: 30px;
+      text-align: left;
+      img{
+        height: 64px;
+        width: 64px;
+      }
+      .info{
+        h4{
+          font-weight: bold;
+          margin-bottom: 8px;
+        }
+        min-height: 170px;
+      }
+    }
+  }
+
+  .callout {
+    color: #ffffff;
+    padding-top:7%;
+    height: 100%;
+    width: 100%;
+    background: url('home.jpg') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+  }
+
+
+  .gallery {
+    padding: 50px 0;
+  }
+
+  .call-to-action {
+    background: #eeeeee;
+    padding: 50px 0;
+  }
+
+  .call-to-action .btn {
+    margin: 10px;
+  }
   #sec2{
     color: #ffffff;
     p {
@@ -44,6 +115,7 @@
     background-color: rgba(0, 0, 0, 0);
     padding: 12px 18px;
     text-shadow: black 0.1em 0.1em 0.2em;
+    font-weight: bold;
   }
   .flickerplate ul.flicks > li .flick-sub-text {
     color: rgb(255, 255, 255) !important;
@@ -130,10 +202,22 @@
   #static_pages_about{
     .about_section {
       .container {
-
         width: 80%;
       }
     }
+  }
+
+  #static_pages_home {
+      .featurette {
+        .featurette-item {
+          .info {
+            min-height: 0;
+          }
+          .image-wrapper{
+            margin-bottom: 10px;
+          }
+        }
+      }
   }
 }
 
@@ -150,10 +234,21 @@
   #static_pages_about{
     .about_section {
       .container {
-
         width: 100%;
       }
     }
+  }
+  #static_pages_home {
+      .featurette {
+        .featurette-item {
+          .info {
+            min-height: 0;
+          }
+          .image-wrapper{
+            margin-bottom: 10px;
+          }
+        }
+      }
   }
 }
 
