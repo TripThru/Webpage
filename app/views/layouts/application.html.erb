@@ -2,13 +2,14 @@
 <html>
 <head>
   <title><%= full_title(yield(:title)) %></title>
+  <meta name="viewport" content="width=device-width">
   <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
   <%= csrf_meta_tags %>
   <!--[if lt IE 9]>
   <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
+  <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&libraries=visualization,drawing"></script>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
 </head>
 <body class="<%= controller_name %> <%= action_name %>">
     <div class="navbar navbar-fixed-top navbar-bold" data-spy="affix" data-offset-top="1000">
