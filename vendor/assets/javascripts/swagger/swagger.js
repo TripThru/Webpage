@@ -227,6 +227,12 @@
             _ref = response.apis;
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               endpoint = _ref[_i];
+                _ref2 = endpoint.operations;
+                for (_i2 = 0, _len2 = _ref2.length; _i2 < _len2; _i2++) {
+                    if(_ref2[_i2].httpMethod === 'OPTIONS'){
+                        endpoint.operations.splice(_i2,(_i2+1))
+                    }
+                }
               _this.addOperations(endpoint.path, endpoint.operations);
             }
           }
