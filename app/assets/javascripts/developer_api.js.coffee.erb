@@ -3,11 +3,11 @@
 $('.developer.api').ready ->
   clearInterval(window.tripthruinterval)
   window.swaggerUi = new SwaggerUi({
-    discoveryUrl: 'http://192.168.0.104:17187/' + 'resources'
+    discoveryUrl: new TripThru('').getBaseUrl() + 'resources'
     apiKey: ""
     dom_id: "swagger-ui-container"
     supportHeaderParams: false
-    supportedSubmitMethods: ['get', 'post', 'put']
+    supportedSubmitMethods: ['get', 'post', 'put', 'options']
     onComplete: (swaggerApi, swaggerUi) ->
       if (console)
         console.log("Loaded SwaggerUI")
