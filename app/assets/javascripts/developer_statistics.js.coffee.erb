@@ -844,8 +844,13 @@ class TimeSeries
             if serie.name == @selectedStat
                 weight = series[1].data.data[0][1]
                 break
+      trips = []
       for key of @tripsById
           if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
+              trips.push {
+                lat: @tripsById[key].pickupLocation.lat
+                lng: @tripsById[key].pickupLocation.lng
+              }
               locationPickUp = new google.maps.LatLng(@tripsById[key].pickupLocation.lat,@tripsById[key].pickupLocation.lng)
               locationDropoff =  new google.maps.LatLng(@tripsById[key].dropoffLocation.lat,@tripsById[key].dropoffLocation.lng)
               if window.selectedGeographicZone is null
@@ -868,15 +873,12 @@ class TimeSeries
                           location: locationDropoff,
                           weight: weight
                       }
-      if @selectedFleet != 'All' and @selectedFleet isnt @selectedFleetTemp
-          @selectedFleetTemp = @selectedFleet
-          partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
-          if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
-                window.selectedGeographicZone.setMap null
-                window.selectedGeographicZone = null
-          window.map.panTo partnerPosition
-          window.map.setZoom 8
 
+      geoCenter = @getCentrePointFromListOfCoordinates(trips)
+      bounds = new google.maps.LatLngBounds()
+      bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+      bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+      window.map.fitBounds(bounds)
 
       @heatmap.setMap null
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
@@ -1051,6 +1053,21 @@ class TimeSeries
         @historicChart.redraw()
     if @forecastChart?
         @forecastChart.redraw()
+
+  getCentrePointFromListOfCoordinates: (list) =>
+    minlat = null
+    minlng = null
+    maxlat = null
+    maxlng = null
+    for point in list
+        minlat = if !minlat? or point.lat < minlat then point.lat else minlat
+        maxlat = if !maxlat? or point.lat > maxlat then point.lat else maxlat
+        minlng = if !minlng? or point.lng < minlng then point.lng else minlng
+        maxlng = if !maxlng? or point.lng > maxlng then point.lng else maxlng
+
+    lat = maxlat - ((maxlat - minlat)/2)
+    lng = maxlng - ((maxlng - minlng)/2)
+    {lat: lat, lng: lng, maxlat: maxlat, maxlng: maxlng, minlat: minlat, minlng: minlng}
 
 $('.developer.statistics').ready ->
   window.timeSeries = new TimeSeries(new TripThru($('#access_token').val()), 'historic-chart', 'forecast-chart', 'heat-map')
