@@ -846,13 +846,15 @@ class TimeSeries
                 break
       trips = []
       for key of @tripsById
-          if @selectedFleet == 'All' or @selectedFleet == @tripsById[key].servicing
+          trip = @tripsById[key]
+          if @selectedNetwork == 'All' or (@farmedInMode and trip.getServicing() in @networks[@selectedNetwork].fleets) or (@farmedOutMode and trip.getOrigin() in @networks[@selectedNetwork].fleets)
+            if @selectedFleet == 'All' or (@farmedInMode and @selectedFleet == trip.getServicing()) or (@farmedOutMode and @selectedFleet == trip.getOrigin())
               trips.push {
-                lat: @tripsById[key].pickupLocation.lat
-                lng: @tripsById[key].pickupLocation.lng
+                lat: trip.pickupLocation.lat
+                lng: trip.pickupLocation.lng
               }
-              locationPickUp = new google.maps.LatLng(@tripsById[key].pickupLocation.lat,@tripsById[key].pickupLocation.lng)
-              locationDropoff =  new google.maps.LatLng(@tripsById[key].dropoffLocation.lat,@tripsById[key].dropoffLocation.lng)
+              locationPickUp = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
+              locationDropoff =  new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
               if window.selectedGeographicZone is null
                   taxiData.push {
                       location: locationPickUp,
@@ -874,11 +876,20 @@ class TimeSeries
                           weight: weight
                       }
 
-      geoCenter = @getCentrePointFromListOfCoordinates(trips)
-      bounds = new google.maps.LatLngBounds()
-      bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
-      bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
-      window.map.fitBounds(bounds)
+      if trips.length > 0
+        geoCenter = @getCentrePointFromListOfCoordinates(trips)
+        bounds = new google.maps.LatLngBounds()
+        bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+        bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+        window.map.fitBounds(bounds)
+      else if @selectedFleet != 'All' and @selectedFleet isnt @selectedFleetTemp
+        @selectedFleetTemp = @selectedFleet
+        partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
+        if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
+          window.selectedGeographicZone.setMap null
+          window.selectedGeographicZone = null
+        window.map.panTo partnerPosition
+        window.map.setZoom 8
 
       @heatmap.setMap null
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
