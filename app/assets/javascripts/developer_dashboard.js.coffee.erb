@@ -106,6 +106,7 @@ class TripTracker
     @destinationMarker = null
     @driverMarker = null
     @initialMarker = null
+    @tripChange = false
     @mapOptions =
       center: if typeof google isnt "undefined" then new google.maps.LatLng(40.32004,-98.9290212) else null
       zoom: 4
@@ -152,6 +153,7 @@ class TripTracker
     @map.setZoom 4
 
   tripChanged: (trip) =>
+    @tripChange = true
     @tripId = null
     @driverPreviousLocation = null
     @updateTripInfo(trip)
@@ -162,6 +164,7 @@ class TripTracker
         @updateMap(trip)
     if trip?
       @tripId = trip.getId()
+    @tripChange = false
 
   updateTripInfo: (trip) =>
     if trip?
@@ -341,8 +344,9 @@ class TripTracker
             else
               @directionsService.route request, (result, status) =>
                   @directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay2?
-        @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
-        @map.setZoom 15
+        if @tripChange
+          @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+          @map.setZoom 15
     @setTripInfoBool = false
 
 class ActivityLog
