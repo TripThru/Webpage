@@ -19,6 +19,7 @@ class TimeSeries
 
     @selectedStat = 'tripsCompleted'
     @selectedNetwork = 'All'
+    @selectedNetworkTemp = ''
     @selectedFleet = 'All'
     @selectedFleetTemp = ''
     @selectedDriver = 'All'
@@ -876,20 +877,23 @@ class TimeSeries
                           weight: weight
                       }
 
-      if trips.length > 0
-        geoCenter = @getCentrePointFromListOfCoordinates(trips)
-        bounds = new google.maps.LatLngBounds()
-        bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
-        bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
-        window.map.fitBounds(bounds)
-      else if @selectedFleet != 'All' and @selectedFleet isnt @selectedFleetTemp
+
+      if @selectedNetwork isnt @selectedNetworkTemp or @selectedFleet isnt @selectedFleetTemp
+        @selectedNetworkTemp = @selectedNetwork
         @selectedFleetTemp = @selectedFleet
-        partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
-        if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
-          window.selectedGeographicZone.setMap null
-          window.selectedGeographicZone = null
-        window.map.panTo partnerPosition
-        window.map.setZoom 8
+        if trips.length > 0
+          geoCenter = @getCentrePointFromListOfCoordinates(trips)
+          bounds = new google.maps.LatLngBounds()
+          bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+          bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+          window.map.fitBounds(bounds)
+        else if @selectedFleet != 'All'
+          partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
+          if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
+            window.selectedGeographicZone.setMap null
+            window.selectedGeographicZone = null
+          window.map.panTo partnerPosition
+          window.map.setZoom 8
 
       @heatmap.setMap null
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
