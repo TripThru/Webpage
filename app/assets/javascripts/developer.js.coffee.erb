@@ -71,7 +71,7 @@ class window.TripThru
         return
 
     getPartners: (_callback) =>
-        $.get(@baseUrl + 'partners?format=json&access_token=' + @accessToken, (data) =>
+        $.get(@baseUrl + 'networks?format=json&access_token=' + @accessToken, (data) =>
             if data.result == 'OK'
                 _callback(data)
             else

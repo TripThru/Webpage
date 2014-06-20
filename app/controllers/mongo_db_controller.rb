@@ -8,18 +8,21 @@ class MongoDbController < ApplicationController
     geo_near = { }
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       geo_near['$geoNear'] = {
-          :near => [ params[:centerLng], params[:centerLat] ],
+          :near => [ params[:centerLng].to_f, params[:centerLat].to_f ],
           :distanceField => 'dist.calculated',
-          :maxDistance => params[:centerRadius]
+          :maxDistance => params[:centerRadius].to_f
       }
     end
 
     match = { }
-    if params[:startDate] != nil
-      match['$match'][:LastUpdate]['$gte'] = Time.at(params[:startDate].to_f)
-    end
-    if params[:endDate] != nil
-      match['$match'][:LastUpdate]['$lte'] = Time.at(params[:endDate].to_f)
+    if params[:startDate] != nil or params[:endDate] != nil
+      match['$match'] = { :LastUpdate => {} }
+      if params[:startDate] != nil
+        match['$match'][:LastUpdate]['$gte'] = Time.at(params[:startDate].to_f)
+      end
+      if params[:endDate] != nil
+        match['$match'][:LastUpdate]['$lte'] = Time.at(params[:endDate].to_f)
+      end
     end
     if params[:servicingNetworkId] != nil
       match['$match'][:ServicingPartnerId] = params[:servicingNetworkId]

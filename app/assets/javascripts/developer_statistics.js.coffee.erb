@@ -559,12 +559,12 @@ class TimeSeries
           @updateTimeRange()
       
   updateRealTime: () =>
-    [query, dates, intervals] = @getRealTimeQueryParams()
+    [query, dates, intervals] = @getRealTimeQuery()
     $.get '/mongo_db/trips_count?' + query, (data) =>
       @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
       @updatingRealTime = false
 
-  getRealTimeQueryParams: () =>
+  getRealTimeQuery: () =>
       startDate = new Date()
       intervalCount = 0
       bucketSize = 1
@@ -591,7 +591,7 @@ class TimeSeries
           startDate.setMonth(startDate.getMonth()-3)
           intervalCount = 14
           intervalName = 'week'
-      returnDate = new Date(startDate)
+      date = +(new Date(startDate)) / 1000;
 
       [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
 
@@ -608,16 +608,16 @@ class TimeSeries
         radius = window.selectedGeographicZone.getRadius()
         selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
-      query = 'startDate=' + returnDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
 
       return [query, dates, intervalIds]
 
   updateTimeRange: () =>
-      [intervalName, bucketSize, dates, intervals, networkId] = @getTimeRangeQueryParams(new Date(@startDate), new Date(@endDate))
-      $.get '/mongo_db/trips_count?startDate=' + @startDate + '&endDate=' + @endDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId, (data) =>
+      [query, dates, intervals] = @getTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+      $.get '/mongo_db/trips_count?' + query, (data) =>
         @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
 
-  getTimeRangeQueryParams: (startDate, endDate) =>
+  getTimeRangeQuery: (startDate, endDate) =>
     days = daysBetween(startDate, endDate)
     intervalCount = 0
     bucketSize = 1
@@ -644,7 +644,10 @@ class TimeSeries
       networkId = if @selectedNetwork != 'All' then '&servicingNetworkId=' + @networks[@selectedNetwork].id else ''
     else
       networkId = if @selectedNetwork != 'All' then '&originatingNetworkId=' + @networks[@selectedNetwork].id else ''
-    return [intervalName, bucketSize, dates, intervalIds, networkId]
+
+    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId
+
+    return [query, dates, intervalIds]
 
 
   getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>
