@@ -523,7 +523,7 @@ class TimeSeries
                   @togglesChanged = false
 
 
-  update: () =>
+  update: (force) =>
       if @chartTypeChanged and @chartType == 'series'
           $('#map-container').hide()
           $('#time-series-container').show()
@@ -931,16 +931,20 @@ class TimeSeries
          if window.selectedGeographicZone isnt null
             window.selectedGeographicZone.setMap null
          window.selectedGeographicZone = circle
-         window.timeSeries.update()
          window.map.fitBounds circle.getBounds()
+         window.timeSeries.togglesChanged = true
+         window.timeSeries.update()
+         window.timeSeries.togglesChanged = false
 
       $('#clearMap').click =>
           if window.selectedGeographicZone isnt null
               window.selectedGeographicZone.setMap null
               window.selectedGeographicZone = null
-              window.timeSeries.update()
               window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
               window.map.setZoom 4
+              window.timeSeries.togglesChanged = true
+              window.timeSeries.update()
+              window.timeSeries.togglesChanged = false
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
