@@ -102,6 +102,7 @@ class MongoDbController < ApplicationController
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     res = db.collection('trips').aggregate(parameters)
+    puts res
     respond_to do |format|
       format.json { render text: res.to_json }
     end

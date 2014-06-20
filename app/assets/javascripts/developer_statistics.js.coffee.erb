@@ -645,7 +645,14 @@ class TimeSeries
     else
       networkId = if @selectedNetwork != 'All' then '&originatingNetworkId=' + @networks[@selectedNetwork].id else ''
 
-    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId
+    selectedGeographicZone = ''
+    if window.selectedGeographicZone?
+      lat = window.selectedGeographicZone.getCenter().lat()
+      lng = window.selectedGeographicZone.getCenter().lng()
+      radius = window.selectedGeographicZone.getRadius()
+      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
+
+    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
 
     return [query, dates, intervalIds]
 
@@ -924,14 +931,14 @@ class TimeSeries
          if window.selectedGeographicZone isnt null
             window.selectedGeographicZone.setMap null
          window.selectedGeographicZone = circle
-         window.timeSeries.updateRealTime()
+         window.timeSeries.update()
          window.map.fitBounds circle.getBounds()
 
       $('#clearMap').click =>
           if window.selectedGeographicZone isnt null
               window.selectedGeographicZone.setMap null
               window.selectedGeographicZone = null
-              window.timeSeries.updateRealTime()
+              window.timeSeries.update()
               window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
               window.map.setZoom 4
 
