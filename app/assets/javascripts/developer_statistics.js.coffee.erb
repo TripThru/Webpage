@@ -637,7 +637,7 @@ class TimeSeries
         intervalCount = (days / 7).toFixed(0)
         intervalName = 'week'
 
-    [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
+    [dates, intervalIds] = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
 
     networkId = ''
     if @farmedInMode

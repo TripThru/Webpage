@@ -97,6 +97,7 @@ class MongoDbController < ApplicationController
     end
     parameters << sort << project << group
 
+    puts parameters
 
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
