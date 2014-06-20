@@ -91,11 +91,14 @@ class MongoDbController < ApplicationController
     parameters = []
     if geo_near.length > 0
       parameters << geo_near
+    else
+      parameters << sort
     end
     if match.length > 0
       parameters << match
     end
-    parameters << sort << project << group
+    parameters << project
+    parameters << group
 
     puts parameters
 

@@ -523,7 +523,7 @@ class TimeSeries
                   @togglesChanged = false
 
 
-  update: (force) =>
+  update: () =>
       if @chartTypeChanged and @chartType == 'series'
           $('#map-container').hide()
           $('#time-series-container').show()
@@ -555,7 +555,7 @@ class TimeSeries
       if @realtimeMode and not @updatingRealTime
           @updatingRealTime = true
           @updateRealTime()
-      else if @dateChanged or @togglesChanged
+      else if @dateChanged or @togglesChanged or @chartTypeChanged or @dataModeChanged
           @updateTimeRange()
       
   updateRealTime: () =>
