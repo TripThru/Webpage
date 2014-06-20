@@ -9,7 +9,7 @@
 o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
 c = (0...50).map { o[rand(o.length)] }.join
 tripthru_access_token = c
-
+include BCrypt
 User.create!(
     ClientId: 'TripThru',
     UserName: 'tripthru',
