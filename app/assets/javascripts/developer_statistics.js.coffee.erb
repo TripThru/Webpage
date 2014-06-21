@@ -853,23 +853,18 @@ class TimeSeries
       for id, trip of @tripsById
           if id not in tripsIds
               delete @tripsById[id]
-      @drawHeatMap(series)
+      serie = series.filter((serie) => serie.name == @selectedStat)
+      @drawHeatMap(serie[0].data.data)
 
-  drawHeatMap: (series) =>
+  drawHeatMap: (serie) =>
       taxiData = []
       weight = 0
-      maxIntensity = 0
-      if @realtimeMode
-          if not @percentageMode
-             weightValue = series[1].data.data[0][1] * 20
+      for value in serie
+        weight += value[1]
+      weight /= serie.length
+      if @realtimeMode and not @percentageMode
+             weightValue = weight * 20
              weight = if weightValue > 100 then 100 else weightValue
-          else
-             weight = series[1].data.data[0][1]
-      else
-        for serie in series
-            if serie.name == @selectedStat
-                weight = series[1].data.data[0][1]
-                break
       trips = []
       for key of @tripsById
           trip = @tripsById[key]

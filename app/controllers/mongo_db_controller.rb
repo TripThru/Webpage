@@ -8,30 +8,30 @@ class MongoDbController < ApplicationController
     geo_near = { }
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       geo_near['$geoNear'] = {
-          :near => [ params[:centerLng].to_f, params[:centerLat].to_f ],
-          :distanceField => 'dist.calculated',
-          :maxDistance => params[:centerRadius].to_f
+          'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
+          'distanceField' => 'dist.calculated',
+          'maxDistance' => params[:centerRadius].to_f
       }
     end
 
     match = { }
     if params[:startDate] != nil or params[:endDate] != nil
-      match['$match'] = { :LastUpdate => {} }
+      match['$match'] = { 'LastUpdate' => {} }
       if params[:startDate] != nil
-        match['$match'][:LastUpdate]['$gte'] = Time.at(params[:startDate].to_f)
+        match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
       end
       if params[:endDate] != nil
-        match['$match'][:LastUpdate]['$lte'] = Time.at(params[:endDate].to_f)
+        match['$match']['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
       end
     end
-    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] == nil
-      match['$match'][:ServicingPartnerId] = params[:servicingNetworkId]
+    if params[:servicingNetworkId] != nil
+      match['$match']['ServicingPartnerId'] = params[:servicingNetworkId]
     end
-    if params[:originatingNetworkId] != nil and params[:servicingNetworkId] == nil
-      match['$match'][:OriginatingPartnerId] = params[:originatingNetworkId]
+    if params[:originatingNetworkId] != nil
+      match['$match']['OriginatingPartnerId'] = params[:originatingNetworkId]
     end
 
-    sort = { '$sort' => { :LastUpdate => 1 } } 
+    sort = { '$sort' => { 'LastUpdate' => 1 } }
 
     interval = { }
     case params[:interval]
@@ -68,34 +68,35 @@ class MongoDbController < ApplicationController
 
     project = {
         '$project' => {
-            :Status => '$Status',
-            :Interval => interval
+            'Status' => '$Status',
+            'Interval' => interval
         }
     }
 
     group = {
         '$group' => {
-          :_id => {
-              :Status => '$Status',
-              :Interval => {
+          '_id' => {
+              'Status' => '$Status',
+              'Interval' => {
                   '$subtract' => [
                       '$Interval',
                       { '$mod' => [ '$Interval', 1 ] }
                   ]
               }
           },
-          :count => { '$sum' => 1 }
+          'count' => { '$sum' => 1 }
         }
     }
 
     parameters = []
     if geo_near.length > 0
       parameters << geo_near
-    else
-      parameters << sort
     end
     if match.length > 0
       parameters << match
+    end
+    if geo_near.length == 0
+      parameters << sort
     end
     parameters << project
     parameters << group
@@ -105,7 +106,7 @@ class MongoDbController < ApplicationController
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     res = db.collection('trips').aggregate(parameters)
-    puts res
+    puts 'Results count: ' + res.length.to_s
     respond_to do |format|
       format.json { render text: res.to_json }
     end
