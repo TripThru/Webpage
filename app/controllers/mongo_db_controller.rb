@@ -24,10 +24,14 @@ class MongoDbController < ApplicationController
         match['$match']['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
       end
     end
-    if params[:servicingNetworkId] != nil
+    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+      match['$match']['$or'] = [
+          {'ServicingPartnerId' => params[:servicingNetworkId]},
+          {'OriginatingPartnerId' => params[:originatingNetworkId]}
+      ]
+    elsif params[:servicingNetworkId] != nil
       match['$match']['ServicingPartnerId'] = params[:servicingNetworkId]
-    end
-    if params[:originatingNetworkId] != nil
+    elsif params[:originatingNetworkId] != nil
       match['$match']['OriginatingPartnerId'] = params[:originatingNetworkId]
     end
 
