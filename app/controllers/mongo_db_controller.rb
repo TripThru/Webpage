@@ -118,6 +118,9 @@ class MongoDbController < ApplicationController
 
   def trips_list
     match = { 'LastUpdate' => { '$gte' => Time.at(params[:startDate].to_f) } }
+    if params[:endDate] != nil
+      match['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
+    end
 
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
