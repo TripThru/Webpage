@@ -11,6 +11,11 @@ class TimeSeries
     window.map = null
     @heatmap = null
     window.selectedGeographicZone = null
+    @selectedGeographicZone = {
+        lat: null
+        lng: null
+        radius: null
+    }
     @networks = {}
     @fleets = {}
     @drivers = {}
@@ -582,16 +587,16 @@ class TimeSeries
       if @realtimeMode and not @updatingRealTime
           @updatingRealTime = true
           @updateRealTime()
-      else if @dateChanged or @togglesChanged
+      else if @dateChanged or @togglesChanged or @chartTypeChanged or @dataModeChanged
           @updateTimeRange()
       
   updateRealTime: () =>
-    [startDate, intervalName, bucketSize, dates, intervals, networkId] = @getRealTimeQueryParams()
-    $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId, (data) =>
+    [query, dates, intervals] = @getRealTimeQuery()
+    $.get '/mongo_db/trips_count?' + query, (data) =>
       @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
       @updatingRealTime = false
 
-  getRealTimeQueryParams: () =>
+  getRealTimeQuery: () =>
       startDate = new Date()
       intervalCount = 0
       bucketSize = 1
@@ -618,7 +623,7 @@ class TimeSeries
           startDate.setMonth(startDate.getMonth()-3)
           intervalCount = 14
           intervalName = 'week'
-      returnDate = new Date(startDate)
+      date = +(new Date(startDate)) / 1000;
 
       [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
 
@@ -628,14 +633,24 @@ class TimeSeries
             networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
           if @farmedOutMode
               networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
-      return [returnDate, intervalName, bucketSize, dates, intervalIds, networkId]
+
+      selectedGeographicZone = ''
+      if window.selectedGeographicZone?
+        lat = window.selectedGeographicZone.getCenter().lat()
+        lng = window.selectedGeographicZone.getCenter().lng()
+        radius = window.selectedGeographicZone.getRadius()
+        selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
+
+      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+
+      return [query, dates, intervalIds]
 
   updateTimeRange: () =>
-      [intervalName, bucketSize, dates, intervals, networkId] = @getTimeRangeQueryParams(new Date(@startDate), new Date(@endDate))
-      $.get '/mongo_db/trips_count?startDate=' + @startDate + '&endDate=' + @endDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId, (data) =>
+      [query, dates, intervals] = @getTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+      $.get '/mongo_db/trips_count?' + query, (data) =>
         @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
 
-  getTimeRangeQueryParams: (startDate, endDate) =>
+  getTimeRangeQuery: (startDate, endDate) =>
     days = daysBetween(startDate, endDate)
     intervalCount = 0
     bucketSize = 1
@@ -655,7 +670,7 @@ class TimeSeries
         intervalCount = (days / 7).toFixed(0)
         intervalName = 'week'
 
-    [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
+    [dates, intervalIds] = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
 
     networkId = ''
     if @selectedNetwork != 'All'
@@ -663,7 +678,17 @@ class TimeSeries
           networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
       if @farmedOutMode
           networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
-    return [intervalName, bucketSize, dates, intervalIds, networkId]
+
+    selectedGeographicZone = ''
+    if window.selectedGeographicZone?
+      lat = window.selectedGeographicZone.getCenter().lat()
+      lng = window.selectedGeographicZone.getCenter().lng()
+      radius = window.selectedGeographicZone.getRadius()
+      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
+
+    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+
+    return [query, dates, intervalIds]
 
   getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>
       dates = []
@@ -967,8 +992,14 @@ class TimeSeries
          if window.selectedGeographicZone isnt null
             window.selectedGeographicZone.setMap null
          window.selectedGeographicZone = circle
-         window.timeSeries.updateRealTime()
          window.map.fitBounds circle.getBounds()
+         window.timeSeries.togglesChanged = true
+         window.timeSeries.update()
+         window.timeSeries.togglesChanged = false
+
+              window.timeSeries.togglesChanged = true
+              window.timeSeries.update()
+              window.timeSeries.togglesChanged = false
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
