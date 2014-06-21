@@ -5,8 +5,11 @@ class SessionsController < ApplicationController
   def create
     username = params[:session][:username].downcase
     password = params[:session][:password]
-    user_login = User.find_by_UserName(username)
-      if !user_login.nil? and user_login.authenticate(password)
+    user_login = User.where(UserName: username).first
+      if !user_login.nil?
+        puts '############SetSIGNIN'
+        puts user_login.to_json
+        puts user_login.UserName
         sign_in user_login
         redirect_to developer_dashboard_path
       else
