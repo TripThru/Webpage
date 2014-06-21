@@ -917,24 +917,7 @@ class TimeSeries
                           weight: weight
                       }
 
-
-      if @selectedNetwork isnt @selectedNetworkTemp or @selectedFleet isnt @selectedFleetTemp
-        @selectedNetworkTemp = @selectedNetwork
-        @selectedFleetTemp = @selectedFleet
-        if trips.length > 0
-          geoCenter = @getCentrePointFromListOfCoordinates(trips)
-          bounds = new google.maps.LatLngBounds()
-          bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
-          bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
-          window.map.fitBounds(bounds)
-        else if @selectedFleet != 'All'
-          partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
-          if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
-            window.selectedGeographicZone.setMap null
-            window.selectedGeographicZone = null
-          window.map.panTo partnerPosition
-          window.map.setZoom 8
-
+      @setMapZoom(trips)
       @heatmap.setMap null
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
       @heatmap = new google.maps.visualization.HeatmapLayer({
@@ -944,6 +927,28 @@ class TimeSeries
           gradient: gradient
       })
       @heatmap.setMap window.map
+
+  setMapZoom: (trips) =>
+    if @selectedNetwork isnt @selectedNetworkTemp or @selectedFleet isnt @selectedFleetTemp or @clearZoom
+      @selectedNetworkTemp = @selectedNetwork
+      @selectedFleetTemp = @selectedFleet
+      if trips.length > 0
+        geoCenter = @getCentrePointFromListOfCoordinates(trips)
+        bounds = new google.maps.LatLngBounds()
+        bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+        bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+        window.map.fitBounds(bounds)
+      else if @selectedFleet != 'All'
+        partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
+        if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
+          window.selectedGeographicZone.setMap null
+          window.selectedGeographicZone = null
+        window.map.panTo partnerPosition
+        window.map.setZoom 8
+      else
+        window.map.panTo new google.maps.LatLng(37.09024, -95.712891)
+        window.map.setZoom 4
+      @clearZoom = false
 
   processTrip: (newTrip) =>
       driverLocation =
@@ -996,7 +1001,7 @@ class TimeSeries
               editable: true
       )
       homeControlDiv = document.createElement("div")
-      homeControl = new HomeControl(homeControlDiv, window.map)
+      homeControl = new @HomeControl(homeControlDiv, window.map)
       homeControlDiv.index = 1
       window.map.controls[google.maps.ControlPosition.TOP_RIGHT].push homeControlDiv
 
@@ -1024,7 +1029,7 @@ class TimeSeries
           $('#networks-select').append('<option value="' + fleet.partnerName + '">' + fleet.partnerName + '</option>')
           $('#fleets-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
 
-  HomeControl = (controlDiv, map) ->
+  HomeControl: (controlDiv, map) =>
         controlDiv.style.padding = "5px"
 
         controlUI = document.createElement("div")
@@ -1033,7 +1038,7 @@ class TimeSeries
         controlUI.style.borderWidth = "2px"
         controlUI.style.cursor = "pointer"
         controlUI.style.textAlign = "center"
-        controlUI.title = "Click to set the map to Home"
+        controlUI.title = "Clear filter"
         controlDiv.appendChild controlUI
 
         controlText = document.createElement("div")
@@ -1044,18 +1049,14 @@ class TimeSeries
         controlText.innerHTML = "<b>Reset</b>"
         controlUI.appendChild controlText
 
-        # Setup the click event listeners: simply set the map to
-        # Chicago
-
-        google.maps.event.addDomListener controlUI, "click", ->
+        google.maps.event.addDomListener controlUI, "click", =>
           if window.selectedGeographicZone isnt null
               window.selectedGeographicZone.setMap null
               window.selectedGeographicZone = null
-          window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
-          window.map.setZoom 4
-          window.timeSeries.togglesChanged = true
-          window.timeSeries.update()
-          window.timeSeries.togglesChanged = false
+          @togglesChanged = true
+          @clearZoom = true
+          @update()
+          @togglesChanged = false
 
   loadCharts: () =>
     if @forecastDataMode
