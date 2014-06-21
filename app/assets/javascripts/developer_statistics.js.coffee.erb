@@ -996,15 +996,6 @@ class TimeSeries
          window.timeSeries.togglesChanged = true
          window.timeSeries.update()
          window.timeSeries.togglesChanged = false
-      $('#clearMap').click =>
-        if window.selectedGeographicZone isnt null
-          window.selectedGeographicZone.setMap null
-          window.selectedGeographicZone = null
-          window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
-          window.map.setZoom 4
-          window.timeSeries.togglesChanged = true
-          window.timeSeries.update()
-          window.timeSeries.togglesChanged = false
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
@@ -1045,9 +1036,11 @@ class TimeSeries
           if window.selectedGeographicZone isnt null
               window.selectedGeographicZone.setMap null
               window.selectedGeographicZone = null
-          window.timeSeries.updateRealTime()
           window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
           window.map.setZoom 4
+          window.timeSeries.togglesChanged = true
+          window.timeSeries.update()
+          window.timeSeries.togglesChanged = false
 
   loadCharts: () =>
     if @forecastDataMode
