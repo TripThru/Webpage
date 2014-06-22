@@ -638,7 +638,7 @@ class TimeSeries
       if window.selectedGeographicZone?
         lat = window.selectedGeographicZone.getCenter().lat()
         lng = window.selectedGeographicZone.getCenter().lng()
-        radius = window.selectedGeographicZone.getRadius()
+        radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
         selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
       query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
@@ -683,7 +683,7 @@ class TimeSeries
     if window.selectedGeographicZone?
       lat = window.selectedGeographicZone.getCenter().lat()
       lng = window.selectedGeographicZone.getCenter().lng()
-      radius = window.selectedGeographicZone.getRadius()
+      radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
     query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
