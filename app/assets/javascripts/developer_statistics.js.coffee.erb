@@ -866,7 +866,14 @@ class TimeSeries
       radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius + selectedGeographicZone
 
-    return 'startDate=' + date + selectedGeographicZone
+    networkId = ''
+    if @selectedNetwork != 'All'
+      if @farmedInMode
+        networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
+      if @farmedOutMode
+        networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
+
+    return 'startDate=' + date + selectedGeographicZone + networkId
 
   getTripsListTimeRangeQuery: (startDate, endDate) =>
     selectedGeographicZone = ''
@@ -876,7 +883,14 @@ class TimeSeries
       radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
-    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone
+    networkId = ''
+    if @selectedNetwork != 'All'
+      if @farmedInMode
+        networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
+      if @farmedOutMode
+        networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
+
+    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone + networkId
 
   loadHeatMapTrips: (trips, series) =>
       tripsIds = []
@@ -902,22 +916,20 @@ class TimeSeries
       trips = []
       for key of @tripsById
           trip = @tripsById[key]
-          if @selectedNetwork == 'All' or (@farmedInMode and trip.getServicing() in @networks[@selectedNetwork].fleets) or (@farmedOutMode and trip.getOrigin() in @networks[@selectedNetwork].fleets)
-            if @selectedFleet == 'All' or (@farmedInMode and @selectedFleet == trip.getServicing()) or (@farmedOutMode and @selectedFleet == trip.getOrigin())
-              trips.push {
-                lat: trip.pickupLocation.lat
-                lng: trip.pickupLocation.lng
-              }
-              locationPickUp = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
-              locationDropoff =  new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-              taxiData.push {
-                  location: locationPickUp,
-                  weight: weight
-              }
-              taxiData.push {
-                  location: locationDropoff,
-                  weight: weight
-              }
+          trips.push {
+            lat: trip.pickupLocation.lat
+            lng: trip.pickupLocation.lng
+          }
+          locationPickUp = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
+          locationDropoff =  new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
+          taxiData.push {
+              location: locationPickUp,
+              weight: weight
+          }
+          taxiData.push {
+              location: locationDropoff,
+              weight: weight
+          }
 
       @setMapZoom(trips)
       @heatmap.setMap null

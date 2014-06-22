@@ -134,6 +134,17 @@ class MongoDbController < ApplicationController
                       }
     end
 
+    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+      match['$or'] = [
+          {'ServicingPartnerId' => params[:servicingNetworkId]},
+          {'OriginatingPartnerId' => params[:originatingNetworkId]}
+      ]
+    elsif params[:servicingNetworkId] != nil
+      match['ServicingPartnerId'] = params[:servicingNetworkId]
+    elsif params[:originatingNetworkId] != nil
+      match['OriginatingPartnerId'] = params[:originatingNetworkId]
+    end
+
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     trips = db.collection('trips').find(match)
