@@ -11,7 +11,8 @@ class MongoDbController < ApplicationController
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
           'distanceField' => 'dist.calculated',
           'maxDistance' => params[:centerRadius].to_f,
-          'spherical' => true
+          'spherical' => true,
+          'distanceMultiplier' => 3959
       }
     end
 
