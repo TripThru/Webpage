@@ -859,10 +859,24 @@ class TimeSeries
       startDate.setMonth(startDate.getMonth()-3)
     date = +(new Date(startDate)) / 1000
 
-    return 'startDate=' + date
+    selectedGeographicZone = ''
+    if window.selectedGeographicZone?
+      lat = window.selectedGeographicZone.getCenter().lat()
+      lng = window.selectedGeographicZone.getCenter().lng()
+      radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
+      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius + selectedGeographicZone
+
+    return 'startDate=' + date + selectedGeographicZone
 
   getTripsListTimeRangeQuery: (startDate, endDate) =>
-    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000)
+    selectedGeographicZone = ''
+    if window.selectedGeographicZone?
+      lat = window.selectedGeographicZone.getCenter().lat()
+      lng = window.selectedGeographicZone.getCenter().lng()
+      radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
+      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
+
+    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone
 
   loadHeatMapTrips: (trips, series) =>
       tripsIds = []
@@ -896,26 +910,14 @@ class TimeSeries
               }
               locationPickUp = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
               locationDropoff =  new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-              if window.selectedGeographicZone is null
-                  taxiData.push {
-                      location: locationPickUp,
-                      weight: weight
-                  }
-                  taxiData.push {
-                      location: locationDropoff,
-                      weight: weight
-                  }
-              else
-                  if window.selectedGeographicZone.isHere(locationPickUp)
-                      taxiData.push {
-                          location: locationPickUp,
-                          weight: weight
-                      }
-                  if window.selectedGeographicZone.isHere(locationDropoff)
-                      taxiData.push {
-                          location: locationDropoff,
-                          weight: weight
-                      }
+              taxiData.push {
+                  location: locationPickUp,
+                  weight: weight
+              }
+              taxiData.push {
+                  location: locationDropoff,
+                  weight: weight
+              }
 
       @setMapZoom(trips)
       @heatmap.setMap null

@@ -107,12 +107,11 @@ class MongoDbController < ApplicationController
     parameters << project
     parameters << group
 
-    puts parameters
-
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     res = db.collection('trips').aggregate(parameters)
-    puts 'Results count: ' + res.length.to_s
+    #puts parameters
+    #puts 'Results count: ' + res.length.to_s
     respond_to do |format|
       format.json { render text: res.to_json }
     end
@@ -122,6 +121,17 @@ class MongoDbController < ApplicationController
     match = { 'LastUpdate' => { '$gte' => Time.at(params[:startDate].to_f) } }
     if params[:endDate] != nil
       match['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
+    end
+
+    if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
+      match['loc'] = { '$geoWithin' =>
+                        { '$centerSphere' =>
+                              [
+                                [ params[:centerLng].to_f, params[:centerLat].to_f ] ,
+                                params[:centerRadius].to_f / 3959
+                              ]
+                        }
+                      }
     end
 
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
