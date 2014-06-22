@@ -10,7 +10,8 @@ class MongoDbController < ApplicationController
       geo_near['$geoNear'] = {
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
           'distanceField' => 'dist.calculated',
-          'maxDistance' => params[:centerRadius].to_f
+          'maxDistance' => params[:centerRadius].to_f,
+          'spherical' => true
       }
     end
 
