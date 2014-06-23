@@ -182,7 +182,7 @@ class TimeSeries
         @togglesChanged = true
         if @realtimeMode
             @realtimeMode = false
-            $('#realtime-button').val('Time range')
+            $('#realtime-button').val('Real-time')
             $('#datepicker>input').attr("disabled", false)
             $('#realtime-intervals-container>input').addClass('disabled')
             $('#realtime-panel').addClass('hidden')
@@ -190,7 +190,7 @@ class TimeSeries
             @update()
         else
             @realtimeMode = true
-            $('#realtime-button').val('Real-time')
+            $('#realtime-button').val('Time range')
             $('#datepicker>input').attr("disabled", true)
             $('#realtime-intervals-container>input').removeClass('disabled')
             $('#realtime-panel').removeClass('hidden')
@@ -240,12 +240,12 @@ class TimeSeries
     $('#chart-type-toggle-container>#toggle-button').click =>
         if @chartType == 'series'
             @chartType = 'map'
-            $('#heatmap-toggle').hide()
-            $('#statistics-toggle').show()
-        else
-            @chartType = 'series'
             $('#statistics-toggle').hide()
             $('#heatmap-toggle').show()
+        else
+            @chartType = 'series'
+            $('#heatmap-toggle').hide()
+            $('#statistics-toggle').show()
         @chartTypeChanged = true
         @setFilterEvents()
         @update()
@@ -253,11 +253,11 @@ class TimeSeries
 
     $('#historic-toggle-container>#toggle-button').click =>
         if @forecastDataMode
-            $('#historic-toggle').hide()
-            $('#forecast-toggle').show()
-        else
             $('#forecast-toggle').hide()
             $('#historic-toggle').show()
+        else
+            $('#historic-toggle').hide()
+            $('#forecast-toggle').show()
         @forecastDataMode = not @forecastDataMode
         @dataModeChanged = true
         @update()
