@@ -66,7 +66,7 @@ class TimeSeries
     $('#start-date').datepicker('update', @startDate)
     $('#end-date').datepicker('update', @endDate)
 
-    @tripsArrivalSelected =     true
+    @tripsRequestedSelected =     true
     @tripsCompletedSelected =   true
     @tripsCancelledSelected =   true
     @tripsRejectedSelected =    true
@@ -81,7 +81,7 @@ class TimeSeries
     @ratingDriversSelected =    false
     @ratingPassengersSelected = false
 
-    $('#trips-arrival-filter-button').addClass('active')
+    $('#trips-requested-filter-button').addClass('active')
     $('#trips-completed-filter-button').addClass('active')
     $('#trips-rejected-filter-button').addClass('active')
     $('#trips-cancelled-filter-button').addClass('active')
@@ -93,7 +93,7 @@ class TimeSeries
     $('#datepicker>input').attr("disabled", true)
     $('#time-range-panel').addClass('hidden')
 
-    @tripsArrival =   { name: 'Arrival trips', id: 'Arrival trips', data: []}
+    @tripsRequested =   { name: 'Requested trips', id: 'Requested trips', data: []}
     @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
     @tripsCancelled = { name: 'Cancelled trips', id: 'Cancelled trips', data: []}
     @tripsRejected =  { name: 'Rejected trips', id: 'Rejected trips', data: []}
@@ -309,15 +309,15 @@ class TimeSeries
   setFilterEvents: () =>
       if @chartType == 'series'
           $('.filter-button').removeClass('active')
-          $('#trips-arrival-filter-button').toggleClass('active')
+          $('#trips-requested-filter-button').toggleClass('active')
           $('#trips-completed-filter-button').toggleClass('active')
           $('#trips-rejected-filter-button').toggleClass('active')
           $('#trips-cancelled-filter-button').toggleClass('active')
           $('#trips-error-filter-button').toggleClass('active')
 
-          $('#trips-arrival-filter-button').off('click').on 'click', =>
-              $('#trips-arrival-filter-button').toggleClass('active')
-              @tripsArrivalSelected= not @tripsArrivalSelected
+          $('#trips-requested-filter-button').off('click').on 'click', =>
+              $('#trips-requested-filter-button').toggleClass('active')
+              @tripsRequestedSelected= not @tripsRequestedSelected
               @togglesChanged = true
               @update()
               @togglesChanged = false
@@ -417,11 +417,11 @@ class TimeSeries
           $('.filter-button').removeClass('active')
           $('#trips-completed-filter-button').addClass('active')
 
-          $('#trips-arrival-filter-button').off('click').on 'click', =>
-              if @selectedStat != 'tripsArrival'
+          $('#trips-requested-filter-button').off('click').on 'click', =>
+              if @selectedStat != 'tripsRequested'
                   $('.filter-button').removeClass('active')
-                  $('#trips-arrival-filter-button').addClass('active')
-                  @selectedStat = 'Arrival trips'
+                  $('#trips-requested-filter-button').addClass('active')
+                  @selectedStat = 'Requested trips'
                   @togglesChanged = true
                   @update()
                   @togglesChanged = false
@@ -724,7 +724,7 @@ class TimeSeries
       return [dates, intervalIds]
 
   mongoDbTripCountToSeries: (data, dates, intervals) =>
-      @tripsArrival.data = []
+      @tripsRequested.data = []
       @tripsCompleted.data = []
       @tripsRejected.data = []
       @tripsCancelled.data = []
@@ -740,9 +740,9 @@ class TimeSeries
           countRejected = 0
           countError = 0
 
-          if @tripsArrivalSelected
-              count = data.filter((v) -> v._id.Status == 'Arrival' and v._id.Interval == parseInt(id))
-              countArrival = if count.length == 0 then 0 else count[0].count
+          if @tripsRequestedSelected
+              count = data.filter((v) -> v._id.Status == 'Requested' and v._id.Interval == parseInt(id))
+              countRequested = if count.length == 0 then 0 else count[0].count
           if @tripsCompletedSelected
             count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
             countComplete = if count.length == 0 then 0 else count[0].count
@@ -755,18 +755,18 @@ class TimeSeries
           if @tripsErrorSelected
             count = data.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
             countError = if count.length == 0 then 0 else count[0].count
-          total = countArrival + countComplete + countCancelled + countRejected + countError
+          total = countRequested + countComplete + countCancelled + countRejected + countError
 
           if @percentageMode
-              countArrival = if countArrival > 0 then countArrival * 100 / total else 0
+              countRequested = if countRequested > 0 then countRequested * 100 / total else 0
               countComplete = if countComplete > 0 then countComplete * 100 / total else 0
               countCancelled = if countCancelled > 0 then countCancelled * 100 / total else 0
               countRejected = if countRejected > 0 then countRejected * 100 / total else 0
               countError = if countError > 0 then countError * 100 / total else 0
 
-          if @tripsArrivalSelected
-              @tripsArrival.data.push [date, countArrival]
-              @YAxisMax = if countArrival > @YAxisMax then countArrival else @YAxisMax
+          if @tripsRequestedSelected
+              @tripsRequested.data.push [date, countRequested]
+              @YAxisMax = if countRequested > @YAxisMax then countRequested else @YAxisMax
           if @tripsCompletedSelected
               @tripsCompleted.data.push [date, countComplete]
               @YAxisMax = if countComplete > @YAxisMax then countComplete else @YAxisMax
@@ -784,9 +784,9 @@ class TimeSeries
 
       updateData = []
       updateData.push({
-          name: 'Arrival trips'
-          data: @tripsArrival
-          load: @tripsArrivalSelected
+          name: 'Requested trips'
+          data: @tripsRequested
+          load: @tripsRequestedSelected
       })
       updateData.push({
           name: 'Completed trips'
