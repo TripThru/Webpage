@@ -10,9 +10,8 @@ class MongoDbController < ApplicationController
       geo_near['$geoNear'] = {
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
           'distanceField' => 'dist.calculated',
-          'maxDistance' => params[:centerRadius].to_f,
-          'spherical' => true,
-          'distanceMultiplier' => 3959
+          'maxDistance' => params[:centerRadius].to_f / 3959,
+          'spherical' => true
       }
     end
 
@@ -110,7 +109,7 @@ class MongoDbController < ApplicationController
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     res = db.collection('trips').aggregate(parameters)
-    #puts parameters
+    puts parameters
     #puts 'Results count: ' + res.length.to_s
     respond_to do |format|
       format.json { render text: res.to_json }
@@ -122,7 +121,6 @@ class MongoDbController < ApplicationController
     if params[:endDate] != nil
       match['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
     end
-
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       match['loc'] = { '$geoWithin' =>
                         { '$centerSphere' =>
@@ -133,7 +131,6 @@ class MongoDbController < ApplicationController
                         }
                       }
     end
-
     if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
       match['$or'] = [
           {'ServicingPartnerId' => params[:servicingNetworkId]},
@@ -145,9 +142,11 @@ class MongoDbController < ApplicationController
       match['OriginatingPartnerId'] = params[:originatingNetworkId]
     end
 
+
     client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     trips = db.collection('trips').find(match)
+    puts match
     respond_to do |format|
       format.json { render text: trips.to_json }
     end
