@@ -5,7 +5,7 @@ class SettingsController < ApplicationController
   end
 
   def new
-    if roleUser == 'Admin'
+    if roleUser == 'admin'
       @user = User.new
     else
       redirect_to new_session_path
@@ -14,12 +14,13 @@ class SettingsController < ApplicationController
   end
 
   def saveUser
-    if roleUser == 'Admin'
-      user = User.new(UserName: params[:user][:UserName].downcase, password_digest: BCrypt::Password.create(params[:user][:password_digest]), Email: params[:user][:Email].downcase, Role: params[:user][:Role])
-      if user.Role == 'Partner'
+    if roleUser == 'admin'
+      user = User.new(UserName: params[:user][:UserName].downcase, password_digest: BCrypt::Password.create(params[:user][:password_digest]), Email: params[:user][:Email].downcase, Role: params[:user][:Role], AccessToke: 'jaosid1201231')
+      if user.Role == 'partner'
         user.PartnerName=params[:user][:PartnerName]
         user.CallbackUrl=params[:user][:CallbackUrl]
         user.TripThruAccessToken=params[:user][:TripThruAccessToken]
+        user.ClientId =params[:user][:Email].downcase
       end
       o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
       c = (0...50).map { o[rand(o.length)] }.join
@@ -40,7 +41,7 @@ class SettingsController < ApplicationController
   end
 
   def users
-    if roleUser == 'Admin'
+    if roleUser == 'admin'
       @users = User.all
     else
       redirect_to new_session_path
@@ -48,7 +49,7 @@ class SettingsController < ApplicationController
   end
 
   def edit
-    if roleUser == 'Admin'
+    if roleUser == 'admin'
       user = User.find(params[:id])
       render :partial => 'new', :locals => {:user => user, :edit => true}
     else
@@ -57,7 +58,7 @@ class SettingsController < ApplicationController
   end
 
   def update
-    if roleUser == 'Admin'
+    if roleUser == 'admin'
       user = User.find_by_UserName(params[:user][:UserName])
       user.password_digest = BCrypt::Password.create(params[:user][:password_digest])
       user.Email = params[:user][:Email]
@@ -74,7 +75,7 @@ class SettingsController < ApplicationController
   end
 
   def destroy
-    if roleUser == 'Admin'
+    if roleUser == 'admin'
       User.find(params[:id]).delete
       redirect_to settings_users_path
     else
@@ -82,6 +83,7 @@ class SettingsController < ApplicationController
     end
 
   end
+
   def map
 
   end

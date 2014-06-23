@@ -20,7 +20,7 @@ User.create!(
     PartnerName: '',
     CallbackUrl: '',
     TripThruAccessToken: tripthru_access_token,
-    Role: 'Admin',
+    Role: 'admin',
     remember_token: '',
     created_at: Date.today,
     updated_at: Date.today
