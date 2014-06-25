@@ -179,25 +179,24 @@ class TimeSeries
       @toggleRealTime()
 
     $('#realtime-button').click =>
+      @togglesChanged = true
+      if @realtimeMode
+        @realtimeMode = false
+        $('#realtime-button').val('Time range')
+        $('#datepicker>input').attr("disabled", false)
+        $('#realtime-intervals-container>input').addClass('disabled')
+        $('#realtime-panel').addClass('hidden')
+        $('#time-range-panel').removeClass('hidden')
+      else
+        @realtimeMode = true
+        $('#realtime-button').val('Real-time')
+        $('#datepicker>input').attr("disabled", true)
+        $('#realtime-intervals-container>input').removeClass('disabled')
+        $('#realtime-panel').removeClass('hidden')
         @togglesChanged = true
-        if @realtimeMode
-            @realtimeMode = false
-            $('#realtime-button').val('Real-time')
-            $('#datepicker>input').attr("disabled", false)
-            $('#realtime-intervals-container>input').addClass('disabled')
-            $('#realtime-panel').addClass('hidden')
-            $('#time-range-panel').removeClass('hidden')
-            @update()
-        else
-            @realtimeMode = true
-            $('#realtime-button').val('Time range')
-            $('#datepicker>input').attr("disabled", true)
-            $('#realtime-intervals-container>input').removeClass('disabled')
-            $('#realtime-panel').removeClass('hidden')
-            @togglesChanged = true
-            $('#time-range-panel').addClass('hidden')
-            @update()
-        @togglesChanged = false
+        $('#time-range-panel').addClass('hidden')
+      @update()
+      @togglesChanged = false
 
     $('#start-date').on 'changeDate', (e) =>
         @startDate = e.date
@@ -298,12 +297,8 @@ class TimeSeries
   toggleRealTime: () =>
       @togglesChanged = true
       if @realtimeMode
-          $('#datepicker>input').attr("disabled", true)
           @loadCharts()
-          @update()
-      else
-          $('#datepicker>input').attr("disabled", false)
-          @update()
+      @update()
       @togglesChanged = false
 
   setFilterEvents: () =>
