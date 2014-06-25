@@ -551,6 +551,7 @@ class TimeSeries
                   @togglesChanged = false
 
   update: () =>
+      @showLoadingIndicator()
       if @chartTypeChanged and @chartType == 'series'
           $('#map-container').hide()
           $('#time-series-container').show()
@@ -831,6 +832,7 @@ class TimeSeries
             else
                 @historicChart.yAxis[0].setExtremes(0, 100)
         @refreshCharts()
+        @hideLoadingIndicator()
     else
         query = ''
         if @realtimeMode
@@ -839,6 +841,7 @@ class TimeSeries
           query = @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate))
         $.get '/mongo_db/trips_list?' + query, (trips) =>
           @loadHeatMapTrips(trips, series)
+          @hideLoadingIndicator()
 
   getTripsListRealTimeQuery: () =>
     startDate = new Date()
@@ -1124,6 +1127,12 @@ class TimeSeries
         @historicChart.redraw()
     if @forecastChart?
         @forecastChart.redraw()
+
+  showLoadingIndicator: () =>
+    $('.loading-indicator>img').show()
+
+  hideLoadingIndicator: () =>
+    $('.loading-indicator>img').hide()
 
   getCentrePointFromListOfCoordinates: (list) =>
     minlat = null
