@@ -101,19 +101,30 @@ class TripList
 
 class TripTracker
 
+  setZoomEvent: () =>
+    google.maps.event.addListener @map, 'zoom_changed', () =>
+      zoom = @map.getZoom()
+      if zoom != @defaultCleanMapZoom and zoom != @defaultTrackingZoom
+        @userChangedZoom = true
+
   constructor: (@tripInfoContainerId, @mapContainer) ->
     @passengerMarker = null
     @destinationMarker = null
     @driverMarker = null
     @initialMarker = null
     @tripChange = false
+    @userChangedZoom = false
+    @defaultCleanMapZoom = 4
+    @defaultTrackingZoom = 15
     @mapOptions =
       center: if typeof google isnt "undefined" then new google.maps.LatLng(40.32004,-98.9290212) else null
-      zoom: 4
+      zoom: @defaultCleanMapZoom
       mapTypeControl: false
       mapTypeId: google.maps.MapTypeId.ROADMAP
 
     @map = if typeof google isnt "undefined" then new google.maps.Map(document.getElementById("map-canvas"), @mapOptions) else null
+    if @map?
+      @setZoomEvent()
 
     rendererOptions =
         preserveViewport: true
@@ -132,13 +143,10 @@ class TripTracker
 
     @directionsDisplay = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions) else null
     @directionsDisplay2 = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions2) else null
-
     @directionsService = if typeof google isnt "undefined" then new google.maps.DirectionsService() else null
-
     @driverPreviousLocation = null
     @setTripInfoBool = false
     @tripId = null
-
     @passengerRatingChartId = 'passenger-rating'
     @driverRatingChartId = 'driver-rating'
 
@@ -150,10 +158,11 @@ class TripTracker
     @directionsDisplay.setMap null if @directionsDisplay?
     @directionsDisplay2.setMap null if @directionsDisplay2?
     @map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
-    @map.setZoom 4
+    @map.setZoom @defaultCleanMapZoom
 
   tripChanged: (trip) =>
     @tripChange = true
+    @userChangedZoom = false
     @tripId = null
     @driverPreviousLocation = null
     @updateTripInfo(trip)
@@ -270,11 +279,12 @@ class TripTracker
         unless @map?
           @mapOptions =
             center: (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
-            zoom: 15
+            zoom: @defaultTrackingZoom
             mapTypeControl: false
             mapTypeId: google.maps.MapTypeId.ROADMAP
 
           @map = new google.maps.Map(document.getElementById("map-canvas"), @mapOptions)
+          @setZoomEvent()
         if passengerLocation? and not @passengerMarker?
           @passengerMarker = new google.maps.Marker(
             position: passengerLocation
@@ -344,9 +354,9 @@ class TripTracker
             else
               @directionsService.route request, (result, status) =>
                   @directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay2?
-        if @tripChange
+        if @tripChange or !@userChangedZoom
           @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
-          @map.setZoom 15
+          @map.setZoom @defaultTrackingZoom
     @setTripInfoBool = false
 
 class ActivityLog
