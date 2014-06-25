@@ -280,6 +280,7 @@ class TimeSeries
           @farmedInMode = not @farmedInMode
           if @selectedNetwork != 'All'
               @togglesChanged = true
+              @clearZoom = true
               @update()
               @togglesChanged = false
 
@@ -289,6 +290,7 @@ class TimeSeries
           @farmedOutMode = not @farmedOutMode
           if @selectedNetwork != 'All'
             @togglesChanged = true
+            @clearZoom = true
             @update()
             @togglesChanged = false
 
@@ -937,7 +939,7 @@ class TimeSeries
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
           radius: 20,
-          maxIntensity: trips.length * 10,
+          maxIntensity: trips.length * 8,
           gradient: gradient,
       })
       @heatmap.setMap window.map
