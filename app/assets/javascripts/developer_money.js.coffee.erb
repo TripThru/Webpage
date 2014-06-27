@@ -27,7 +27,7 @@ class money
     partnersList: (fleets) =>
         firstFleet = null
         for fleet in fleets.fleets
-            if fleet.fleetName == "TripThru San Francisco"
+            if fleet.fleetName == "TripThru San Francisco" or (fleet.fleetName.toLowerCase() != $('#getUserName').html() and $('#getUserRole').html() == 'partner')
                 continue
             if !firstFleet?
                 firstFleet = fleet.partnerId

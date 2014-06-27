@@ -972,7 +972,7 @@ class TimeSeries
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
-          if fleet.partnerName == "TDispatch"
+          if fleet.partnerName == "TDispatch" or (fleet.partnerName.toLowerCase() != $('#getUserName').html() and $('#getUserRole').html() == 'partner')
               continue
           if fleet.partnerName of @networks
               @networks[fleet.partnerName].fleets.push fleet.fleetName

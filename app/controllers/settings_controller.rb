@@ -15,7 +15,7 @@ class SettingsController < ApplicationController
 
   def saveUser
     if roleUser == 'admin'
-      user = User.new(UserName: params[:user][:UserName].downcase, password_digest: BCrypt::Password.create(params[:user][:password_digest]), Email: params[:user][:Email].downcase, Role: params[:user][:Role], AccessToke: 'jaosid1201231')
+      user = User.new(UserName: params[:user][:UserName].downcase, password_digest: BCrypt::Password.create(params[:user][:password_digest]), Email: params[:user][:Email].downcase, Role: params[:user][:Role])
       if user.Role == 'partner'
         user.PartnerName=params[:user][:PartnerName]
         user.CallbackUrl=params[:user][:CallbackUrl]

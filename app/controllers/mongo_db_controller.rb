@@ -85,7 +85,7 @@ class MongoDbController < ApplicationController
 
     puts get_trips
 
-    client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
+    client = MongoClient.new('localhost', '27017')
     db = client.db('TripThru')
     res = db.eval(get_trips)
 
@@ -95,7 +95,7 @@ class MongoDbController < ApplicationController
   end
 
   def trips_list
-    client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
+    client = MongoClient.new('localhost', '27017')
     db = client.db('TripThru')
     match = { 'LastUpdate' => { '$gte' => Time.at(params[:startDate].to_f) } }
     trips = db.collection('trips').find(match)
