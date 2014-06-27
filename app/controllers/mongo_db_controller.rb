@@ -106,7 +106,7 @@ class MongoDbController < ApplicationController
     parameters << project
     parameters << group
 
-    client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
+    client = MongoClient.new('SG-tripthru-3110.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     res = db.collection('trips').aggregate(parameters)
     puts parameters
@@ -143,7 +143,7 @@ class MongoDbController < ApplicationController
     end
 
 
-    client = MongoClient.new('SG-TripThru-2816.servers.mongodirector.com', '27017')
+    client = MongoClient.new('SG-tripthru-3110.servers.mongodirector.com', '27017')
     db = client.db('TripThru')
     trips = db.collection('trips').find(match)
     puts match
