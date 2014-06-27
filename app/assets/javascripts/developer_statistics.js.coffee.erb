@@ -11,6 +11,11 @@ class TimeSeries
     window.map = null
     @heatmap = null
     window.selectedGeographicZone = null
+    @selectedGeographicZone = {
+        lat: null
+        lng: null
+        radius: null
+    }
     @networks = {}
     @fleets = {}
     @drivers = {}
@@ -61,7 +66,7 @@ class TimeSeries
     $('#start-date').datepicker('update', @startDate)
     $('#end-date').datepicker('update', @endDate)
 
-    @tripsArrivalSelected =     true
+    @tripsRequestedSelected =     true
     @tripsCompletedSelected =   true
     @tripsCancelledSelected =   true
     @tripsRejectedSelected =    true
@@ -76,7 +81,7 @@ class TimeSeries
     @ratingDriversSelected =    false
     @ratingPassengersSelected = false
 
-    $('#trips-arrival-filter-button').addClass('active')
+    $('#trips-requested-filter-button').addClass('active')
     $('#trips-completed-filter-button').addClass('active')
     $('#trips-rejected-filter-button').addClass('active')
     $('#trips-cancelled-filter-button').addClass('active')
@@ -88,7 +93,7 @@ class TimeSeries
     $('#datepicker>input').attr("disabled", true)
     $('#time-range-panel').addClass('hidden')
 
-    @tripsArrival =   { name: 'Arrival trips', id: 'Arrival trips', data: []}
+    @tripsRequested =   { name: 'Requested trips', id: 'Requested trips', data: []}
     @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
     @tripsCancelled = { name: 'Cancelled trips', id: 'Cancelled trips', data: []}
     @tripsRejected =  { name: 'Rejected trips', id: 'Rejected trips', data: []}
@@ -174,25 +179,24 @@ class TimeSeries
       @toggleRealTime()
 
     $('#realtime-button').click =>
+      @togglesChanged = true
+      if @realtimeMode
+        @realtimeMode = false
+        $('#realtime-button').val('Time range')
+        $('#datepicker>input').attr("disabled", false)
+        $('#realtime-intervals-container>input').addClass('disabled')
+        $('#realtime-panel').addClass('hidden')
+        $('#time-range-panel').removeClass('hidden')
+      else
+        @realtimeMode = true
+        $('#realtime-button').val('Real-time')
+        $('#datepicker>input').attr("disabled", true)
+        $('#realtime-intervals-container>input').removeClass('disabled')
+        $('#realtime-panel').removeClass('hidden')
         @togglesChanged = true
-        if @realtimeMode
-            @realtimeMode = false
-            $('#realtime-button').val('Time range')
-            $('#datepicker>input').attr("disabled", false)
-            $('#realtime-intervals-container>input').addClass('disabled')
-            $('#realtime-panel').addClass('hidden')
-            $('#time-range-panel').removeClass('hidden')
-            @update()
-        else
-            @realtimeMode = true
-            $('#realtime-button').val('Real-time')
-            $('#datepicker>input').attr("disabled", true)
-            $('#realtime-intervals-container>input').removeClass('disabled')
-            $('#realtime-panel').removeClass('hidden')
-            @togglesChanged = true
-            $('#time-range-panel').addClass('hidden')
-            @update()
-        @togglesChanged = false
+        $('#time-range-panel').addClass('hidden')
+      @update()
+      @togglesChanged = false
 
     $('#start-date').on 'changeDate', (e) =>
         @startDate = e.date
@@ -235,12 +239,12 @@ class TimeSeries
     $('#chart-type-toggle-container>#toggle-button').click =>
         if @chartType == 'series'
             @chartType = 'map'
-            $('#heatmap-toggle').hide()
-            $('#statistics-toggle').show()
-        else
-            @chartType = 'series'
             $('#statistics-toggle').hide()
             $('#heatmap-toggle').show()
+        else
+            @chartType = 'series'
+            $('#heatmap-toggle').hide()
+            $('#statistics-toggle').show()
         @chartTypeChanged = true
         @setFilterEvents()
         @update()
@@ -248,11 +252,11 @@ class TimeSeries
 
     $('#historic-toggle-container>#toggle-button').click =>
         if @forecastDataMode
-            $('#historic-toggle').hide()
-            $('#forecast-toggle').show()
-        else
             $('#forecast-toggle').hide()
             $('#historic-toggle').show()
+        else
+            $('#historic-toggle').hide()
+            $('#forecast-toggle').show()
         @forecastDataMode = not @forecastDataMode
         @dataModeChanged = true
         @update()
@@ -276,6 +280,7 @@ class TimeSeries
           @farmedInMode = not @farmedInMode
           if @selectedNetwork != 'All'
               @togglesChanged = true
+              @clearZoom = true
               @update()
               @togglesChanged = false
 
@@ -285,6 +290,7 @@ class TimeSeries
           @farmedOutMode = not @farmedOutMode
           if @selectedNetwork != 'All'
             @togglesChanged = true
+            @clearZoom = true
             @update()
             @togglesChanged = false
 
@@ -293,26 +299,22 @@ class TimeSeries
   toggleRealTime: () =>
       @togglesChanged = true
       if @realtimeMode
-          $('#datepicker>input').attr("disabled", true)
           @loadCharts()
-          @update()
-      else
-          $('#datepicker>input').attr("disabled", false)
-          @update()
+      @update()
       @togglesChanged = false
 
   setFilterEvents: () =>
       if @chartType == 'series'
           $('.filter-button').removeClass('active')
-          $('#trips-arrival-filter-button').toggleClass('active')
+          $('#trips-requested-filter-button').toggleClass('active')
           $('#trips-completed-filter-button').toggleClass('active')
           $('#trips-rejected-filter-button').toggleClass('active')
           $('#trips-cancelled-filter-button').toggleClass('active')
           $('#trips-error-filter-button').toggleClass('active')
 
-          $('#trips-arrival-filter-button').off('click').on 'click', =>
-              $('#trips-arrival-filter-button').toggleClass('active')
-              @tripsArrivalSelected= not @tripsArrivalSelected
+          $('#trips-requested-filter-button').off('click').on 'click', =>
+              $('#trips-requested-filter-button').toggleClass('active')
+              @tripsRequestedSelected= not @tripsRequestedSelected
               @togglesChanged = true
               @update()
               @togglesChanged = false
@@ -412,11 +414,11 @@ class TimeSeries
           $('.filter-button').removeClass('active')
           $('#trips-completed-filter-button').addClass('active')
 
-          $('#trips-arrival-filter-button').off('click').on 'click', =>
-              if @selectedStat != 'tripsArrival'
+          $('#trips-requested-filter-button').off('click').on 'click', =>
+              if @selectedStat != 'tripsRequested'
                   $('.filter-button').removeClass('active')
-                  $('#trips-arrival-filter-button').addClass('active')
-                  @selectedStat = 'Arrival trips'
+                  $('#trips-requested-filter-button').addClass('active')
+                  @selectedStat = 'Requested trips'
                   @togglesChanged = true
                   @update()
                   @togglesChanged = false
@@ -551,6 +553,7 @@ class TimeSeries
                   @togglesChanged = false
 
   update: () =>
+      @showLoadingIndicator()
       if @chartTypeChanged and @chartType == 'series'
           $('#map-container').hide()
           $('#time-series-container').show()
@@ -582,16 +585,16 @@ class TimeSeries
       if @realtimeMode and not @updatingRealTime
           @updatingRealTime = true
           @updateRealTime()
-      else if @dateChanged or @togglesChanged
+      else if @dateChanged or @togglesChanged or @chartTypeChanged or @dataModeChanged
           @updateTimeRange()
       
   updateRealTime: () =>
-    [startDate, intervalName, bucketSize, dates, intervals, networkId] = @getRealTimeQueryParams()
-    $.get '/mongo_db/trips_count?startDate=' + startDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId, (data) =>
+    [query, dates, intervals] = @getTripsCountRealTimeQuery()
+    $.get '/mongo_db/trips_count?' + query, (data) =>
       @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
       @updatingRealTime = false
 
-  getRealTimeQueryParams: () =>
+  getTripsCountRealTimeQuery: () =>
       startDate = new Date()
       intervalCount = 0
       bucketSize = 1
@@ -618,7 +621,7 @@ class TimeSeries
           startDate.setMonth(startDate.getMonth()-3)
           intervalCount = 14
           intervalName = 'week'
-      returnDate = new Date(startDate)
+      date = +(new Date(startDate)) / 1000;
 
       [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
 
@@ -628,14 +631,24 @@ class TimeSeries
             networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
           if @farmedOutMode
               networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
-      return [returnDate, intervalName, bucketSize, dates, intervalIds, networkId]
+
+      selectedGeographicZone = ''
+      if window.selectedGeographicZone?
+        lat = window.selectedGeographicZone.getCenter().lat()
+        lng = window.selectedGeographicZone.getCenter().lng()
+        radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
+        selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
+
+      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+
+      return [query, dates, intervalIds]
 
   updateTimeRange: () =>
-      [intervalName, bucketSize, dates, intervals, networkId] = @getTimeRangeQueryParams(new Date(@startDate), new Date(@endDate))
-      $.get '/mongo_db/trips_count?startDate=' + @startDate + '&endDate=' + @endDate + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId, (data) =>
+      [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+      $.get '/mongo_db/trips_count?' + query, (data) =>
         @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
 
-  getTimeRangeQueryParams: (startDate, endDate) =>
+  getTripsCountTimeRangeQuery: (startDate, endDate) =>
     days = daysBetween(startDate, endDate)
     intervalCount = 0
     bucketSize = 1
@@ -655,7 +668,7 @@ class TimeSeries
         intervalCount = (days / 7).toFixed(0)
         intervalName = 'week'
 
-    [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
+    [dates, intervalIds] = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
 
     networkId = ''
     if @selectedNetwork != 'All'
@@ -663,7 +676,17 @@ class TimeSeries
           networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
       if @farmedOutMode
           networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
-    return [intervalName, bucketSize, dates, intervalIds, networkId]
+
+    selectedGeographicZone = ''
+    if window.selectedGeographicZone?
+      lat = window.selectedGeographicZone.getCenter().lat()
+      lng = window.selectedGeographicZone.getCenter().lng()
+      radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
+      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
+
+    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+
+    return [query, dates, intervalIds]
 
   getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>
       dates = []
@@ -699,7 +722,7 @@ class TimeSeries
       return [dates, intervalIds]
 
   mongoDbTripCountToSeries: (data, dates, intervals) =>
-      @tripsArrival.data = []
+      @tripsRequested.data = []
       @tripsCompleted.data = []
       @tripsRejected.data = []
       @tripsCancelled.data = []
@@ -715,9 +738,9 @@ class TimeSeries
           countRejected = 0
           countError = 0
 
-          if @tripsArrivalSelected
-              count = data.filter((v) -> v._id.Status == 'Arrival' and v._id.Interval == parseInt(id))
-              countArrival = if count.length == 0 then 0 else count[0].count
+          if @tripsRequestedSelected
+              count = data.filter((v) -> v._id.Status == 'Requested' and v._id.Interval == parseInt(id))
+              countRequested = if count.length == 0 then 0 else count[0].count
           if @tripsCompletedSelected
             count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
             countComplete = if count.length == 0 then 0 else count[0].count
@@ -730,18 +753,18 @@ class TimeSeries
           if @tripsErrorSelected
             count = data.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
             countError = if count.length == 0 then 0 else count[0].count
-          total = countArrival + countComplete + countCancelled + countRejected + countError
+          total = countRequested + countComplete + countCancelled + countRejected + countError
 
           if @percentageMode
-              countArrival = if countArrival > 0 then countArrival * 100 / total else 0
+              countRequested = if countRequested > 0 then countRequested * 100 / total else 0
               countComplete = if countComplete > 0 then countComplete * 100 / total else 0
               countCancelled = if countCancelled > 0 then countCancelled * 100 / total else 0
               countRejected = if countRejected > 0 then countRejected * 100 / total else 0
               countError = if countError > 0 then countError * 100 / total else 0
 
-          if @tripsArrivalSelected
-              @tripsArrival.data.push [date, countArrival]
-              @YAxisMax = if countArrival > @YAxisMax then countArrival else @YAxisMax
+          if @tripsRequestedSelected
+              @tripsRequested.data.push [date, countRequested]
+              @YAxisMax = if countRequested > @YAxisMax then countRequested else @YAxisMax
           if @tripsCompletedSelected
               @tripsCompleted.data.push [date, countComplete]
               @YAxisMax = if countComplete > @YAxisMax then countComplete else @YAxisMax
@@ -759,9 +782,9 @@ class TimeSeries
 
       updateData = []
       updateData.push({
-          name: 'Arrival trips'
-          data: @tripsArrival
-          load: @tripsArrivalSelected
+          name: 'Requested trips'
+          data: @tripsRequested
+          load: @tripsRequestedSelected
       })
       updateData.push({
           name: 'Completed trips'
@@ -811,12 +834,63 @@ class TimeSeries
             else
                 @historicChart.yAxis[0].setExtremes(0, 100)
         @refreshCharts()
+        @hideLoadingIndicator()
     else
-        last10Minutes = new Date();
-        last10Minutes.setMinutes(last10Minutes.getMinutes()-10);
-        date = +last10Minutes / 1000;
-        $.get '/mongo_db/trips_list?startDate=' + date, (trips) =>
+        query = ''
+        if @realtimeMode
+          query = @getTripsListRealTimeQuery()
+        else
+          query = @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+        $.get '/mongo_db/trips_list?' + query, (trips) =>
           @loadHeatMapTrips(trips, series)
+          @hideLoadingIndicator()
+
+  getTripsListRealTimeQuery: () =>
+    startDate = new Date()
+    if @realtimeModeInterval.seconds
+      startDate.setMinutes(startDate.getMinutes()-10)
+    else if @realtimeModeInterval.minutes
+      startDate.setHours(startDate.getHours()-10)
+    else if @realtimeModeInterval.hours
+      startDate.setDate(startDate.getDate()-2)
+    else if @realtimeModeInterval.days
+      startDate.setMonth(startDate.getMonth()-1)
+    else if @realtimeModeInterval.weeks
+      startDate.setMonth(startDate.getMonth()-3)
+    date = +(new Date(startDate)) / 1000
+
+    selectedGeographicZone = ''
+    if window.selectedGeographicZone?
+      lat = window.selectedGeographicZone.getCenter().lat()
+      lng = window.selectedGeographicZone.getCenter().lng()
+      radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
+      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius + selectedGeographicZone
+
+    networkId = ''
+    if @selectedNetwork != 'All'
+      if @farmedInMode
+        networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
+      if @farmedOutMode
+        networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
+
+    return 'startDate=' + date + selectedGeographicZone + networkId
+
+  getTripsListTimeRangeQuery: (startDate, endDate) =>
+    selectedGeographicZone = ''
+    if window.selectedGeographicZone?
+      lat = window.selectedGeographicZone.getCenter().lat()
+      lng = window.selectedGeographicZone.getCenter().lng()
+      radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
+      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
+
+    networkId = ''
+    if @selectedNetwork != 'All'
+      if @farmedInMode
+        networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
+      if @farmedOutMode
+        networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
+
+    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone + networkId
 
   loadHeatMapTrips: (trips, series) =>
       tripsIds = []
@@ -828,82 +902,69 @@ class TimeSeries
       for id, trip of @tripsById
           if id not in tripsIds
               delete @tripsById[id]
-      @drawHeatMap(series)
+      serie = series.filter((serie) => serie.name == @selectedStat)
+      @drawHeatMap(serie[0].data.data)
 
-  drawHeatMap: (series) =>
+  drawHeatMap: (serie) =>
       taxiData = []
       weight = 0
-      maxIntensity = 0
-      if @realtimeMode
-          if not @percentageMode
-             weightValue = series[1].data.data[0][1] * 20
-             weight = if weightValue > 100 then 100 else weightValue
-          else
-             weight = series[1].data.data[0][1]
-      else
-        for serie in series
-            if serie.name == @selectedStat
-                weight = series[1].data.data[0][1]
-                break
+      max = 0
+      for value in serie
+        weight += value[1]
+        if value[1] > max
+          max = value[1]
+      weight /= serie.length
+      weight *= 100 / max
       trips = []
       for key of @tripsById
           trip = @tripsById[key]
-          if @selectedNetwork == 'All' or (@farmedInMode and trip.getServicing() in @networks[@selectedNetwork].fleets) or (@farmedOutMode and trip.getOrigin() in @networks[@selectedNetwork].fleets)
-            if @selectedFleet == 'All' or (@farmedInMode and @selectedFleet == trip.getServicing()) or (@farmedOutMode and @selectedFleet == trip.getOrigin())
-              trips.push {
-                lat: trip.pickupLocation.lat
-                lng: trip.pickupLocation.lng
-              }
-              locationPickUp = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
-              locationDropoff =  new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-              if window.selectedGeographicZone is null
-                  taxiData.push {
-                      location: locationPickUp,
-                      weight: weight
-                  }
-                  taxiData.push {
-                      location: locationDropoff,
-                      weight: weight
-                  }
-              else
-                  if window.selectedGeographicZone.isHere(locationPickUp)
-                      taxiData.push {
-                          location: locationPickUp,
-                          weight: weight
-                      }
-                  if window.selectedGeographicZone.isHere(locationDropoff)
-                      taxiData.push {
-                          location: locationDropoff,
-                          weight: weight
-                      }
+          trips.push {
+            lat: trip.pickupLocation.lat
+            lng: trip.pickupLocation.lng
+          }
+          locationPickUp = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
+          locationDropoff =  new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
+          taxiData.push {
+              location: locationPickUp,
+              weight: weight
+          }
+          taxiData.push {
+              location: locationDropoff,
+              weight: weight
+          }
 
-
-      if @selectedNetwork isnt @selectedNetworkTemp or @selectedFleet isnt @selectedFleetTemp
-        @selectedNetworkTemp = @selectedNetwork
-        @selectedFleetTemp = @selectedFleet
-        if trips.length > 0
-          geoCenter = @getCentrePointFromListOfCoordinates(trips)
-          bounds = new google.maps.LatLngBounds()
-          bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
-          bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
-          window.map.fitBounds(bounds)
-        else if @selectedFleet != 'All'
-          partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
-          if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
-            window.selectedGeographicZone.setMap null
-            window.selectedGeographicZone = null
-          window.map.panTo partnerPosition
-          window.map.setZoom 8
-
+      @setMapZoom(trips)
       @heatmap.setMap null
       gradient = [ "rgba(0, 255, 255, 0)", "rgba(13, 0, 229, 1)", "rgba(0, 74, 225, 1)", "rgba(0, 159, 221, 1)", "rgba(0, 217, 193, 1)", "rgba(0, 213, 106, 1)", "rgba(0, 210, 22, 1)", "rgba(58, 206, 0, 1)", "rgba(135, 202, 0, 1)", "rgba(198, 186, 0, 1)", "rgba(194, 106, 0, 1)", "rgba(191, 30, 0, 1)" ]
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
-          radius: 30,
-          maxIntensity: weight * 2,
-          gradient: gradient
+          radius: 20,
+          maxIntensity: trips.length * 8,
+          gradient: gradient,
       })
       @heatmap.setMap window.map
+
+  setMapZoom: (trips) =>
+    if @selectedNetwork isnt @selectedNetworkTemp or @selectedFleet isnt @selectedFleetTemp or @clearZoom
+      @selectedNetworkTemp = @selectedNetwork
+      @selectedFleetTemp = @selectedFleet
+      if trips.length > 0
+        geoCenter = @getCentrePointFromListOfCoordinates(trips)
+        bounds = new google.maps.LatLngBounds()
+        bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+        bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+        window.map.fitBounds(bounds)
+      else if @selectedFleet != 'All'
+        partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
+        if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
+          window.selectedGeographicZone.setMap null
+          window.selectedGeographicZone = null
+        window.map.panTo partnerPosition
+        window.map.setZoom 8
+      else
+        window.map.panTo new google.maps.LatLng(37.09024, -95.712891)
+        window.map.setZoom 4
+      @clearZoom = false
 
   processTrip: (newTrip) =>
       driverLocation =
@@ -956,7 +1017,7 @@ class TimeSeries
               editable: true
       )
       homeControlDiv = document.createElement("div")
-      homeControl = new HomeControl(homeControlDiv, window.map)
+      homeControl = new @HomeControl(homeControlDiv, window.map)
       homeControlDiv.index = 1
       window.map.controls[google.maps.ControlPosition.TOP_RIGHT].push homeControlDiv
 
@@ -967,8 +1028,10 @@ class TimeSeries
          if window.selectedGeographicZone isnt null
             window.selectedGeographicZone.setMap null
          window.selectedGeographicZone = circle
-         window.timeSeries.updateRealTime()
          window.map.fitBounds circle.getBounds()
+         window.timeSeries.togglesChanged = true
+         window.timeSeries.update()
+         window.timeSeries.togglesChanged = false
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
@@ -982,7 +1045,7 @@ class TimeSeries
           $('#networks-select').append('<option value="' + fleet.partnerName + '">' + fleet.partnerName + '</option>')
           $('#fleets-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
 
-  HomeControl = (controlDiv, map) ->
+  HomeControl: (controlDiv, map) =>
         controlDiv.style.padding = "5px"
 
         controlUI = document.createElement("div")
@@ -991,7 +1054,7 @@ class TimeSeries
         controlUI.style.borderWidth = "2px"
         controlUI.style.cursor = "pointer"
         controlUI.style.textAlign = "center"
-        controlUI.title = "Click to set the map to Home"
+        controlUI.title = "Clear filter"
         controlDiv.appendChild controlUI
 
         controlText = document.createElement("div")
@@ -1002,16 +1065,14 @@ class TimeSeries
         controlText.innerHTML = "<b>Reset</b>"
         controlUI.appendChild controlText
 
-        # Setup the click event listeners: simply set the map to
-        # Chicago
-
-        google.maps.event.addDomListener controlUI, "click", ->
+        google.maps.event.addDomListener controlUI, "click", =>
           if window.selectedGeographicZone isnt null
               window.selectedGeographicZone.setMap null
               window.selectedGeographicZone = null
-          window.timeSeries.updateRealTime()
-          window.map.panTo(new google.maps.LatLng(40.32004,-98.9290212))
-          window.map.setZoom 4
+          @togglesChanged = true
+          @clearZoom = true
+          @update()
+          @togglesChanged = false
 
   loadCharts: () =>
     if @forecastDataMode
@@ -1068,6 +1129,12 @@ class TimeSeries
         @historicChart.redraw()
     if @forecastChart?
         @forecastChart.redraw()
+
+  showLoadingIndicator: () =>
+    $('.loading-indicator>img').show()
+
+  hideLoadingIndicator: () =>
+    $('.loading-indicator>img').hide()
 
   getCentrePointFromListOfCoordinates: (list) =>
     minlat = null
