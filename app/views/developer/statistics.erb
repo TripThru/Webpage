@@ -148,8 +148,12 @@
             </div>
           </div>
 
-
-            <div id="network-select-container">
+          <% if roleUser == 'partner' %>
+              <% valueClass = 'hidden' %>
+          <% else %>
+              <% valueClass = '' %>
+          <% end %>
+            <div <%= valueClass %> id="network-select-container">
                 <div class="panel panel-default filter-button-group">
                   <div class="panel-heading text-center ">
                     <h3 class="panel-title">Network</h3>
