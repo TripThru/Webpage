@@ -105,12 +105,10 @@ class MongoDbController < ApplicationController
     end
     parameters << project
     parameters << group
-
-    client = MongoClient.new('localhost', '27017')
-    db = client.db('TripThru')
-    res = db.collection('trips').aggregate(parameters)
+    
+    res = Trip.collection.aggregate(parameters)
     puts parameters
-    #puts 'Results count: ' + res.length.to_s
+    puts 'Results count: ' + res.length.to_s
     respond_to do |format|
       format.json { render text: res.to_json }
     end
@@ -142,10 +140,8 @@ class MongoDbController < ApplicationController
       match['OriginatingPartnerId'] = params[:originatingNetworkId]
     end
 
+    trips = Trip.where(match)
 
-    db = client.db('TripThru')
-    trips = db.collection('trips').find(match)
-    puts match
     respond_to do |format|
       format.json { render text: trips.to_json }
     end
