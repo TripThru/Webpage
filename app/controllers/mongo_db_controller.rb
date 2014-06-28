@@ -105,7 +105,7 @@ class MongoDbController < ApplicationController
     end
     parameters << project
     parameters << group
-    
+
     res = Trip.collection.aggregate(parameters)
     puts parameters
     puts 'Results count: ' + res.length.to_s

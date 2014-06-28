@@ -49,7 +49,10 @@ class Stats
     updateStats: (stats) =>
         lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate()-7);
-        $.get '/mongo_db/trips_count?startDate=' + lastWeek + '&interval=week&bucketSize=1', (data) =>
+        partnerId = ''
+        if $('#getUserRole').html() isnt 'admin'
+            partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
+        $.get '/mongo_db/trips_count?startDate=' + lastWeek + partnerId + '&interval=week&bucketSize=1', (data) =>
             request = 0
             completed = 0
             rejected = 0

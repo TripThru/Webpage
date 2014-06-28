@@ -30,6 +30,13 @@ module SessionsHelper
       return nil
     end
   end
+  def userId
+    if signed_in?
+      return current_user.ClientId
+    else
+      return nil
+    end
+  end
   def current_user=(user)
     @current_user = user
   end

@@ -572,7 +572,10 @@ class StatisticsDashboard
   updateStats: (stats) =>
       lastHour = new Date();
       lastHour.setHours(lastHour.getHours()-1);
-      $.get '/mongo_db/trips_count?startDate=' + lastHour+ '&interval=hour&bucketSize=1', (data) =>
+      partnerId = ''
+      if $('#getUserRole').html() isnt 'admin'
+          partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
+      $.get '/mongo_db/trips_count?startDate=' + lastHour + partnerId + '&interval=hour&bucketSize=1', (data) =>
           request = 0
           completed = 0
           rejected = 0

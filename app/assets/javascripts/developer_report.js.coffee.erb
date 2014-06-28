@@ -3,7 +3,10 @@ $('.developer.report').ready ->
     lastHour = new Date();
     lastHour.setMinutes(lastHour.getMinutes()-60);
     date = +lastHour / 1000;
-    $.get '/mongo_db/trips_list?startDate=' + date, (data) =>
+    partnerId = ''
+    if $('#getUserRole').html() isnt 'admin'
+        partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
+    $.get '/mongo_db/trips_list?startDate=' + date + partnerId, (data) =>
         completeTrips = []
         rejectedTrips = []
         cancelledTrips = []
