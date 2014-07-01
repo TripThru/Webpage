@@ -49,7 +49,10 @@ class Stats
     updateStats: (stats) =>
         lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate()-7);
-        $.get '/mongo_db/trips_count?startDate=' + lastWeek + '&interval=week&bucketSize=1', (data) =>
+        partnerId = ''
+        if $('#getUserRole').html() isnt 'admin'
+            partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
+        $.get '/mongo_db/trips_count?startDate=' + lastWeek + partnerId + '&interval=week&bucketSize=1', (data) =>
             request = 0
             completed = 0
             rejected = 0
@@ -160,7 +163,7 @@ class CoverageMap
     citymap = {}
     count = 0
     for fleet in @fleets
-      if fleet.fleetName == "TripThru San Francisco"
+      if fleet.fleetName == "TripThru San Francisco" or (fleet.fleetName.toLowerCase() == $('#getUserName').html() and $('#getUserRole').html() == 'partner')
         continue
       driver++
       citymap[fleet.fleetName]=
@@ -254,7 +257,7 @@ class PartnersManager
         partners = partners.fleets
         @coverageMap = new CoverageMap(@coverageMapId, partners)
         for fleet in partners
-            if fleet.fleetName == "TripThru San Francisco"
+            if fleet.fleetName == "TripThru San Francisco" or (fleet.fleetName.toLowerCase() == $('#getUserName').html() and $('#getUserRole').html() == 'partner')
                 continue
             @partnersById[fleet.fleetName] = fleet
             $('#' + @selectorId).append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')

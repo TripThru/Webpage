@@ -11,7 +11,12 @@
     </div>
   </div>
   <div class="container">
-      <div id="partner-select-container" class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
+    <% if roleUser == 'partner' %>
+        <% valueClass = 'hidden' %>
+    <% else %>
+        <% valueClass = '' %>
+    <% end %>
+      <div <%= valueClass %> id="partner-select-container" class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
         <div class="panel panel-default filter-button-group ">
 
           <h3>
@@ -24,8 +29,12 @@
           </div>
         </div>
       </div>
-
-      <div id="farmed-in-container" class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+    <% if roleUser == 'partner' %>
+        <% valueClass = 'col-xs-12 col-sm-9 col-md-9 col-lg-9"' %>
+    <% else %>
+        <% valueClass = 'col-xs-12 col-sm-6 col-md-6 col-lg-6' %>
+    <% end %>
+      <div id="farmed-in-container"  class="<%= valueClass %>" >
           <div class="panel panel-default">
             <h3>
                 <div id="farmedInTitle" class="panel-body">
@@ -38,7 +47,7 @@
           </div>
       </div>
 
-      <div id="farmed-out-container" class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+      <div id="farmed-out-container" class="<%= valueClass %>">
           <div class="panel panel-default">
             <h3>
                 <div id="farmedOutTitle" class="panel-body">
