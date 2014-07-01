@@ -15,7 +15,9 @@ stderr_path APP_ROOT + "/log/unicorn.stderr.log"
 stdout_path APP_ROOT + "/log/unicorn.stdout.log"
 
 before_fork do |server, worker|
-  ActiveRecord::Base.connection.disconnect!
+  if rails_env != 'production'
+    ActiveRecord::Base.connection.disconnect!
+  end
 
   old_pid = APP_ROOT + '/tmp/pids/unicorn.pid.oldbin'
   if File.exists?(old_pid) && server.pid != old_pid
@@ -28,5 +30,7 @@ before_fork do |server, worker|
 end
 
 after_fork do |server, worker|
-  ActiveRecord::Base.establish_connection
+  if rails_env != 'production'
+    ActiveRecord::Base.establish_connection
+  end
 end

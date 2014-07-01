@@ -79,7 +79,7 @@ Rails.application.configure do
   config.log_formatter = ::Logger::Formatter.new
 
   # Do not dump schema after migrations.
-  config.active_record.dump_schema_after_migration = false
+  #config.active_record.dump_schema_after_migration = false
 
   config.action_mailer.perform_deliveries = true
   config.action_mailer.raise_delivery_errors = true

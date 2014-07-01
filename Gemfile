@@ -22,7 +22,7 @@ gem 'bson_ext'
 gem 'mongoid', '~> 4.0.0.rc2', github: 'mongoid/mongoid'
 
 group :production do 
-	gem 'pg', '~> 0.17.1'
+	#gem 'pg', '~> 0.17.1'
 end
 
 group :development do 

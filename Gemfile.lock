@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/mongoid/mongoid.git
-  revision: 50b633c8baf2fa467e8c36b18a013a2cd50e0454
+  revision: e01daa73623520716d62b7513bda10e978e0d583
   specs:
     mongoid (4.0.0)
       activemodel (~> 4.0)
@@ -85,7 +85,7 @@ GEM
     highcharts-rails (4.0.1)
       railties (>= 3.1)
     hike (1.2.3)
-    i18n (0.6.9)
+    i18n (0.6.10)
     jbuilder (2.1.1)
       activesupport (>= 3.0.0, < 5)
       multi_json (~> 1.2)
@@ -117,7 +117,6 @@ GEM
       mini_portile (= 0.6.0)
     optionable (0.2.0)
     origin (2.1.1)
-    pg (0.17.1)
     polyglot (0.3.5)
     rack (1.5.2)
     rack-test (0.6.2)
@@ -221,7 +220,6 @@ DEPENDENCIES
   jquery-turbolinks
   mongo
   mongoid (~> 4.0.0.rc2)!
-  pg (~> 0.17.1)
   rails (= 4.1.0)
   rspec-rails (= 2.13.1)
   sass-rails (~> 4.0.3)
