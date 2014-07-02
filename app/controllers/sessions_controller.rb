@@ -6,10 +6,10 @@ class SessionsController < ApplicationController
     username = params[:session][:username].downcase
     password = params[:session][:password]
     user_login = User.where(UserName: username).first
-      if !user_login.nil?
-        puts '############SetSIGNIN'
-        puts user_login.to_json
-        puts user_login.UserName
+    passwordSalt = BCrypt::Engine.hash_secret password, user_login.password_digest.scan(/.{1,29}/)[0]
+    puts '##############################'
+    puts passwordSalt
+      if !user_login.nil? and passwordSalt == user_login.password_digest
         sign_in user_login
         redirect_to developer_dashboard_path
       else

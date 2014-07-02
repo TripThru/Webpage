@@ -36,7 +36,7 @@
     <%= f.label :Role %>
     <div class="input-group col-xs-12">
       <span class="input-group-addon glyphicon glyphicon-tags"></span>
-      <%= f.select :Role, options_for_select([%w(Partner partner), %w(Demo Demo), %w(Admin admin)], :selected => (user.Role.nil? ? 'partner' : user.Role)), class: 'form-control ', required: true %>
+      <%= f.select :Role, options_for_select([%w(Partner partner), %w(Demo demo), %w(Admin admin)], :selected => (user.Role.nil? ? 'partner' : user.Role)), class: 'form-control ', required: true %>
     </div>
     <br/>
     <%= f.label :Partner_Name, id: 'user_Partner_Name' %>

@@ -25,15 +25,44 @@ class MongoDbController < ApplicationController
         match['$match']['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
       end
     end
-    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
-      match['$match']['$or'] = [
-          {'ServicingPartnerId' => params[:servicingNetworkId]},
-          {'OriginatingPartnerId' => params[:originatingNetworkId]}
-      ]
-    elsif params[:servicingNetworkId] != nil
-      match['$match']['ServicingPartnerId'] = params[:servicingNetworkId]
-    elsif params[:originatingNetworkId] != nil
-      match['$match']['OriginatingPartnerId'] = params[:originatingNetworkId]
+    if roleUser == 'admin' or roleUser == 'demo'
+      if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+        match['$match']['$or'] = [
+            {'ServicingPartnerId' => params[:servicingNetworkId]},
+            {'OriginatingPartnerId' => params[:originatingNetworkId]}
+        ]
+      elsif params[:servicingNetworkId] != nil
+        match['$match']['ServicingPartnerId'] = params[:servicingNetworkId]
+      elsif params[:originatingNetworkId] != nil
+        match['$match']['OriginatingPartnerId'] = params[:originatingNetworkId]
+      end
+    elsif
+      if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+        if userId == params[:servicingNetworkId] or userId == params[:originatingNetworkId]
+          match['$match']['$or'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'OriginatingPartnerId' => params[:originatingNetworkId]}
+          ]
+        end
+      elsif params[:servicingNetworkId] != nil
+        if params[:servicingNetworkId] != userId
+          match['$match']['$and'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'OriginatingPartnerId' => userId}
+          ]
+        elsif
+          match['$match']['ServicingPartnerId'] = params[:servicingNetworkId]
+        end
+      elsif params[:originatingNetworkId] != nil
+        if params[:originatingNetworkId] != userId
+          match['$match']['$and'] = [
+              {'ServicingPartnerId' => userId},
+              {'OriginatingPartnerId' => params[:originatingNetworkId]}
+          ]
+        elsif
+          match['$match']['OriginatingPartnerId'] = params[:originatingNetworkId]
+        end
+      end
     end
 
     sort = { '$sort' => { 'LastUpdate' => 1 } }
@@ -129,15 +158,44 @@ class MongoDbController < ApplicationController
                         }
                       }
     end
-    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
-      match['$or'] = [
-          {'ServicingPartnerId' => params[:servicingNetworkId]},
-          {'OriginatingPartnerId' => params[:originatingNetworkId]}
-      ]
-    elsif params[:servicingNetworkId] != nil
-      match['ServicingPartnerId'] = params[:servicingNetworkId]
-    elsif params[:originatingNetworkId] != nil
-      match['OriginatingPartnerId'] = params[:originatingNetworkId]
+    if roleUser == 'admin' or roleUser == 'demo'
+      if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+        match['$or'] = [
+            {'ServicingPartnerId' => params[:servicingNetworkId]},
+            {'OriginatingPartnerId' => params[:originatingNetworkId]}
+        ]
+      elsif params[:servicingNetworkId] != nil
+        match['ServicingPartnerId'] = params[:servicingNetworkId]
+      elsif params[:originatingNetworkId] != nil
+        match['OriginatingPartnerId'] = params[:originatingNetworkId]
+      end
+    elsif
+      if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+        if userId == params[:servicingNetworkId] or userId == params[:originatingNetworkId]
+          match['$or'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'OriginatingPartnerId' => params[:originatingNetworkId]}
+          ]
+        end
+      elsif params[:servicingNetworkId] != nil
+        if params[:servicingNetworkId] != userId
+          match['$match']['$and'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'OriginatingPartnerId' => userId}
+          ]
+        elsif
+          match['$match']['ServicingPartnerId'] = params[:servicingNetworkId]
+        end
+      elsif params[:originatingNetworkId] != nil
+        if params[:originatingNetworkId] != userId
+          match['$match']['$and'] = [
+              {'ServicingPartnerId' => userId},
+              {'OriginatingPartnerId' => params[:originatingNetworkId]}
+          ]
+        elsif
+          match['$match']['OriginatingPartnerId'] = params[:originatingNetworkId]
+        end
+      end
     end
 
     trips = Trip.where(match)

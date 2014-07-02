@@ -4,7 +4,7 @@ $('.developer.report').ready ->
     lastHour.setMinutes(lastHour.getMinutes()-60);
     date = +lastHour / 1000;
     partnerId = ''
-    if $('#getUserRole').html() isnt 'admin'
+    if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
         partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
     $.get '/mongo_db/trips_list?startDate=' + date + partnerId, (data) =>
         completeTrips = []

@@ -50,7 +50,7 @@ class Stats
         lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate()-7);
         partnerId = ''
-        if $('#getUserRole').html() isnt 'admin'
+        if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
             partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
         $.get '/mongo_db/trips_count?startDate=' + lastWeek + partnerId + '&interval=week&bucketSize=1', (data) =>
             request = 0
