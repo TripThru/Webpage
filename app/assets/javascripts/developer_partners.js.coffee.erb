@@ -163,7 +163,7 @@ class CoverageMap
     citymap = {}
     count = 0
     for fleet in @fleets
-      if fleet.fleetName == "TripThru San Francisco" or (fleet.fleetName.toLowerCase() == $('#getUserName').html() and $('#getUserRole').html() == 'partner')
+      if fleet.fleetName == "TripThru San Francisco" or (fleet.partnerId.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
         continue
       driver++
       citymap[fleet.fleetName]=
@@ -257,7 +257,7 @@ class PartnersManager
         partners = partners.fleets
         @coverageMap = new CoverageMap(@coverageMapId, partners)
         for fleet in partners
-            if fleet.fleetName == "TripThru San Francisco" or (fleet.fleetName.toLowerCase() == $('#getUserName').html() and $('#getUserRole').html() == 'partner')
+            if fleet.fleetName == "TripThru San Francisco" or (fleet.partnerId.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
                 continue
             @partnersById[fleet.fleetName] = fleet
             $('#' + @selectorId).append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
