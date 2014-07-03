@@ -35,6 +35,7 @@ class TimeSeries
     @forecastDataMode = false
     @farmedInMode = true
     @farmedOutMode = true
+    @localTripsMode = true
     @dataModeChanged = false
     @togglesChanged  = false
     @dateChanged = false
@@ -88,6 +89,7 @@ class TimeSeries
     $('#trips-error-filter-button').addClass('active')
     $('#farmedin-button').addClass('active')
     $('#farmedout-button').addClass('active')
+    $('#local-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#realtime-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
@@ -275,24 +277,33 @@ class TimeSeries
         @togglesChanged = false
 
     $('#farmedin-button').click =>
-      if not @farmedInMode or @farmedOutMode
-          $('#farmedin-button').toggleClass('active')
-          @farmedInMode = not @farmedInMode
-          if @selectedNetwork != 'All'
-              @togglesChanged = true
-              @clearZoom = true
-              @update()
-              @togglesChanged = false
-
-    $('#farmedout-button').click =>
-      if not @farmedOutMode or @farmedInMode
-          $('#farmedout-button').toggleClass('active')
-          @farmedOutMode = not @farmedOutMode
-          if @selectedNetwork != 'All'
+      if not @farmedInMode or @farmedOutMode or @localTripsMode
+        $('#farmedin-button').toggleClass('active')
+        @farmedInMode = not @farmedInMode
+        if @selectedNetwork != 'All'
             @togglesChanged = true
             @clearZoom = true
             @update()
             @togglesChanged = false
+
+    $('#farmedout-button').click =>
+      if not @farmedOutMode or @farmedInMode or @localTripsMode
+        $('#farmedout-button').toggleClass('active')
+        @farmedOutMode = not @farmedOutMode
+        if @selectedNetwork != 'All'
+          @togglesChanged = true
+          @clearZoom = true
+          @update()
+          @togglesChanged = false
+
+    $('#local-button').click =>
+      if not @localTripsMode or @farmedInMode or @farmedOutMode
+        $('#local-button').toggleClass('active')
+        @localTripsMode = not @localTripsMode
+        @togglesChanged = true
+        @clearZoom = true
+        @update()
+        @togglesChanged = false
 
     @update()
 
@@ -642,7 +653,9 @@ class TimeSeries
         radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
         selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
-      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+      localTrips = if @localTripsMode then '&local=true' else ''
+
+      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone + localTrips
 
       return [query, dates, intervalIds]
 
@@ -690,7 +703,9 @@ class TimeSeries
       radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
-    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+    localTrips = if @localTripsMode then '&local=true' else ''
+
+    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone + localTrips
 
     return [query, dates, intervalIds]
 
@@ -882,7 +897,9 @@ class TimeSeries
       if @farmedOutMode
         networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
 
-    return 'startDate=' + date + selectedGeographicZone + networkId
+    localTrips = if @localTripsMode then '&local=true' else ''
+
+    return 'startDate=' + date + selectedGeographicZone + networkId + localTrips
 
   getTripsListTimeRangeQuery: (startDate, endDate) =>
     selectedGeographicZone = ''
@@ -899,7 +916,9 @@ class TimeSeries
       if @farmedOutMode
         networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
 
-    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone + networkId
+    localTrips = if @localTripsMode then '&local=true' else ''
+
+    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone + networkId + localTrips
 
   loadHeatMapTrips: (trips, series) =>
       tripsIds = []
