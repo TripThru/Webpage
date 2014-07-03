@@ -35,7 +35,7 @@ class TimeSeries
     @forecastDataMode = false
     @farmedInMode = true
     @farmedOutMode = true
-    @localTripsMode = true
+    @localTripsMode = false
     @dataModeChanged = false
     @togglesChanged  = false
     @dateChanged = false
@@ -89,7 +89,6 @@ class TimeSeries
     $('#trips-error-filter-button').addClass('active')
     $('#farmedin-button').addClass('active')
     $('#farmedout-button').addClass('active')
-    $('#local-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#realtime-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
@@ -654,7 +653,7 @@ class TimeSeries
         selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
       localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-      localTrips = if @localTripsMode then '&local=' + @networks[@selectedNetwork].id  else ''
+      localTrips = if @localTripsMode then '&local=' + localTripsNetwork  else ''
 
       query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone + localTrips
 
@@ -705,7 +704,7 @@ class TimeSeries
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
     localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-    localTrips = if @localTripsMode then '&local=' + @networks[@selectedNetwork].id else ''
+    localTrips = if @localTripsMode then '&local=' + localTripsNetwork else ''
 
     query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone + localTrips
 
@@ -900,7 +899,7 @@ class TimeSeries
         networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
 
     localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-    localTrips = if @localTripsMode then '&local=' + @networks[@selectedNetwork].id else ''
+    localTrips = if @localTripsMode then '&local=' + localTripsNetwork else ''
 
     return 'startDate=' + date + selectedGeographicZone + networkId + localTrips
 

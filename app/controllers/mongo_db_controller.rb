@@ -4,6 +4,9 @@ include Mongo
 class MongoDbController < ApplicationController
   skip_before_action :verify_authenticity_token
 
+  ##Queries currently assume that servicing and originating will be the same (if both are not nil)
+  ##Todo: Fix match query when we need servicing == originating when servicing and originating are not specified
+
   def trips_count
     geo_near = { }
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
@@ -14,29 +17,6 @@ class MongoDbController < ApplicationController
           'spherical' => true
       }
     end
-
-    match = { }
-    if params[:startDate] != nil or params[:endDate] != nil
-      match['$match'] = { 'LastUpdate' => {} }
-      if params[:startDate] != nil
-        match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
-      end
-      if params[:endDate] != nil
-        match['$match']['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
-      end
-    end
-    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
-      match['$match']['$or'] = [
-          {'ServicingPartnerId' => params[:servicingNetworkId]},
-          {'OriginatingPartnerId' => params[:originatingNetworkId]}
-      ]
-    elsif params[:servicingNetworkId] != nil
-      match['$match']['ServicingPartnerId'] = params[:servicingNetworkId]
-    elsif params[:originatingNetworkId] != nil
-      match['$match']['OriginatingPartnerId'] = params[:originatingNetworkId]
-    end
-
-    sort = { '$sort' => { 'LastUpdate' => 1 } }
 
     interval = { }
     case params[:interval]
@@ -71,9 +51,87 @@ class MongoDbController < ApplicationController
         interval = { '$week' => '$LastUpdate' }
     end
 
+    match = { }
+    if params[:startDate] != nil or params[:endDate] != nil
+      match['$match'] = { 'LastUpdate' => {} }
+      if params[:startDate] != nil
+        match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
+      end
+      if params[:endDate] != nil
+        match['$match']['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
+      end
+    end
+
+    if params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil
+      if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+        if params[:local] != nil
+          match['$match']['$or'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'OriginatingPartnerId' => params[:originatingNetworkId]}
+          ]
+        else
+          match['$match']['$and'] = [
+              {'$or' => [
+                  {'ServicingPartnerId' => params[:servicingNetworkId]},
+                  {'OriginatingPartnerId' => params[:originatingNetworkId]}
+              ]
+              },
+              {'$or' => [
+                  {'ServicingPartnerId' => {'$ne' => params[:servicingNetworkId]}},
+                  {'OriginatingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
+              ]}
+          ]
+        end
+      elsif params[:servicingNetworkId] != nil
+        if params[:local] != nil
+          match['$match']['$or'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'$and' => [
+                  {'ServicingPartnerId' => params[:servicingNetworkId]},
+                  {'OriginatingPartnerId' => params[:servicingNetworkId]}
+              ]
+              }
+          ]
+        else
+          match['$match']['$and'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              'OriginatingPartnerId' => {'$ne' => params[:servicingNetworkId]}
+          ]
+        end
+      elsif params[:originatingNetworkId] != nil
+        if params[:local] != nil
+          match['$match']['$or'] = [
+              {'OriginatingPartnerId' => params[:originatingNetworkId]},
+              {'$and' => [
+                  {'ServicingPartnerId' => params[:originatingNetworkId]},
+                  {'OriginatingPartnerId' => params[:originatingNetworkId]}
+              ]}
+          ]
+        else
+          match['$match']['$and'] = [
+              {'OriginatingPartnerId' => params[:originatingNetworkId]},
+              {'ServicingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
+          ]
+        end
+      end
+    else
+      if params[:local] != nil
+        if params[:local] == 'all'
+          match['$match']['ServicingPartnerId'] = '$OriginatingNetwork'
+        else
+          match['$match']['$and'] = [
+              {'ServicingPartnerId' => params[:local]},
+              {'OriginatingPartnerId' => params[:local]}
+          ]
+        end
+      end
+    end
+
+    sort = { '$sort' => { 'LastUpdate' => 1 } }
+
     project = {
         '$project' => {
-            'Status' => '$Status',
+            'Status' => 1,
             'Interval' => interval
         }
     }
@@ -129,17 +187,73 @@ class MongoDbController < ApplicationController
                         }
                       }
     end
-    if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
-      match['$or'] = [
-          {'ServicingPartnerId' => params[:servicingNetworkId]},
-          {'OriginatingPartnerId' => params[:originatingNetworkId]}
-      ]
-    elsif params[:servicingNetworkId] != nil
-      match['ServicingPartnerId'] = params[:servicingNetworkId]
-    elsif params[:originatingNetworkId] != nil
-      match['OriginatingPartnerId'] = params[:originatingNetworkId]
+
+    if params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil
+      if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
+        if params[:local] != nil
+          match['$or'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'OriginatingPartnerId' => params[:originatingNetworkId]}
+          ]
+        else
+          match['$and'] = [
+              {'$or' => [
+                  {'ServicingPartnerId' => params[:servicingNetworkId]},
+                  {'OriginatingPartnerId' => params[:originatingNetworkId]}
+              ]
+              },
+              {'$or' => [
+                  {'ServicingPartnerId' => {'$ne' => params[:servicingNetworkId]}},
+                  {'OriginatingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
+              ]}
+          ]
+        end
+      elsif params[:servicingNetworkId] != nil
+        if params[:local] != nil
+          match['$or'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'$and' => [
+                  {'ServicingPartnerId' => params[:servicingNetworkId]},
+                  {'OriginatingPartnerId' => params[:servicingNetworkId]}
+              ]
+              }
+          ]
+        else
+          match['$and'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              'OriginatingPartnerId' => {'$ne' => params[:servicingNetworkId]}
+          ]
+        end
+      elsif params[:originatingNetworkId] != nil
+        if params[:local] != nil
+          match['$or'] = [
+              {'OriginatingPartnerId' => params[:originatingNetworkId]},
+              {'$and' => [
+                  {'ServicingPartnerId' => params[:originatingNetworkId]},
+                  {'OriginatingPartnerId' => params[:originatingNetworkId]}
+              ]}
+          ]
+        else
+          match['$and'] = [
+              {'OriginatingPartnerId' => params[:originatingNetworkId]},
+              {'ServicingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
+          ]
+        end
+      end
+    else
+      if params[:local] != nil
+        if params[:local] == 'all'
+          match['ServicingPartnerId'] = '$OriginatingNetwork'
+        else
+          match['$and'] = [
+              {'ServicingPartnerId' => params[:local]},
+              {'OriginatingPartnerId' => params[:local]}
+          ]
+        end
+      end
     end
 
+    puts match
     trips = Trip.where(match)
 
     respond_to do |format|
