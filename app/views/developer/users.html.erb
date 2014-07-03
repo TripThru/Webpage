@@ -52,7 +52,7 @@
               <div class="modal-content">
                 <div class="modal-header">
                   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                  <h2 class="modal-title" id="myModalLabel" align="center">Add New User</h2>
+                  <h2 id="headerText" class="modal-title" id="myModalLabel" align="center"></h2>
                 </div>
                 <div class="modal-body">
                   <div id="contenthere"></div>
@@ -68,6 +68,7 @@
 <input type="hidden" id="access_token" value="<%= userAccessToken %>"/>
 <script type="text/javascript">
     function loadPageNew() {
+        $('#headerText').html('Add New User');
         $("#contenthere").load('<%= settings_new_path %>');
     }
     function loadPage(id) {

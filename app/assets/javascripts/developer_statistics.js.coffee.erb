@@ -590,10 +590,10 @@ class TimeSeries
       
   updateRealTime: () =>
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
-    partnerId = ''
-    if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
-        partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
-    $.get '/mongo_db/trips_count?' + query + partnerId, (data) =>
+    #partnerId = ''
+    #if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
+    #    partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
+    $.get '/mongo_db/trips_count?' + query, (data) =>
       @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
       @updatingRealTime = false
 
@@ -648,9 +648,6 @@ class TimeSeries
 
   updateTimeRange: () =>
       [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
-      partnerId = ''
-      if $('#getUserRole').html() isnt 'admin'
-          partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
       $.get '/mongo_db/trips_count?' + query, (data) =>
         @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
 
@@ -847,10 +844,7 @@ class TimeSeries
           query = @getTripsListRealTimeQuery()
         else
           query = @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate))
-        partnerId = ''
-        if $('#getUserRole').html() isnt 'admin'
-          partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
-        $.get '/mongo_db/trips_list?' + query + partnerId, (trips) =>
+        $.get '/mongo_db/trips_list?' + query , (trips) =>
           @loadHeatMapTrips(trips, series)
           @hideLoadingIndicator()
 
@@ -1044,7 +1038,7 @@ class TimeSeries
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
-          if fleet.partnerName == "TDispatch" or (fleet.partnerName.toLowerCase() != $('#getUserName').html() and $('#getUserRole').html() == 'partner')
+          if fleet.partnerName == "TDispatch" or (fleet.partnerId.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
               continue
           if fleet.partnerName of @networks
               @networks[fleet.partnerName].fleets.push fleet.fleetName
