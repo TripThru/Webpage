@@ -41,7 +41,7 @@ class MongoDbController < ApplicationController
       when 'partner'
         if params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil
           if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
-            match['$or'] = [
+            match['$match']['$or'] = [
                 {'ServicingPartnerId' => userId},
                 {'OriginatingPartnerId' => userId}
             ]
@@ -51,7 +51,7 @@ class MongoDbController < ApplicationController
             match['$match']['OriginatingPartnerId'] = userId
           end
         else
-          match['$or'] = [
+          match['$match']['$or'] = [
               {'ServicingPartnerId' => userId},
               {'OriginatingPartnerId' => userId}
           ]
