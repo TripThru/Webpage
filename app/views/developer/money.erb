@@ -1,12 +1,13 @@
 <div id="money">
   <div class="panel panel-default" id="farmed-panel">
     <div class="panel-heading text-center ">
-      <h3 class="panel-title">Farmed</h3>
+      <h3 class="panel-title">Origin</h3>
     </div>
     <div class="panel-body">
       <div id="farmed-intervals-container">
         <input type="submit" id="farmedout-button" value="Farmed-Out"/>
         <input type="submit" id="farmedin-button" value="Farmed-In"/>
+        <input type="submit" id="local-button" value="Local"/>
       </div>
     </div>
   </div>
@@ -58,6 +59,19 @@
 
             </div>
           </div>
+      </div>
+
+      <div id="local-container" class="<%= valueClass %>">
+        <div class="panel panel-default">
+          <h3>
+            <div id="localTitle" class="panel-body">
+              Local <span class="badge pull-right" id="local-total" ></span>
+            </div>
+          </h3>
+          <div id="localDiv" class="panel-footer panel-footer-trips">
+  
+          </div>
+        </div>
       </div>
 
       <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3" id="balance-container">

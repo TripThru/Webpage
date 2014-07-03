@@ -1,28 +1,45 @@
-class money
+class Money
     constructor: (@gateway, @selectorId) ->
         document.getElementById("imageLoad").style.visibility = "visible"
         @gateway.getPartners(@partnersList)
-        @farmedA = 'out'
+        @origin = 'out'
         $('#farmed-in-container').addClass('hidden')
+        $('#local-container').addClass('hidden')
         $('#farmedout-button').addClass('active')
 
         $('#farmedin-button').click =>
-            $('#farmedout-button').removeClass('active')
-            $('#farmedin-button').addClass('active')
-            $('#farmed-in-container').removeClass('hidden')
-            $('#farmed-out-container').addClass('hidden')
-            @farmedA = 'in'
-            @selectedFleet = $('#' + @selectorId + ' option:selected').val()
-            @updateStats(@selectedFleet, @farmedA)
+          $('#farmedout-button').removeClass('active')
+          $('#local-button').removeClass('active')
+          $('#farmedin-button').addClass('active')
+          $('#farmed-in-container').removeClass('hidden')
+          $('#farmed-out-container').addClass('hidden')
+          $('#local-container').addClass('hidden')
+          @origin = 'in'
+          @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+          @updateStats()
 
         $('#farmedout-button').click =>
-            $('#farmedin-button').removeClass('active')
-            $('#farmedout-button').addClass('active')
-            $('#farmed-out-container').removeClass('hidden')
-            $('#farmed-in-container').addClass('hidden')
-            @farmedA = 'out'
-            @selectedFleet = $('#' + @selectorId + ' option:selected').val()
-            @updateStats(@selectedFleet, @farmedA)
+          $('#farmedin-button').removeClass('active')
+          $('#local-button').removeClass('active')
+          $('#farmedout-button').addClass('active')
+          $('#farmed-out-container').removeClass('hidden')
+          $('#farmed-in-container').addClass('hidden')
+          $('#local-container').addClass('hidden')
+
+          @origin = 'out'
+          @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+          @updateStats()
+
+        $('#local-button').click =>
+          $('#farmedin-button').removeClass('active')
+          $('#farmedout-button').removeClass('active')
+          $('#local-button').addClass('active')
+          $('#farmed-out-container').addClass('hidden')
+          $('#farmed-in-container').addClass('hidden')
+          $('#local-container').removeClass('hidden')
+          @origin = 'local'
+          @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+          @updateStats()
 
     partnersList: (fleets) =>
         firstFleet = null
@@ -36,79 +53,50 @@ class money
                 $('#' + @selectorId).append('<option value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
         $('#' + @selectorId).change =>
             @selectedFleet = $('#' + @selectorId + ' option:selected').val()
-            @updateStats(@selectedFleet, @farmedA)
+            @updateStats(@selectedFleet, @origin)
         if firstFleet?
-            @updateStats(firstFleet, @farmedA)
+            @selectedFleet = firstFleet
+            @updateStats()
 
-    updateStats: (iD, farmed) =>
+    updateStats: () =>
         document.getElementById("imageLoad").style.visibility = "visible"
         day = new Date();
         day.setHours(day.getHours()-24);
         date = +day / 1000;
-        $.get '/mongo_db/trips_list?startDate=' + date, (data) =>
-            farmedIn = []
-            farmedOut = []
+        iD = @selectedFleet
+        network = ''
+        if @origin == 'out'
+          network = '&originatingNetworkId=' + iD
+        else if @origin == 'in'
+          network = '&servicingNetworkId=' + iD
+        else
+          network = '&local=' + iD
+        $.get '/mongo_db/trips_list?startDate=' + date + network, (trips) =>
+            content = '<ul class="list-group">'
+            trips.forEach (trip) =>
+              content += '<li class="list-group-item">' + trip._id + '</li>'
+            content += '</ul>'
 
-            data.forEach (entry) ->
-                if entry.OriginatingPartnerId is iD
-                    farmedOut.push entry
-                else if entry.ServicingPartnerId is iD
-                    farmedIn.push entry
-            $('#farmed-out-total').html(farmedOut.length)
-            $('#farmed-in-total').html(farmedIn.length)
-
-            content = '
-                              <ul class="list-group">
-                             '
-            if farmedIn.length > 0
-                farmedIn.forEach (trip) ->
-                    content += '
-                                      <li class="list-group-item">' + trip._id + '</li>
-                                    '
+            if @origin is 'out'
+              $('#farmed-out-total').html(trips.length)
+              $('#farmedOutDiv').html content
+            else if @origin is 'in'
+              $('#farmed-in-total').html(trips.length)
+              $('#farmedInDiv').html content
             else
-                content +='
-                                <li class="list-group-item">Empty</li>
-                               '
-            content += '
-                              </ul>
-                            '
-            $('#farmedInDiv').html content
+              $('#local-total').html(trips.length)
+              $('#localDiv').html content
 
-            content = '
-                              <ul class="list-group">
-                             '
-            if farmedOut.length >0
-                farmedOut.forEach (trip) ->
-                    content += '
-                                   <li class="list-group-item">' + trip._id + '</li>
-                                  '
-            else
-                content +='
-                                <li class="list-group-item">Empty</li>
-                               '
-            content += '
-                               </ul>
-                              '
-            $('#farmedOutDiv').html content
-
-            if farmed is 'out'
-
-                $('#balance-due').html (farmedOut.length)
-                content = '<row><h2>Balance due</h2></row>
-                           <row><h2><strong> $' + ((farmedOut.length)/2).toFixed(2) + '</strong></h2></row>
-                           <row><button type="button" class="btn btn-info">Make payment</button></row>'
-                $('#balanceDiv').html content
-            else
-                $('#balance-due').html (farmedIn.length)
-                content = '<row><h2>Balance due</h2></row>
-                           <row><h2><strong> $' + ((farmedIn.length)/2).toFixed(2) + '</strong></h2></row>
-                           <row><button type="button" class="btn btn-info">Make payment</button></row>'
-                $('#balanceDiv').html content
+            $('#balance-due').html (trips.length)
+            content = '<row><h2>Balance due</h2></row>
+                                       <row><h2><strong> $' + ((trips.length)/2).toFixed(2) + '</strong></h2></row>
+                                       <row><button type="button" class="btn btn-info">Make payment</button></row>'
+            $('#balanceDiv').html content
             document.getElementById("imageLoad").style.visibility = "hidden"
 
 $('.developer.money').ready ->
     clearInterval(window.tripthruinterval)
-    moneyV = new money(
+    moneyV = new Money(
         new TripThru($('#access_token').val())
         'partners-select'
     )
