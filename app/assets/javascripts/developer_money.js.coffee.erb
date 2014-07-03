@@ -108,7 +108,7 @@ class Money
 
 $('.developer.money').ready ->
     clearInterval(window.tripthruinterval)
-    moneyV = new money(
+    moneyV = new Money(
         new TripThru($('#access_token').val())
         'partners-select'
     )
