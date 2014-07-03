@@ -653,7 +653,8 @@ class TimeSeries
         radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
         selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
-      localTrips = if @localTripsMode then '&local=true' else ''
+      localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+      localTrips = if @localTripsMode then '&local=' + @networks[@selectedNetwork].id  else ''
 
       query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone + localTrips
 
@@ -703,7 +704,8 @@ class TimeSeries
       radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
-    localTrips = if @localTripsMode then '&local=true' else ''
+    localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    localTrips = if @localTripsMode then '&local=' + @networks[@selectedNetwork].id else ''
 
     query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone + localTrips
 
@@ -897,7 +899,8 @@ class TimeSeries
       if @farmedOutMode
         networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
 
-    localTrips = if @localTripsMode then '&local=true' else ''
+    localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    localTrips = if @localTripsMode then '&local=' + @networks[@selectedNetwork].id else ''
 
     return 'startDate=' + date + selectedGeographicZone + networkId + localTrips
 
@@ -916,7 +919,8 @@ class TimeSeries
       if @farmedOutMode
         networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
 
-    localTrips = if @localTripsMode then '&local=true' else ''
+    localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    localTrips = if @localTripsMode then '&local=' + localTripsNetwork else ''
 
     return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone + networkId + localTrips
 
