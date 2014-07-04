@@ -63,6 +63,15 @@ class MongoDbController < ApplicationController
     end
 
     if params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil
+      if roleUser == 'partner'
+        if params[:servicingNetworkId] != nil
+          params[:servicingNetworkId] = userId
+        end
+        if params[:originatingNetworkId] != nil
+          params[:originatingNetworkId] = userId
+        end
+      end
+
       if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
         if params[:local] != nil
           match['$match']['$or'] = [
