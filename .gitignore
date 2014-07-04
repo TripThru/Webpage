@@ -9,6 +9,7 @@
 .vagrant
 vagrant/ansible/*
 vendor/cache/*
+vendor/bundle/*
 
 # Ignore bundler config.
 /.bundle

@@ -25,19 +25,18 @@
               <tbody>
               <% @users.each do |user| %>
                   <tr>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.id %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.UserName %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.Email %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.AccessToken.truncate(10) %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.RefreshToken.truncate(10) %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.PartnerName %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.CallbackUrl %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.TripThruAccessToken %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)"><%= user.Role %></td>
-                    <td class="active" onclick="loadPage(<%= user.id %>)">Edit</td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.ClientId %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.UserName %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.Email %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.AccessToken.truncate(10) %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.RefreshToken.truncate(10) %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.PartnerName %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.CallbackUrl %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.TripThruAccessToken %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.Role %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')">Edit</td>
                     <td class="active"><%= link_to 'Delete', settings_destroy_path(@user, :id => user.id), method: :delete, data: {confirm: 'Are you sure?'} %></td>
                   </tr>
-                  <br/>
               <% end %>
               </tbody>
             </table>
@@ -52,7 +51,7 @@
               <div class="modal-content">
                 <div class="modal-header">
                   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                  <h2 class="modal-title" id="myModalLabel" align="center">Add New User</h2>
+                  <h2 id="headerText" class="modal-title" id="myModalLabel" align="center"></h2>
                 </div>
                 <div class="modal-body">
                   <div id="contenthere"></div>
@@ -68,9 +67,11 @@
 <input type="hidden" id="access_token" value="<%= userAccessToken %>"/>
 <script type="text/javascript">
     function loadPageNew() {
+        $('#headerText').html('Add New User');
         $("#contenthere").load('<%= settings_new_path %>');
     }
     function loadPage(id) {
+        $('#headerText').html('Edit User');
         url = "<%= settings_edit_path%>" + "?id=" + id;
         $("#contenthere").load(url);
         $("#myModal").modal("show");

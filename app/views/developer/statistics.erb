@@ -1,5 +1,9 @@
 <div id="statistics">
-
+  <% if roleUser == 'partner' %>
+      <% valueClass = 'hidden' %>
+  <% else %>
+      <% valueClass = '' %>
+  <% end %>
   <div id="chart-container" class="container">
     <div class="row">
       <div id="filters-container">
@@ -149,11 +153,7 @@
             </div>
           </div>
 
-          <% if roleUser == 'partner' %>
-              <% valueClass = 'hidden' %>
-          <% else %>
-              <% valueClass = '' %>
-          <% end %>
+
             <div <%= valueClass %> id="network-select-container">
                 <div class="panel panel-default filter-button-group">
                   <div class="panel-heading text-center ">
@@ -161,7 +161,10 @@
                   </div>
                   <div class="panel-body">
                       <select id="networks-select" multiple="multiple">
-                        <option value="All" selected="selected">All</option>
+                        <% if roleUser != 'partner' %>
+                            <option value="All" selected="selected">All</option>
+                        <% end %>
+
                       </select>
                   </div>
                 </div>

@@ -59,7 +59,8 @@ class SettingsController < ApplicationController
 
   def update
     if roleUser == 'admin'
-      user = User.find_by_UserName(params[:user][:UserName])
+      userName = params[:user][:UserName]
+      user = User.where(UserName: userName).first
       user.password_digest = BCrypt::Password.create(params[:user][:password_digest])
       user.Email = params[:user][:Email]
       user.Role = params[:user][:Role]
