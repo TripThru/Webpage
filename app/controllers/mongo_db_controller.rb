@@ -5,7 +5,6 @@ class MongoDbController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   ##Queries currently assume that servicing and originating will be the same (if both are not nil)
-  ##Todo: Fix match query when we need servicing == originating when servicing and originating are not specified
 
   def trips_count
     geo_near = { }
