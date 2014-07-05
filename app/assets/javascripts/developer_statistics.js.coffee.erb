@@ -35,7 +35,7 @@ class TimeSeries
     @forecastDataMode = false
     @farmedInMode = true
     @farmedOutMode = true
-    @localTripsMode = false
+    @localTripsMode = true
     @dataModeChanged = false
     @togglesChanged  = false
     @dateChanged = false
@@ -89,6 +89,7 @@ class TimeSeries
     $('#trips-error-filter-button').addClass('active')
     $('#farmedin-button').addClass('active')
     $('#farmedout-button').addClass('active')
+    $('#local-button').addClass('active')
     $('#seconds-button').addClass('active')
     $('#realtime-button').addClass('active')
     $('#datepicker>input').attr("disabled", true)
