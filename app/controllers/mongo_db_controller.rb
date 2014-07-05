@@ -51,6 +51,17 @@ class MongoDbController < ApplicationController
         interval = { '$week' => '$LastUpdate' }
     end
 
+
+    project = {
+        '$project' => {
+            'Status' => 1,
+            'LastUpdate' => 1,
+            'ServicingPartnerId' => 1,
+            'OriginatingPartnerId' => 1,
+            'Interval' => interval
+        }
+    }
+
     match = { }
     if params[:startDate] != nil or params[:endDate] != nil
       match['$match'] = { 'LastUpdate' => {} }
@@ -126,24 +137,19 @@ class MongoDbController < ApplicationController
       end
     else
       if params[:localNetworkId] == 'all' and params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil
-        match['$match']['ServicingPartnerId'] = '$OriginatingNetwork'
-      end
-      if params[:localNetworkId] != nil and params[:localNetworkId] != 'all'
-        match['$match']['$and'] = [
-            {'ServicingPartnerId' => params[:localNetworkId]},
-            {'OriginatingPartnerId' => params[:localNetworkId]}
-        ]
+        project['$project']['isLocal'] = { '$eq' => [ '$ServicingPartnerId', '$OriginatingPartnerId' ] }
+        match['$match']['isLocal'] = true
+      else
+        if params[:localNetworkId] != nil and params[:localNetworkId] != 'all'
+          match['$match']['$and'] = [
+              {'ServicingPartnerId' => params[:localNetworkId]},
+              {'OriginatingPartnerId' => params[:localNetworkId]}
+          ]
+        end
       end
     end
 
     sort = { '$sort' => { 'LastUpdate' => 1 } }
-
-    project = {
-        '$project' => {
-            'Status' => 1,
-            'Interval' => interval
-        }
-    }
 
     group = {
         '$group' => {
@@ -164,13 +170,13 @@ class MongoDbController < ApplicationController
     if geo_near.length > 0
       parameters << geo_near
     end
+    parameters << project
     if match.length > 0
       parameters << match
     end
     if geo_near.length == 0
       parameters << sort
     end
-    parameters << project
     parameters << group
 
     res = Trip.collection.aggregate(parameters)
