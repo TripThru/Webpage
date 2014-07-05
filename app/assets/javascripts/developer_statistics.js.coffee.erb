@@ -279,21 +279,19 @@ class TimeSeries
       if not @farmedInMode or @farmedOutMode or @localTripsMode
         $('#farmedin-button').toggleClass('active')
         @farmedInMode = not @farmedInMode
-        if @selectedNetwork != 'All'
-            @togglesChanged = true
-            @clearZoom = true
-            @update()
-            @togglesChanged = false
+        @togglesChanged = true
+        @clearZoom = true
+        @update()
+        @togglesChanged = false
 
     $('#farmedout-button').click =>
       if not @farmedOutMode or @farmedInMode or @localTripsMode
         $('#farmedout-button').toggleClass('active')
         @farmedOutMode = not @farmedOutMode
-        if @selectedNetwork != 'All'
-          @togglesChanged = true
-          @clearZoom = true
-          @update()
-          @togglesChanged = false
+        @togglesChanged = true
+        @clearZoom = true
+        @update()
+        @togglesChanged = false
 
     $('#local-button').click =>
       if not @localTripsMode or @farmedInMode or @farmedOutMode
@@ -600,9 +598,6 @@ class TimeSeries
       
   updateRealTime: () =>
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
-    #partnerId = ''
-    #if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
-    #    partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
     $.get '/mongo_db/trips_count?' + query, (data) =>
       @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
       @updatingRealTime = false
@@ -639,11 +634,13 @@ class TimeSeries
       [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
 
       networkId = ''
-      if @selectedNetwork != 'All'
-          if @farmedInMode
-            networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
-          if @farmedOutMode
-              networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
+      id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+      if @farmedInMode
+        networkId += '&servicingNetworkId=' + id
+      if @farmedOutMode
+        networkId += '&originatingNetworkId=' + id
+      if @localTripsMode
+        networkId += '&localNetworkId=' + id
 
       selectedGeographicZone = ''
       if window.selectedGeographicZone?
@@ -652,10 +649,7 @@ class TimeSeries
         radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
         selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
-      localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-      localTrips = if @localTripsMode then '&local=' + localTripsNetwork  else ''
-
-      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone + localTrips
+      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
 
       return [query, dates, intervalIds]
 
@@ -687,11 +681,13 @@ class TimeSeries
     [dates, intervalIds] = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
 
     networkId = ''
-    if @selectedNetwork != 'All'
-      if @farmedInMode
-          networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
-      if @farmedOutMode
-          networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
+    id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    if @farmedInMode
+      networkId += '&servicingNetworkId=' + id
+    if @farmedOutMode
+      networkId += '&originatingNetworkId=' + id
+    if @localTripsMode
+      networkId += '&localNetworkId=' + id
 
     selectedGeographicZone = ''
     if window.selectedGeographicZone?
@@ -700,10 +696,7 @@ class TimeSeries
       radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
-    localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-    localTrips = if @localTripsMode then '&local=' + localTripsNetwork else ''
-
-    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone + localTrips
+    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
 
     return [query, dates, intervalIds]
 
@@ -886,16 +879,15 @@ class TimeSeries
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius + selectedGeographicZone
 
     networkId = ''
-    if @selectedNetwork != 'All'
-      if @farmedInMode
-        networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
-      if @farmedOutMode
-        networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
+    id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    if @farmedInMode
+      networkId += '&servicingNetworkId=' + id
+    if @farmedOutMode
+      networkId += '&originatingNetworkId=' + id
+    if @localTripsMode
+      networkId += '&localNetworkId=' + id
 
-    localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-    localTrips = if @localTripsMode then '&local=' + localTripsNetwork else ''
-
-    return 'startDate=' + date + selectedGeographicZone + networkId + localTrips
+    return 'startDate=' + date + selectedGeographicZone + networkId
 
   getTripsListTimeRangeQuery: (startDate, endDate) =>
     selectedGeographicZone = ''
@@ -906,16 +898,15 @@ class TimeSeries
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
     networkId = ''
-    if @selectedNetwork != 'All'
-      if @farmedInMode
-        networkId += '&servicingNetworkId=' + @networks[@selectedNetwork].id
-      if @farmedOutMode
-        networkId += '&originatingNetworkId=' + @networks[@selectedNetwork].id
+    id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    if @farmedInMode
+      networkId += '&servicingNetworkId=' + id
+    if @farmedOutMode
+      networkId += '&originatingNetworkId=' + id
+    if @localTripsMode
+      networkId += '&localNetworkId=' + id
 
-    localTripsNetwork = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-    localTrips = if @localTripsMode then '&local=' + localTripsNetwork else ''
-
-    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone + networkId + localTrips
+    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone + networkId
 
   loadHeatMapTrips: (trips, series) =>
       tripsIds = []

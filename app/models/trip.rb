@@ -6,6 +6,8 @@ class Trip
   field :LastStatusChange, type: String
   field :OriginatingPartnerName, type: String
   field :OriginatingPartnerId, type: String
+  field :ServicingPartnerId, type: String
+  field :ServicingNetworkId, type: String
   field :PassengerName, type: String
   field :PickupLocation, type: Location
   field :DropoffLocation, type: Location

@@ -62,7 +62,8 @@ class MongoDbController < ApplicationController
       end
     end
 
-    if params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil
+    if (params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil) and
+        (params[:servicingNetworkId] != 'all' and params[:originatingNetworkId] != 'all')
       if roleUser == 'partner'
         if params[:servicingNetworkId] != nil
           params[:servicingNetworkId] = userId
@@ -73,7 +74,7 @@ class MongoDbController < ApplicationController
       end
 
       if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
-        if params[:local] != nil
+        if params[:localNetworkId] != nil
           match['$match']['$or'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
               {'OriginatingPartnerId' => params[:originatingNetworkId]}
@@ -92,7 +93,7 @@ class MongoDbController < ApplicationController
           ]
         end
       elsif params[:servicingNetworkId] != nil
-        if params[:local] != nil
+        if params[:localNetworkId] != nil
           match['$match']['$or'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
               {'$and' => [
@@ -108,7 +109,7 @@ class MongoDbController < ApplicationController
           ]
         end
       elsif params[:originatingNetworkId] != nil
-        if params[:local] != nil
+        if params[:localNetworkId] != nil
           match['$match']['$or'] = [
               {'OriginatingPartnerId' => params[:originatingNetworkId]},
               {'$and' => [
@@ -124,15 +125,14 @@ class MongoDbController < ApplicationController
         end
       end
     else
-      if params[:local] != nil
-        if params[:local] == 'all'
-          match['$match']['ServicingPartnerId'] = '$OriginatingNetwork'
-        else
-          match['$match']['$and'] = [
-              {'ServicingPartnerId' => params[:local]},
-              {'OriginatingPartnerId' => params[:local]}
-          ]
-        end
+      if params[:localNetworkId] == 'all' and params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil
+        match['$match']['ServicingPartnerId'] = '$OriginatingNetwork'
+      end
+      if params[:localNetworkId] != nil and params[:localNetworkId] != 'all'
+        match['$match']['$and'] = [
+            {'ServicingPartnerId' => params[:localNetworkId]},
+            {'OriginatingPartnerId' => params[:localNetworkId]}
+        ]
       end
     end
 
@@ -197,9 +197,20 @@ class MongoDbController < ApplicationController
                       }
     end
 
-    if params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil
+    only_local = false
+    if (params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil) and
+        (params[:servicingNetworkId] != 'all' and params[:originatingNetworkId] != 'all')
+      if roleUser == 'partner'
+        if params[:servicingNetworkId] != nil
+          params[:servicingNetworkId] = userId
+        end
+        if params[:originatingNetworkId] != nil
+          params[:originatingNetworkId] = userId
+        end
+      end
+
       if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
-        if params[:local] != nil
+        if params[:localNetworkId] != nil
           match['$or'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
               {'OriginatingPartnerId' => params[:originatingNetworkId]}
@@ -218,7 +229,7 @@ class MongoDbController < ApplicationController
           ]
         end
       elsif params[:servicingNetworkId] != nil
-        if params[:local] != nil
+        if params[:localNetworkId] != nil
           match['$or'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
               {'$and' => [
@@ -234,7 +245,7 @@ class MongoDbController < ApplicationController
           ]
         end
       elsif params[:originatingNetworkId] != nil
-        if params[:local] != nil
+        if params[:localNetworkId] != nil
           match['$or'] = [
               {'OriginatingPartnerId' => params[:originatingNetworkId]},
               {'$and' => [
@@ -250,20 +261,22 @@ class MongoDbController < ApplicationController
         end
       end
     else
-      if params[:local] != nil
-        if params[:local] == 'all'
-          match['ServicingPartnerId'] = '$OriginatingNetwork'
-        else
-          match['$and'] = [
-              {'ServicingPartnerId' => params[:local]},
-              {'OriginatingPartnerId' => params[:local]}
-          ]
-        end
+      if params[:localNetworkId] == 'all' and params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil
+        only_local = true
+      end
+      if params[:localNetworkId] != nil and params[:localNetworkId] != 'all'
+        match['$and'] = [
+            {'ServicingPartnerId' => params[:localNetworkId]},
+            {'OriginatingPartnerId' => params[:localNetworkId]}
+        ]
       end
     end
 
     puts match
     trips = Trip.where(match)
+    if only_local
+      trips = trips.select{ |t| t.OriginatingPartnerId == t.ServicingPartnerId }
+    end
 
     respond_to do |format|
       format.json { render text: trips.to_json }
