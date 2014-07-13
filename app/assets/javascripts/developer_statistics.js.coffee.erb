@@ -956,7 +956,7 @@ class TimeSeries
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
           radius: 20,
-          maxIntensity: trips.length * 8,
+          maxIntensity: trips.length,
           gradient: gradient,
       })
       @heatmap.setMap window.map

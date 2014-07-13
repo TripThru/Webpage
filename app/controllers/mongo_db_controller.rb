@@ -55,15 +55,16 @@ class MongoDbController < ApplicationController
         '$project' => {
             'Status' => 1,
             'LastUpdate' => 1,
+            'rand' => 1,
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
             'Interval' => interval
         }
     }
 
-    match = { }
+    match = { '$match' => { 'rand' => {'$gte' => 0.5}}}
     if params[:startDate] != nil or params[:endDate] != nil
-      match['$match'] = { 'LastUpdate' => {} }
+      match['$match']['LastUpdate'] = { }
       if params[:startDate] != nil
         match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
       end
@@ -148,8 +149,6 @@ class MongoDbController < ApplicationController
       end
     end
 
-    sort = { '$sort' => { 'LastUpdate' => 1 } }
-
     group = {
         '$group' => {
           '_id' => {
@@ -165,16 +164,16 @@ class MongoDbController < ApplicationController
         }
     }
 
+    limit = {'$limit' => 200000}
+
     parameters = []
+    parameters << limit
     if geo_near.length > 0
       parameters << geo_near
     end
     parameters << project
     if match.length > 0
       parameters << match
-    end
-    if geo_near.length == 0
-      parameters << sort
     end
     parameters << group
 
@@ -187,22 +186,39 @@ class MongoDbController < ApplicationController
   end
 
   def trips_list
-    match = { 'LastUpdate' => { '$gte' => Time.at(params[:startDate].to_f) } }
-    if params[:endDate] != nil
-      match['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
-    end
+    geo_near = { }
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
-      match['loc'] = { '$geoWithin' =>
-                        { '$centerSphere' =>
-                              [
-                                [ params[:centerLng].to_f, params[:centerLat].to_f ] ,
-                                params[:centerRadius].to_f / 3959
-                              ]
-                        }
-                      }
+      geo_near['$geoNear'] = {
+          'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
+          'distanceField' => 'dist.calculated',
+          'maxDistance' => params[:centerRadius].to_f / 3959,
+          'spherical' => true
+      }
     end
 
-    only_local = false
+
+    project = {
+        '$project' => {
+            'LastUpdate' => 1,
+            'rand' => 1,
+            'ServicingPartnerId' => 1,
+            'OriginatingPartnerId' => 1,
+            'PickupLocation' => 1,
+            'DropoffLocation' => 1
+        }
+    }
+
+    match = { '$match' => { 'rand' => {'$gte' => 0.5}}}
+    if params[:startDate] != nil or params[:endDate] != nil
+      match['$match']['LastUpdate'] = { }
+      if params[:startDate] != nil
+        match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
+      end
+      if params[:endDate] != nil
+        match['$match']['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
+      end
+    end
+
     if (params[:servicingNetworkId] != nil or params[:originatingNetworkId] != nil) and
         (params[:servicingNetworkId] != 'all' and params[:originatingNetworkId] != 'all')
       if roleUser == 'partner'
@@ -216,12 +232,12 @@ class MongoDbController < ApplicationController
 
       if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$or'] = [
+          match['$match']['$or'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
               {'OriginatingPartnerId' => params[:originatingNetworkId]}
           ]
         else
-          match['$and'] = [
+          match['$match']['$and'] = [
               {'$or' => [
                   {'ServicingPartnerId' => params[:servicingNetworkId]},
                   {'OriginatingPartnerId' => params[:originatingNetworkId]}
@@ -235,7 +251,7 @@ class MongoDbController < ApplicationController
         end
       elsif params[:servicingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$or'] = [
+          match['$match']['$or'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
               {'$and' => [
                   {'ServicingPartnerId' => params[:servicingNetworkId]},
@@ -244,14 +260,14 @@ class MongoDbController < ApplicationController
               }
           ]
         else
-          match['$and'] = [
+          match['$match']['$and'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
               'OriginatingPartnerId' => {'$ne' => params[:servicingNetworkId]}
           ]
         end
       elsif params[:originatingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$or'] = [
+          match['$match']['$or'] = [
               {'OriginatingPartnerId' => params[:originatingNetworkId]},
               {'$and' => [
                   {'ServicingPartnerId' => params[:originatingNetworkId]},
@@ -259,7 +275,7 @@ class MongoDbController < ApplicationController
               ]}
           ]
         else
-          match['$and'] = [
+          match['$match']['$and'] = [
               {'OriginatingPartnerId' => params[:originatingNetworkId]},
               {'ServicingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
           ]
@@ -267,24 +283,36 @@ class MongoDbController < ApplicationController
       end
     else
       if params[:localNetworkId] == 'all' and params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil
-        only_local = true
-      end
-      if params[:localNetworkId] != nil and params[:localNetworkId] != 'all'
-        match['$and'] = [
-            {'ServicingPartnerId' => params[:localNetworkId]},
-            {'OriginatingPartnerId' => params[:localNetworkId]}
-        ]
+        project['$project']['isLocal'] = { '$eq' => [ '$ServicingPartnerId', '$OriginatingPartnerId' ] }
+        match['$match']['isLocal'] = true
+      else
+        if params[:localNetworkId] != nil and params[:localNetworkId] != 'all'
+          match['$match']['$and'] = [
+              {'ServicingPartnerId' => params[:localNetworkId]},
+              {'OriginatingPartnerId' => params[:localNetworkId]}
+          ]
+        end
       end
     end
 
-    puts match
-    trips = Trip.where(match)
-    if only_local
-      trips = trips.select{ |t| t.OriginatingPartnerId == t.ServicingPartnerId }
+    limit = {'$limit' => 20000}
+
+    parameters = []
+    parameters << limit
+    if geo_near.length > 0
+      parameters << geo_near
+    end
+    parameters << project
+    if match.length > 0
+      parameters << match
     end
 
+    res = Trip.collection.aggregate(parameters)
+
+    puts parameters
+    puts 'Results count: ' + res.length.to_s
     respond_to do |format|
-      format.json { render text: trips.to_json }
+      format.json { render text: res.to_json }
     end
   end
 
