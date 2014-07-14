@@ -198,6 +198,7 @@ class MongoDbController < ApplicationController
 
     project = {
         '$project' => {
+            'Status' => 1,
             'LastUpdate' => 1,
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
