@@ -55,16 +55,15 @@ class MongoDbController < ApplicationController
         '$project' => {
             'Status' => 1,
             'LastUpdate' => 1,
-            'rand' => 1,
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
             'Interval' => interval
         }
     }
 
-    match = { '$match' => { 'rand' => {'$gte' => 0.5}}}
+    match = { }
     if params[:startDate] != nil or params[:endDate] != nil
-      match['$match']['LastUpdate'] = { }
+      match['$match'] = { 'LastUpdate' => { } }
       if params[:startDate] != nil
         match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
       end
@@ -200,7 +199,6 @@ class MongoDbController < ApplicationController
     project = {
         '$project' => {
             'LastUpdate' => 1,
-            'rand' => 1,
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
             'PickupLocation' => 1,
@@ -208,9 +206,9 @@ class MongoDbController < ApplicationController
         }
     }
 
-    match = { '$match' => { 'rand' => {'$gte' => 0.5}}}
+    match = { }
     if params[:startDate] != nil or params[:endDate] != nil
-      match['$match']['LastUpdate'] = { }
+      match['$match'] = { 'LastUpdate' => { } }
       if params[:startDate] != nil
         match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
       end
