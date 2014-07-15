@@ -53,12 +53,17 @@ class Money
                 $('#' + @selectorId).append('<option value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
         $('#' + @selectorId).change =>
             @selectedFleet = $('#' + @selectorId + ' option:selected').val()
-            @updateStats(@selectedFleet, @origin)
+            @updateStats()
         if firstFleet?
             @selectedFleet = firstFleet
-            @updateStats()
+        else
+          document.getElementById("imageLoad").style.visibility = "hidden"
+        @updateStats()
 
     updateStats: () =>
+        if !@selectedFleet?
+          $('#balanceDiv').html "No fleets found"
+          return
         document.getElementById("imageLoad").style.visibility = "visible"
         day = new Date();
         day.setHours(day.getHours()-24);
