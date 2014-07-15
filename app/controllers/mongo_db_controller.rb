@@ -74,6 +74,11 @@ class MongoDbController < ApplicationController
 
 
     if roleUser == 'partner'
+      if params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil and params[:localNetworkId] == nil
+        params[:servicingNetworkId] = userId
+        params[:originatingNetworkId] = userId
+        params[:localNetworkId] = userId
+      end
       if params[:servicingNetworkId] != nil
         params[:servicingNetworkId] = userId
       end
@@ -221,11 +226,19 @@ class MongoDbController < ApplicationController
     end
 
     if roleUser == 'partner'
+      if params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil and params[:localNetworkId] == nil
+        params[:servicingNetworkId] = userId
+        params[:originatingNetworkId] = userId
+        params[:localNetworkId] = userId
+      end
       if params[:servicingNetworkId] != nil
         params[:servicingNetworkId] = userId
       end
       if params[:originatingNetworkId] != nil
         params[:originatingNetworkId] = userId
+      end
+      if params[:localNetworkId] != nil
+        params[:localNetworkId] = userId
       end
     end
 
