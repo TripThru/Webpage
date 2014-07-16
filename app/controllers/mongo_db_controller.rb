@@ -8,12 +8,14 @@ class MongoDbController < ApplicationController
 
   def trips_count
     geo_near = { }
+    documents_limit = 200000
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       geo_near['$geoNear'] = {
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
           'distanceField' => 'dist.calculated',
           'maxDistance' => params[:centerRadius].to_f / 3959,
-          'spherical' => true
+          'spherical' => true,
+          'limit' => documents_limit
       }
     end
 
@@ -170,12 +172,13 @@ class MongoDbController < ApplicationController
         }
     }
 
-    limit = {'$limit' => 200000}
+    limit = {'$limit' => documents_limit}
 
     parameters = []
-    parameters << limit
     if geo_near.length > 0
       parameters << geo_near
+    else
+      parameters << limit
     end
     parameters << project
     if match.length > 0
@@ -193,12 +196,14 @@ class MongoDbController < ApplicationController
 
   def trips_list
     geo_near = { }
+    documents_limit = 200000
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       geo_near['$geoNear'] = {
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
           'distanceField' => 'dist.calculated',
           'maxDistance' => params[:centerRadius].to_f / 3959,
-          'spherical' => true
+          'spherical' => true,
+          'limit' => documents_limit
       }
     end
 
@@ -310,12 +315,13 @@ class MongoDbController < ApplicationController
       end
     end
 
-    limit = {'$limit' => 20000}
+    limit = {'$limit' => documents_limit}
 
     parameters = []
-    parameters << limit
     if geo_near.length > 0
       parameters << geo_near
+    else
+      parameters << limit
     end
     parameters << project
     if match.length > 0
