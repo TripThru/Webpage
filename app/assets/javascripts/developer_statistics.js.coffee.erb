@@ -629,23 +629,7 @@ class TimeSeries
 
       [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
 
-      networkId = ''
-      id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-      if @farmedInMode
-        networkId += '&servicingNetworkId=' + id
-      if @farmedOutMode
-        networkId += '&originatingNetworkId=' + id
-      if @localTripsMode
-        networkId += '&localNetworkId=' + id
-
-      selectedGeographicZone = ''
-      if window.selectedGeographicZone?
-        lat = window.selectedGeographicZone.getCenter().lat()
-        lng = window.selectedGeographicZone.getCenter().lng()
-        radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
-        selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
-
-      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + @getCommonQuery()
 
       return [query, dates, intervalIds]
 
@@ -676,23 +660,7 @@ class TimeSeries
 
     [dates, intervalIds] = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
 
-    networkId = ''
-    id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-    if @farmedInMode
-      networkId += '&servicingNetworkId=' + id
-    if @farmedOutMode
-      networkId += '&originatingNetworkId=' + id
-    if @localTripsMode
-      networkId += '&localNetworkId=' + id
-
-    selectedGeographicZone = ''
-    if window.selectedGeographicZone?
-      lat = window.selectedGeographicZone.getCenter().lat()
-      lng = window.selectedGeographicZone.getCenter().lng()
-      radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
-      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
-
-    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + networkId + selectedGeographicZone
+    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + @getCommonQuery()
 
     return [query, dates, intervalIds]
 
@@ -867,25 +835,12 @@ class TimeSeries
       startDate.setMonth(startDate.getMonth()-3)
     date = +(new Date(startDate)) / 1000
 
-    selectedGeographicZone = ''
-    if window.selectedGeographicZone?
-      lat = window.selectedGeographicZone.getCenter().lat()
-      lng = window.selectedGeographicZone.getCenter().lng()
-      radius = window.selectedGeographicZone.getRadius()/1609.344 #convert to miles
-      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius + selectedGeographicZone
-
-    networkId = ''
-    id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-    if @farmedInMode
-      networkId += '&servicingNetworkId=' + id
-    if @farmedOutMode
-      networkId += '&originatingNetworkId=' + id
-    if @localTripsMode
-      networkId += '&localNetworkId=' + id
-
-    return 'startDate=' + date + selectedGeographicZone + networkId
+    return 'startDate=' + date + @getCommonQuery()
 
   getTripsListTimeRangeQuery: (startDate, endDate) =>
+    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + @getCommonQuery()
+
+  getCommonQuery: () =>
     selectedGeographicZone = ''
     if window.selectedGeographicZone?
       lat = window.selectedGeographicZone.getCenter().lat()
@@ -902,7 +857,7 @@ class TimeSeries
     if @localTripsMode
       networkId += '&localNetworkId=' + id
 
-    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + selectedGeographicZone + networkId
+    return selectedGeographicZone + networkId
 
   loadHeatMapTrips: (trips, series) =>
       tripsIds = []
