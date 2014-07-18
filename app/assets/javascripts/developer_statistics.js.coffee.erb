@@ -639,24 +639,44 @@ class TimeSeries
         @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
 
   getTripsCountTimeRangeQuery: (startDate, endDate) =>
-    days = daysBetween(startDate, endDate)
+    startMoment = moment(startDate)
+    endMoment = moment(endDate)
+    days = endMoment.diff(startMoment, 'days')
     intervalCount = 0
     bucketSize = 1
     intervalName = ''
 
-    if days < 3
-        intervalCount = days * 24
+    if days < 1
+      hours = endMoment.diff(startMoment, 'hours')
+      if hours < 1
+        minutes = endMoment.diff(startMoment, 'minutes')
+        if minutes <= 15
+          bucketSize = 15
+          intervalCount = minutes * 60 / bucketSize
+          intervalName = 'second'
+        else
+          intervalCount = minutes
+          intervalName = 'minute'
+      else if hours < 12
+        bucketSize = 5
+        intervalCount = hours * 60 / bucketSize
+        intervalName = 'minute'
+      else
+        intervalCount = hours
         intervalName = 'hour'
+    else if days >= 1 and days < 3
+      intervalCount = days * 24
+      intervalName = 'hour'
     else if days >= 3 and days < 7
-        bucketSize = 8
-        intervalCount = days * 24 / bucketSize
-        intervalName = 'hour'
+      bucketSize = 8
+      intervalCount = days * 24 / bucketSize
+      intervalName = 'hour'
     else if days < 61
-        intervalCount = days
-        intervalName = 'day'
+      intervalCount = days
+      intervalName = 'day'
     else
-        intervalCount = (days / 7).toFixed(0)
-        intervalName = 'week'
+      intervalCount = (days / 7).toFixed(0)
+      intervalName = 'week'
 
     [dates, intervalIds] = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
 
