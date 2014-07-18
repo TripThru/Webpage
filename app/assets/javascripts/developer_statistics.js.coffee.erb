@@ -556,7 +556,6 @@ class TimeSeries
                   @togglesChanged = false
 
   update: () =>
-      @showLoadingIndicator()
       if @chartTypeChanged and @chartType == 'series'
           $('#map-container').hide()
           $('#time-series-container').show()
@@ -586,9 +585,11 @@ class TimeSeries
                   @loadCharts()
 
       if @realtimeMode and not @updatingRealTime
+          @showLoadingIndicator()
           @updatingRealTime = true
           @updateRealTime()
       else if @dateChanged or @togglesChanged or @chartTypeChanged or @dataModeChanged
+          @showLoadingIndicator()
           @updateTimeRange()
       
   updateRealTime: () =>
