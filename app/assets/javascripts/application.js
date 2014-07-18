@@ -29,7 +29,8 @@
 //= require swagger/highlight.7.3.pack.js
 //= require swagger/swagger.js
 //= require swagger/swagger-ui.min.js
-//= require bootstrap-datepicker
+//= require moment
+//= require bootstrap-datetimepicker.js
 //= require highcharts
 //= require flickerplate.js
 //= require jquery-finger-v0.1.0.min.js

@@ -5,25 +5,20 @@ gem 'sass-rails', '~> 4.0.3'
 gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.0.0'
 gem 'bootstrap-sass'
-gem 'bootstrap-datepicker-rails'
 gem 'sprockets'
 gem 'jquery-rails'
 gem 'turbolinks'
 gem 'jbuilder', '~> 2.0'
 gem 'sdoc', '~> 0.4.0'
 gem 'unicorn'
-#gem 'sqlite3', '1.3.8'
 gem 'jquery-turbolinks'
 gem 'highcharts-rails', '~> 4.0.1'
 gem 'bcrypt-ruby', '3.1.5', :require => 'bcrypt'
-#gem 'pg', '~> 0.17.1'
 gem 'mongo'
 gem 'bson_ext'
 gem 'mongoid', '~> 4.0.0.rc2', github: 'mongoid/mongoid'
-
-group :production do 
-	#gem 'pg', '~> 0.17.1'
-end
+gem 'momentjs-rails', '~> 2.5.0'
+gem 'bootstrap3-datetimepicker-rails', '~> 3.0.0'
 
 group :development do 
 	gem 'rspec-rails', '2.13.1'

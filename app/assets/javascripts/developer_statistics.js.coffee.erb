@@ -47,25 +47,19 @@ class TimeSeries
         months: false
     }
 
-    $('#start-date').datepicker(
-      format: "yyyy/mm/dd"
-      endDate: '+1d'
-      todayBtn: "linked"
-      autoclose: true
-      todayHighlight: true
-    )
-    $('#end-date').datepicker(
-      format: "yyyy/mm/dd"
-      endDate: '+1d'
-      todayBtn: "linked"
-      autoclose: true
-      todayHighlight: true
-    )
     @startDate = new Date()
     @startDate.setDate(@startDate.getDate()-7)
     @endDate = new Date()
-    $('#start-date').datepicker('update', @startDate)
-    $('#end-date').datepicker('update', @endDate)
+    $('#start-date').datetimepicker(
+      showToday: true
+      format: "YYYY/MM/DD HH:mm"
+    )
+    $('#end-date').datetimepicker(
+      showToday: true
+      format: "YYYY/MM/DD HH:mm"
+    )
+    $('#start-date').data('DateTimePicker').setDate(@startDate)
+    $('#end-date').data('DateTimePicker').setDate(@endDate)
 
     @tripsRequestedSelected =     true
     @tripsCompletedSelected =   true
@@ -200,13 +194,13 @@ class TimeSeries
       @update()
       @togglesChanged = false
 
-    $('#start-date').on 'changeDate', (e) =>
+    $('#start-date').on 'dp.change', (e) =>
         @startDate = e.date
         @dateChanged = true
         @update()
         @dateChanged = false
 
-    $('#end-date').on 'changeDate', (e) =>
+    $('#end-date').on 'dp.change', (e) =>
         @endDate = e.date
         @dateChanged = true
         @update()
