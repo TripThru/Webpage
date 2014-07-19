@@ -7,8 +7,14 @@ class MongoDbController < ApplicationController
   ##Queries currently assume that servicing and originating will be the same (if both are not nil)
 
   def trips_count
-    geo_near = { }
     documents_limit = 200000
+    by_status = false
+
+    if params[:by_status] != nil
+      by_status = params[:by_status] == 'true' ? true : false
+    end
+
+    geo_near = { }
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       geo_near['$geoNear'] = {
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
@@ -157,17 +163,20 @@ class MongoDbController < ApplicationController
       end
     end
 
+    id = {}
+    if by_status
+      id['Status'] = '$Status'
+    end
+    id['Interval'] = {
+        '$subtract' => [
+            '$Interval',
+            { '$mod' => [ '$Interval', 1 ] }
+        ]
+    }
+
     group = {
         '$group' => {
-          '_id' => {
-              'Status' => '$Status',
-              'Interval' => {
-                  '$subtract' => [
-                      '$Interval',
-                      { '$mod' => [ '$Interval', 1 ] }
-                  ]
-              }
-          },
+          '_id' => id,
           'count' => { '$sum' => 1 }
         }
     }

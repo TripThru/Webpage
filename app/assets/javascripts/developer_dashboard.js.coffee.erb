@@ -575,7 +575,7 @@ class StatisticsDashboard
       partnerId = ''
       if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
           partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
-      $.get '/mongo_db/trips_count?startDate=' + lastHour + partnerId + '&interval=hour&bucketSize=1', (data) =>
+      $.get '/mongo_db/trips_count?startDate=' + lastHour + partnerId + '&interval=hour&bucketSize=1&by_status=true', (data) =>
           request = 0
           completed = 0
           rejected = 0

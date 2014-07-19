@@ -599,9 +599,10 @@ class TimeSeries
       
   updateRealTime: () =>
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
-    $.get '/mongo_db/trips_count?' + query, (data) =>
-      @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
-      @updatingRealTime = false
+    $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
+      $.get '/mongo_db/trips_count?' + query + '&by_status=false', (totalCount) =>
+        @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals)
+        @updatingRealTime = false
 
   getTripsCountRealTimeQuery: () =>
       startDate = new Date()
@@ -640,8 +641,9 @@ class TimeSeries
 
   updateTimeRange: () =>
       [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
-      $.get '/mongo_db/trips_count?' + query, (data) =>
-        @setSeries @mongoDbTripCountToSeries(data, dates, intervals)
+      $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
+        $.get '/mongo_db/trips_count?' + query + '&by_status=false', (totalCount) =>
+          @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals)
 
   getTripsCountTimeRangeQuery: (startDate, endDate) =>
     startMoment = moment(startDate)
@@ -722,7 +724,7 @@ class TimeSeries
                   startDate.setDate(startDate.getDate() + 7)
       return [dates, intervalIds]
 
-  mongoDbTripCountToSeries: (data, dates, intervals) =>
+  mongoDbTripCountToSeries: (countByStatus, totalCount, dates, intervals) =>
       @tripsRequested.data = []
       @tripsCompleted.data = []
       @tripsRejected.data = []
@@ -739,16 +741,18 @@ class TimeSeries
           countRejected = 0
           countError = 0
 
-          count = data.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
+          count = countByStatus.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
           countComplete = if count.length == 0 then 0 else count[0].count
-          count = data.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
+          count = countByStatus.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
           countCancelled = if count.length == 0 then 0 else count[0].count
-          count = data.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
+          count = countByStatus.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
           countRejected = if count.length == 0 then 0 else count[0].count
-          count = data.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
+          count = countByStatus.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
           countError = if count.length == 0 then 0 else count[0].count
+          count = totalCount.filter((v) -> v._id.Interval == parseInt(id))
+          countRequested = if count.length == 0 then 0 else count[0].count
+          total = countRequested
 
-          total = countComplete + countCancelled + countRejected + countError
           if not @tripsCompletedSelected
             countComplete = 0
           if not @tripsCancelledSelected
@@ -757,8 +761,8 @@ class TimeSeries
             countRejected = 0
           if not @tripsErrorSelected
             countError = 0
-          if @tripsRequestedSelected
-            countRequested = total
+          if not @tripsRequestedSelected
+            countRequested = 0
 
           if @percentageMode
               countRequested = if countRequested > 0 then countRequested * 100 / total else 0
