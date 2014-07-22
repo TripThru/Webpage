@@ -80,7 +80,6 @@ class TimeSeries
     @timeIdleSelected =         false
     @mileageEnrouteSelected =   false
     @mileageOccupiedSelected =  false
-    @serviceGoalSelected =      false
     @serviceLatenessSelected =  false
     @ratingDriversSelected =    false
     @ratingPassengersSelected = false
@@ -108,8 +107,7 @@ class TimeSeries
     @timeIdle =         { name: 'Time idle', id: 'Time idle', data: []}
     @mileageEnroute =   { name: 'Mileage enroute', id: 'Mileage enroute', data: []}
     @mileageOccupied =  { name: 'Mileage occupied', id: 'Mileage occupied', data: []}
-    @serviceGoal =      { name: 'In service', id: 'In service', data: []}
-    @serviceLateness =  { name: 'Out service', id: 'Out service', data: []}
+    @serviceLateness =  { name: 'Lateness', id: 'Lateness', data: []}
     @ratingDrivers =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
     @ratingPassengers = { name: 'Passengers rating', id: 'Passengers rating', data: []}
 
@@ -421,15 +419,6 @@ class TimeSeries
             @togglesChanged = false
             @selectedStatsChanged = false
 
-          $('#service-goal-filter-button').off('click').on 'click', =>
-            $('#service-goal-filter-button').toggleClass('active')
-            @serviceGoalSelected = not @serviceGoalSelected
-            @togglesChanged = true
-            @selectedStatsChanged = true
-            @update()
-            @togglesChanged = false
-            @selectedStatsChanged = false
-
           $('#service-lateness-filter-button').off('click').on 'click', =>
             $('#service-lateness-filter-button').toggleClass('active')
             @serviceLatenessSelected = not @serviceLatenessSelected
@@ -579,21 +568,8 @@ class TimeSeries
                 @togglesChanged = false
                 @selectedStatsChanged = false
 
-
-          $('#service-goal-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'In service'
-              $('.filter-button').removeClass('active')
-              $('#service-goal-filter-button').addClass('active')
-              @selectedStat = 'Out service'
-              @togglesChanged = true
-              @selectedStatsChanged = true
-              @update()
-              @togglesChanged = false
-              @selectedStatsChanged = false
-
-
           $('#service-lateness-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Out service'
+            if @selectedStat != 'Lateness'
               $('.filter-button').removeClass('active')
               $('#service-lateness-filter-button').addClass('active')
               @selectedStat = 'Out service'
