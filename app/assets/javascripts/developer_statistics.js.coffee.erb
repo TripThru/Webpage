@@ -200,17 +200,21 @@ class TimeSeries
         $('#realtime-intervals-container>input').removeClass('disabled')
         $('#realtime-panel').removeClass('hidden')
         $('#time-range-panel').addClass('hidden')
-      @update()
+      @update(
+        () =>
+          @timeModeChanged = false
+          @toggledChanged = false
+      )
 
     $('#start-date').on 'dp.change', (e) =>
         @startDate = e.date
         @dateChanged = true
-        @update()
+        @update(() => @dateChanged = false)
 
     $('#end-date').on 'dp.change', (e) =>
         @endDate = e.date
         @dateChanged = true
-        @update()
+        @update(() => @dateChanged = false)
 
     $('#networks-select').change =>
       @selectedNetwork = $('#networks-select option:selected').val()
@@ -224,19 +228,31 @@ class TimeSeries
           $('#fleets-select').append('<option value="' + fleet + '">' + fleet + '</option>')
       @togglesChanged = true
       @fleetChanged = true
-      @update()
+      @update(
+          () =>
+            @togglesChanged = false
+            @fleetChanged = false
+      )
 
     $('#fleets-select').change =>
       @selectedFleet = $('#fleets-select option:selected').val()
       @togglesChanged = true
       @fleetChanged = true
-      @update()
+      @update(
+          () =>
+            @togglesChanged = false
+            @fleetChanged = false
+      )
 
     $('#drivers-select').change =>
       @selectedDriver = $('#drivers-select option:selected').val()
       @togglesChanged = true
       @fleetChanged = true
-      @update()
+      @update(
+        () =>
+          @togglesChanged = false
+          @fleetChanged = false
+      )
 
     $('#chart-type-toggle-container>#toggle-button').click =>
         if @chartType == 'series'
@@ -249,7 +265,10 @@ class TimeSeries
             $('#statistics-toggle').show()
         @chartTypeChanged = true
         @setFilterEvents()
-        @update()
+        @update(
+            () =>
+              @chartTypeChanged = false
+        )
 
     $('#historic-toggle-container>#toggle-button').click =>
         if @forecastDataMode
@@ -260,7 +279,10 @@ class TimeSeries
             $('#forecast-toggle').show()
         @forecastDataMode = not @forecastDataMode
         @dataModeChanged = true
-        @update()
+        @update(
+            () =>
+              @dataModeChanged = false
+        )
 
     $('#data-mode-toggle-container>#toggle-button').click =>
         if @percentageMode
@@ -271,7 +293,10 @@ class TimeSeries
             $('#absolute-toggle').show()
         @percentageMode = not @percentageMode
         @togglesChanged = true
-        @update()
+        @update(
+            () =>
+              @togglesChanged = false
+        )
 
     $('#farmedin-button').click =>
       if not @farmedInMode or @farmedOutMode or @localTripsMode
@@ -279,7 +304,11 @@ class TimeSeries
         @farmedInMode = not @farmedInMode
         @togglesChanged = true
         @clearZoom = true
-        @update()
+        @update(
+            () =>
+              @togglesChanged = false
+              @clearZoom = false
+        )
 
     $('#farmedout-button').click =>
       if not @farmedOutMode or @farmedInMode or @localTripsMode
@@ -287,7 +316,11 @@ class TimeSeries
         @farmedOutMode = not @farmedOutMode
         @togglesChanged = true
         @clearZoom = true
-        @update()
+        @update(
+            () =>
+              @togglesChanged = false
+              @clearZoom = false
+        )
 
     $('#local-button').click =>
       if not @localTripsMode or @farmedInMode or @farmedOutMode
@@ -295,7 +328,11 @@ class TimeSeries
         @localTripsMode = not @localTripsMode
         @togglesChanged = true
         @clearZoom = true
-        @update()
+        @update(
+          () =>
+            @togglesChanged = false
+            @clearZoom = false
+        )
 
     @update()
 
@@ -319,91 +356,143 @@ class TimeSeries
             @tripsRequestedSelected= not @tripsRequestedSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+            )
           
           $('#trips-completed-filter-button').off('click').on 'click', =>
             $('#trips-completed-filter-button').toggleClass('active')
             @tripsCompletedSelected= not @tripsCompletedSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#trips-rejected-filter-button').off('click').on 'click', =>
             $('#trips-rejected-filter-button').toggleClass('active')
             @tripsRejectedSelected= not @tripsRejectedSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#trips-cancelled-filter-button').off('click').on 'click', =>
             $('#trips-cancelled-filter-button').toggleClass('active')
             @tripsCancelledSelected= not @tripsCancelledSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#trips-error-filter-button').off('click').on 'click', =>
             $('#trips-error-filter-button').toggleClass('active')
             @tripsErrorSelected= not @tripsErrorSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#time-enroute-filter-button').off('click').on 'click', =>
             $('#time-enroute-filter-button').toggleClass('active')
             @timeEnrouteSelected = not @timeEnrouteSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#time-occupied-filter-button').off('click').on 'click', =>
             $('#time-occupied-filter-button').toggleClass('active')
             @timeOccupiedSelected = not @timeOccupiedSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#time-idle-filter-button').off('click').on 'click', =>
             $('#time-idle-filter-button').toggleClass('active')
             @timeIdleSelected = not @timeIdleSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#mileage-enroute-filter-button').off('click').on 'click', =>
             $('#mileage-enroute-filter-button').toggleClass('active')
             @mileageEnrouteSelected = not @mileageEnrouteSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#mileage-occupied-filter-button').off('click').on 'click', =>
             $('#mileage-occupied-filter-button').toggleClass('active')
             @mileageOccupiedSelected = not @mileageOccupiedSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#service-lateness-filter-button').off('click').on 'click', =>
             $('#service-lateness-filter-button').toggleClass('active')
             @serviceLatenessSelected = not @serviceLatenessSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#ratings-drivers-filter-button').off('click').on 'click', =>
             $('#ratings-drivers-filter-button').toggleClass('active')
             @ratingDriversSelected = not @ratingDriversSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
 
           $('#ratings-passengers-filter-button').off('click').on 'click', =>
             $('#ratings-passengers-filter-button').toggleClass('active')
             @ratingPassengersSelected = not @ratingPassengersSelected
             @togglesChanged = true
             @selectedStatsChanged = true
-            @update()
+            @update(
+              () =>
+                @togglesChanged = false
+                @selectedStatsChanged = false
+            )
       else
           @selectedStat = 'Completed trips'
           $('.filter-button').removeClass('active')
@@ -416,7 +505,11 @@ class TimeSeries
               @selectedStat = 'Requested trips'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
           $('#trips-completed-filter-button').off('click').on 'click', =>
             if @selectedStat != 'Completed trips'
@@ -425,7 +518,11 @@ class TimeSeries
               @selectedStat = 'Completed trips'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#trips-rejected-filter-button').off('click').on 'click', =>
@@ -435,7 +532,11 @@ class TimeSeries
               @selectedStat = 'Rejected trips'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#trips-cancelled-filter-button').off('click').on 'click', =>
@@ -445,7 +546,11 @@ class TimeSeries
               @selectedStat = 'Cancelled trips'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#trips-error-filter-button').off('click').on 'click', =>
@@ -455,7 +560,11 @@ class TimeSeries
               @selectedStat = 'Error trips'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#time-enroute-filter-button').off('click').on 'click', =>
@@ -465,7 +574,11 @@ class TimeSeries
               @selectedStat = 'Time enroute'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#time-occupied-filter-button').off('click').on 'click', =>
@@ -475,7 +588,11 @@ class TimeSeries
               @selectedStat = 'Time occupied'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#time-idle-filter-button').off('click').on 'click', =>
@@ -485,7 +602,11 @@ class TimeSeries
               @selectedStat = 'Time idle'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#mileage-enroute-filter-button').off('click').on 'click', =>
@@ -495,7 +616,11 @@ class TimeSeries
               @selectedStat = 'Mileage enroute'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#mileage-occupied-filter-button').off('click').on 'click', =>
@@ -505,7 +630,11 @@ class TimeSeries
                 @selectedStat = 'Mileage occupied'
                 @togglesChanged = true
                 @selectedStatsChanged = true
-                @update()
+                @update(
+                  () =>
+                    @togglesChanged = false
+                    @selectedStatsChanged = false
+                )
 
           $('#service-lateness-filter-button').off('click').on 'click', =>
             if @selectedStat != 'Lateness'
@@ -514,7 +643,11 @@ class TimeSeries
               @selectedStat = 'Lateness'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#ratings-drivers-filter-button').off('click').on 'click', =>
@@ -524,7 +657,11 @@ class TimeSeries
               @selectedStat = 'Rating drivers'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
 
           $('#ratings-passengers-filter-button').off('click').on 'click', =>
@@ -534,7 +671,11 @@ class TimeSeries
               @selectedStat = 'Rating passengers'
               @togglesChanged = true
               @selectedStatsChanged = true
-              @update()
+              @update(
+                () =>
+                  @togglesChanged = false
+                  @selectedStatsChanged = false
+              )
 
   enableSerie: (name) =>
     for serie in @series
@@ -548,19 +689,7 @@ class TimeSeries
         serie.load = false
         return
 
-  clearFlags: () =>
-    @chartTypeChanged = false
-    @dataModeChanged = false
-    @togglesChanged  = false
-    @dateChanged = false
-    @timeModeChanged = false
-    @fleetChanged = false
-    @selectedStatsChanged = false
-    @zoomChanged = false
-    @updatingTimeRange = false
-    @updatingRealTime = false
-
-  update: () =>
+  update: (callback) =>
       if @chartTypeChanged and @chartType == 'series'
           $('#map-container').hide()
           $('#time-series-container').show()
@@ -571,7 +700,8 @@ class TimeSeries
           if !window.map?
               @loadMap()
               google.maps.event.addDomListenerOnce(window.map, "tilesloaded", () =>
-                  google.maps.event.addDomListenerOnce(window.map, "tilesloaded", @update()))
+                  google.maps.event.addDomListenerOnce(window.map, "tilesloaded", @update(callback)))
+              return
           else
               google.maps.event.trigger(window.map,'resize')
 
@@ -592,17 +722,30 @@ class TimeSeries
       if @realtimeMode and not @updatingRealTime
           @showLoadingIndicator()
           @updatingRealTime = true
-          @updateRealTime()
+          @updateRealTime(
+              () =>
+                  @updatingRealTime = false
+                  if callback?
+                    callback()
+          )
       else if (@dateChanged or @togglesChanged or @chartTypeChanged or @dataModeChanged) and not @updatingTimeRange
           @showLoadingIndicator()
           @updatingTimeRange = true
-          @updateTimeRange()
+          @updateTimeRange(
+              () =>
+                @updatingTimeRange = false
+                if callback?
+                  callback()
+          )
+      else
+        if callback?
+          callback()
       
-  updateRealTime: () =>
+  updateRealTime: (callback) =>
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
     $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
       $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
-        @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals)
+        @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals), callback
 
   getTripsCountRealTimeQuery: () =>
       startDate = new Date()
@@ -639,12 +782,12 @@ class TimeSeries
 
       return [query, dates, intervalIds]
 
-  updateTimeRange: () =>
+  updateTimeRange: (callback) =>
     if not @selectedStatsChanged
       [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
         $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
-          @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals)
+          @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals), callback
     else
       if @tripsRequestedSelected
         @enableSerie('Requested trips')
@@ -666,7 +809,7 @@ class TimeSeries
         @enableSerie('Error trips')
       else
         @disableSerie('Error trips')
-      @setSeries @series
+      @setSeries @series, callback
 
   getTripsCountTimeRangeQuery: (startDate, endDate) =>
     startMoment = moment(startDate)
@@ -865,7 +1008,7 @@ class TimeSeries
       })
       return updateData
 
-  setSeries: (series) =>
+  setSeries: (series, callback) =>
     @series = series
     if @chartType == 'series'
         for serie in series
@@ -893,7 +1036,8 @@ class TimeSeries
                 @historicChart.yAxis[0].setExtremes(0, 100)
         @refreshCharts()
         @hideLoadingIndicator()
-        @clearFlags()
+        if callback?
+          callback()
     else
         query = ''
         if @realtimeMode
@@ -904,12 +1048,14 @@ class TimeSeries
           else
             @drawHeatMap()
             @hideLoadingIndicator()
-            @clearFlags()
+            if callback?
+              callback()
             return
         $.get '/mongo_db/trips_list?' + query , (trips) =>
           @loadHeatMapTrips(trips)
           @hideLoadingIndicator()
-          @clearFlags()
+          if callback?
+            callback()
 
   shouldUpdateTimeRangeTrips: () =>
     return @zoomChanged or @dateChanged or @timeModeChanged or (Object.keys(@tripsById).length == 0) or (@selectedFleet != @selectedFleetTemp) or (@selectedNetwork != @selectedNetworkTemp)
@@ -953,15 +1099,15 @@ class TimeSeries
     return selectedGeographicZone + networkId
 
   loadHeatMapTrips: (trips) =>
-      @tripsById = {}
+      tripsIds = []
       for newTrip in trips
-          #tripsIds.push newTrip._id
-          #if newTrip.id not of @tripsById
-              @processTrip(newTrip)
+        tripsIds.push newTrip._id
+        if newTrip.id not of @tripsById
+          @processTrip(newTrip)
 
-      #for id, trip of @tripsById
-      #    if id not in tripsIds
-      #        delete @tripsById[id]
+      for id, trip of @tripsById
+          if id not in tripsIds
+              delete @tripsById[id]
       @drawHeatMap()
 
   drawHeatMap: () =>
@@ -1009,7 +1155,7 @@ class TimeSeries
       @heatmap.setMap window.map
 
   setMapZoom: (trips) =>
-    if @selectedNetwork isnt @selectedNetworkTemp or @selectedFleet isnt @selectedFleetTemp or @clearZoom
+    if window.map? and (@selectedNetwork isnt @selectedNetworkTemp or @selectedFleet isnt @selectedFleetTemp or @clearZoom)
       @selectedNetworkTemp = @selectedNetwork
       @selectedFleetTemp = @selectedFleet
       if trips.length > 0
@@ -1095,7 +1241,11 @@ class TimeSeries
          window.map.fitBounds circle.getBounds()
          window.timeSeries.togglesChanged = true
          window.timeSeries.zoomChanged = true
-         window.timeSeries.update()
+         window.timeSeries.update(
+           () =>
+             window.timeSeries.togglesChanged = false
+             window.timeSeries.zoomChanged = false
+         )
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
@@ -1140,7 +1290,12 @@ class TimeSeries
           @togglesChanged = true
           @clearZoom = true
           @zoomChanged = true
-          @update()
+          @update(
+              () =>
+                @togglesChanged = false
+                @clearZoom = false
+                @zoomChanged = false
+          )
 
   loadCharts: () =>
     if @forecastDataMode
