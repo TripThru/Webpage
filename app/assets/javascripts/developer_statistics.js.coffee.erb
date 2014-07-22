@@ -729,7 +729,7 @@ class TimeSeries
                   if _callback?
                     _callback()
           )
-      else if (@dateChanged or @togglesChanged or @chartTypeChanged or @dataModeChanged) and not @updatingTimeRange
+      else if not @realtimeMode and not @updatingTimeRange and (@dateChanged or @togglesChanged or @chartTypeChanged or @dataModeChanged)
           @showLoadingIndicator()
           @updatingTimeRange = true
           @updateTimeRange(
