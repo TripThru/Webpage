@@ -70,7 +70,7 @@ class TimeSeries
     $('#start-date').data('DateTimePicker').setDate(@startDate)
     $('#end-date').data('DateTimePicker').setDate(@endDate)
 
-    @tripsRequestedSelected =     true
+    @tripsRequestedSelected =   true
     @tripsCompletedSelected =   true
     @tripsCancelledSelected =   true
     @tripsRejectedSelected =    true
@@ -821,8 +821,19 @@ class TimeSeries
           countError = 0
           latenessAverage = 0
 
-          avg = countByStatus.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
-          latenessAverage = if avg.length == 0 then 0 else avg[0].lateness
+          latenessAverages = countByStatus.filter((v) ->
+                      (v._id.Status == 'Complete' or
+                      v._id.Status == 'Cancelled' or
+                      v._id.Status == 'Rejected' or
+                      v._id.Status == 'Error') and
+                      v._id.Interval == parseInt(id))
+          latenessAverage = 0
+          for val in latenessAverages
+            latenessAverage += val.lateness
+          if latenessAverages.length > 0
+            latenessAverage /= latenessAverages.length
+            latenessAverage /= 60000
+
           count = countByStatus.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
           countComplete = if count.length == 0 then 0 else count[0].count
           count = countByStatus.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
@@ -833,7 +844,7 @@ class TimeSeries
           countError = if count.length == 0 then 0 else count[0].count
           count = totalCount.filter((v) -> v._id.Interval == parseInt(id))
           countRequested = if count.length == 0 then 0 else count[0].count
-          total = countRequested
+          total = countComplete + countCancelled + countRejected + countError
 
           if not @tripsCompletedSelected
             countComplete = 0
@@ -849,7 +860,7 @@ class TimeSeries
             latenessAverage = 0
 
           if @percentageMode
-              countRequested = if countRequested > 0 then countRequested * 100 / total else 0
+              countRequested = if countRequested > 0 then 100 else 0
               countComplete = if countComplete > 0 then countComplete * 100 / total else 0
               countCancelled = if countCancelled > 0 then countCancelled * 100 / total else 0
               countRejected = if countRejected > 0 then countRejected * 100 / total else 0
