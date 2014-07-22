@@ -335,7 +335,7 @@ class TimeSeries
             @clearZoom = false
         )
 
-    #@update()
+    @update()
 
   toggleRealTime: () =>
       @togglesChanged = true
@@ -1378,7 +1378,7 @@ class TimeSeries
 $('.developer.statistics').ready ->
   window.timeSeries = new TimeSeries(new TripThru($('#access_token').val()), 'historic-chart', 'forecast-chart', 'heat-map')
 
-  #clearInterval(window.tripthruinterval)
-  #window.tripthruinterval = setInterval =>
-  #  timeSeries.update()
-  #, 15000
+  clearInterval(window.tripthruinterval)
+  window.tripthruinterval = setInterval =>
+    timeSeries.update()
+  , 15000
