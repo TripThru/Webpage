@@ -116,7 +116,6 @@ class TimeSeries
     @ratingPassengers = { name: 'Passengers rating', id: 'Passengers rating', data: []}
 
     @loadCharts()
-
     $('#forecast-chart-container').hide()
     @setFilterEvents()
 
@@ -336,7 +335,7 @@ class TimeSeries
             @clearZoom = false
         )
 
-    @update()
+    #@update()
 
   toggleRealTime: () =>
       @togglesChanged = true
@@ -691,7 +690,7 @@ class TimeSeries
         serie.load = false
         return
 
-  update: (callback) =>
+  update: (_callback) =>
       if @chartTypeChanged and @chartType == 'series'
           $('#map-container').hide()
           $('#time-series-container').show()
@@ -702,7 +701,7 @@ class TimeSeries
           if !window.map?
               @loadMap()
               google.maps.event.addDomListenerOnce(window.map, "tilesloaded", () =>
-                  google.maps.event.addDomListenerOnce(window.map, "tilesloaded", @update(callback)))
+                  google.maps.event.addDomListenerOnce(window.map, "tilesloaded", @update(_callback)))
               return
           else
               google.maps.event.trigger(window.map,'resize')
@@ -727,8 +726,8 @@ class TimeSeries
           @updateRealTime(
               () =>
                   @updatingRealTime = false
-                  if callback?
-                    callback()
+                  if _callback?
+                    _callback()
           )
       else if (@dateChanged or @togglesChanged or @chartTypeChanged or @dataModeChanged) and not @updatingTimeRange
           @showLoadingIndicator()
@@ -736,18 +735,18 @@ class TimeSeries
           @updateTimeRange(
               () =>
                 @updatingTimeRange = false
-                if callback?
-                  callback()
+                if _callback?
+                  _callback()
           )
       else
-        if callback?
-          callback()
+        if _callback?
+          _callback()
       
-  updateRealTime: (callback) =>
+  updateRealTime: (_callback) =>
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
     $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
       $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
-        @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals), callback
+        @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals), _callback
 
   getTripsCountRealTimeQuery: () =>
       startDate = new Date()
@@ -784,12 +783,12 @@ class TimeSeries
 
       return [query, dates, intervalIds]
 
-  updateTimeRange: (callback) =>
+  updateTimeRange: (_callback) =>
     if not @selectedStatsChanged
       [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
         $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
-          @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals), callback
+          @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals), _callback
     else
       if @tripsRequestedSelected
         @enableSerie('Requested trips')
@@ -811,7 +810,7 @@ class TimeSeries
         @enableSerie('Error trips')
       else
         @disableSerie('Error trips')
-      @setSeries @series, callback
+      @setSeries @series, _callback
 
   getTripsCountTimeRangeQuery: (startDate, endDate) =>
     startMoment = moment(startDate)
@@ -1010,7 +1009,7 @@ class TimeSeries
       })
       return updateData
 
-  setSeries: (series, callback) =>
+  setSeries: (series, _callback) =>
     @series = series
     if @chartType == 'series'
         for serie in series
@@ -1038,8 +1037,8 @@ class TimeSeries
                 @historicChart.yAxis[0].setExtremes(0, 100)
         @refreshCharts()
         @hideLoadingIndicator()
-        if callback?
-          callback()
+        if _callback?
+          _callback()
     else
         query = ''
         if @realtimeMode
@@ -1050,14 +1049,14 @@ class TimeSeries
           else
             @drawHeatMap()
             @hideLoadingIndicator()
-            if callback?
-              callback()
+            if _callback?
+              _callback()
             return
         $.get '/mongo_db/trips_list?' + query , (trips) =>
           @loadHeatMapTrips(trips)
           @hideLoadingIndicator()
-          if callback?
-            callback()
+          if _callback?
+            _callback()
 
   shouldUpdateTimeRangeTrips: () =>
     return @zoomChanged or @dateChanged or @timeModeChanged or (Object.keys(@tripsById).length == 0) or (@selectedFleet != @selectedFleetTemp) or (@selectedNetwork != @selectedNetworkTemp)
@@ -1379,7 +1378,7 @@ class TimeSeries
 $('.developer.statistics').ready ->
   window.timeSeries = new TimeSeries(new TripThru($('#access_token').val()), 'historic-chart', 'forecast-chart', 'heat-map')
 
-  clearInterval(window.tripthruinterval)
-  window.tripthruinterval = setInterval =>
-    timeSeries.update()
-  , 15000
+  #clearInterval(window.tripthruinterval)
+  #window.tripthruinterval = setInterval =>
+  #  timeSeries.update()
+  #, 15000
