@@ -572,7 +572,7 @@ class TimeSeries
             if @selectedStat != 'Lateness'
               $('.filter-button').removeClass('active')
               $('#service-lateness-filter-button').addClass('active')
-              @selectedStat = 'Out service'
+              @selectedStat = 'Lateness'
               @togglesChanged = true
               @selectedStatsChanged = true
               @update()
@@ -808,6 +808,7 @@ class TimeSeries
       @tripsRejected.data = []
       @tripsCancelled.data = []
       @tripsError.data = []
+      @serviceLateness.data = []
 
       @YAxisMax = 0
       i = 0
@@ -818,7 +819,10 @@ class TimeSeries
           countCancelled = 0
           countRejected = 0
           countError = 0
+          latenessAverage = 0
 
+          avg = countByStatus.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
+          latenessAverage = if avg.length == 0 then 0 else avg[0].lateness
           count = countByStatus.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
           countComplete = if count.length == 0 then 0 else count[0].count
           count = countByStatus.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
@@ -841,6 +845,8 @@ class TimeSeries
             countError = 0
           if not @tripsRequestedSelected
             countRequested = 0
+          if not @serviceLatenessSelected
+            latenessAverage = 0
 
           if @percentageMode
               countRequested = if countRequested > 0 then countRequested * 100 / total else 0
@@ -864,6 +870,9 @@ class TimeSeries
           if @tripsErrorSelected
               @tripsError.data.push [date, countError]
               @YAxisMax = if countError > @YAxisMax then countError else @YAxisMax
+          if @serviceLatenessSelected
+              @serviceLateness.data.push [date, latenessAverage]
+              @YAxisMax = if latenessAverage > @YAxisMax then latenessAverage else @YAxisMax
 
           i++
 
@@ -892,6 +901,11 @@ class TimeSeries
           name: 'Error trips'
           data: @tripsError
           load: @tripsErrorSelected
+      })
+      updateData.push({
+          name: 'Lateness'
+          data: @serviceLateness
+          load: @serviceLatenessSelected
       })
       return updateData
 

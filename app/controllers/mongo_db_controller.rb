@@ -68,6 +68,7 @@ class MongoDbController < ApplicationController
         '$project' => {
             'Status' => 1,
             date_field => 1,
+            'LatenessMilliseconds' => 1,
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
             'Interval' => interval
@@ -181,6 +182,7 @@ class MongoDbController < ApplicationController
     group = {
         '$group' => {
           '_id' => id,
+          'lateness' => { '$avg' => '$LatenessMilliseconds'},
           'count' => { '$sum' => 1 }
         }
     }
