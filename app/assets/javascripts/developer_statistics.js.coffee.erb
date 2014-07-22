@@ -49,9 +49,11 @@ class TimeSeries
     @fleetChanged = false
     @selectedStatsChanged = false
     @zoomChanged = false
+    @updatingRealTime = false
     @updatingTimeRange = false
     @realtimeModeInterval  = {
         seconds: true
+        minutes: false
         hours: false
         days: false
         weeks: false
