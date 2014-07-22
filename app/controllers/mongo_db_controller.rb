@@ -10,6 +10,11 @@ class MongoDbController < ApplicationController
     documents_limit = 200000
     by_status = false
 
+    date_field = 'LastUpdate'
+    if params[:by_creation_time] == 'true'
+      date_field = 'Creation'
+    end
+
     if params[:by_status] != nil
       by_status = params[:by_status] == 'true' ? true : false
     end
@@ -30,39 +35,39 @@ class MongoDbController < ApplicationController
       when 'second'
         interval['$divide'] = [
             { '$add' => [
-                { '$multiply' => [ { '$hour' => '$LastUpdate' }, 3600] },
-                { '$multiply' => [ { '$minute' => '$LastUpdate' }, 60] },
-                { '$second' => '$LastUpdate' }
+                { '$multiply' => [ { '$hour' => '$'+date_field }, 3600] },
+                { '$multiply' => [ { '$minute' => '$'+date_field }, 60] },
+                { '$second' => '$'+date_field }
             ]},
             params[:bucketSize].to_f
         ]
       when 'minute'
         interval['$divide'] = [
             { '$add' => [
-                { '$multiply' => [ { '$hour' => '$LastUpdate' }, 60] },
-                { '$minute' => '$LastUpdate' }
+                { '$multiply' => [ { '$hour' => '$'+date_field }, 60] },
+                { '$minute' => '$'+date_field }
             ]},
             params[:bucketSize].to_f
         ]
       when 'hour'
         interval['$divide'] = [
             { '$add' => [
-                { '$multiply' => [ { '$dayOfYear' => '$LastUpdate' }, 24] },
-                { '$hour' => '$LastUpdate' }
+                { '$multiply' => [ { '$dayOfYear' => '$'+date_field }, 24] },
+                { '$hour' => '$'+date_field }
             ]},
             params[:bucketSize].to_f
         ]
       when 'day'
-        interval = { '$dayOfYear' => '$LastUpdate' }
+        interval = { '$dayOfYear' => '$'+date_field }
       when 'week'
-        interval = { '$week' => '$LastUpdate' }
+        interval = { '$week' => '$'+date_field }
     end
 
 
     project = {
         '$project' => {
             'Status' => 1,
-            'LastUpdate' => 1,
+            date_field => 1,
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
             'Interval' => interval
@@ -71,15 +76,14 @@ class MongoDbController < ApplicationController
 
     match = { }
     if params[:startDate] != nil or params[:endDate] != nil
-      match['$match'] = { 'LastUpdate' => { } }
+      match['$match'] = { date_field => { } }
       if params[:startDate] != nil
-        match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
+        match['$match'][date_field]['$gte'] = Time.at(params[:startDate].to_f)
       end
       if params[:endDate] != nil
-        match['$match']['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
+        match['$match'][date_field]['$lte'] = Time.at(params[:endDate].to_f)
       end
     end
-
 
     if roleUser == 'partner'
       if params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil and params[:localNetworkId] == nil
@@ -206,6 +210,12 @@ class MongoDbController < ApplicationController
   def trips_list
     geo_near = { }
     documents_limit = 200000
+
+    date_field = 'LastUpdate'
+    if params[:by_creation_time] == 'true'
+      date_field = 'Creation'
+    end
+
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       geo_near['$geoNear'] = {
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
@@ -220,7 +230,7 @@ class MongoDbController < ApplicationController
     project = {
         '$project' => {
             'Status' => 1,
-            'LastUpdate' => 1,
+            date_field => 1,
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
             'PickupLocation' => 1,
@@ -230,12 +240,12 @@ class MongoDbController < ApplicationController
 
     match = { }
     if params[:startDate] != nil or params[:endDate] != nil
-      match['$match'] = { 'LastUpdate' => { } }
+      match['$match'] = { date_field => { } }
       if params[:startDate] != nil
-        match['$match']['LastUpdate']['$gte'] = Time.at(params[:startDate].to_f)
+        match['$match'][date_field]['$gte'] = Time.at(params[:startDate].to_f)
       end
       if params[:endDate] != nil
-        match['$match']['LastUpdate']['$lte'] = Time.at(params[:endDate].to_f)
+        match['$match'][date_field]['$lte'] = Time.at(params[:endDate].to_f)
       end
     end
 

@@ -679,7 +679,7 @@ class TimeSeries
   updateRealTime: () =>
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
     $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
-      $.get '/mongo_db/trips_count?' + query + '&by_status=false', (totalCount) =>
+      $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
         @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals)
         @updatingRealTime = false
 
@@ -722,7 +722,7 @@ class TimeSeries
     if not @selectedStatsChanged
       [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
-        $.get '/mongo_db/trips_count?' + query + '&by_status=false', (totalCount) =>
+        $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
           @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals)
     else
       if @tripsRequestedSelected
