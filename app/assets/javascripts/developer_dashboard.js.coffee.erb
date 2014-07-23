@@ -392,7 +392,6 @@ class ActivityLog
           @lastLogId++
           [id, logString] = @getLogTag(@lastLogId, log)
           $('#' + @containerId).prepend(logString)
-          $('#' + id).slideDown();
 
         Prism.highlightAll()
         @latestAddedLogDate = logList[logList.length-1].time
@@ -407,7 +406,7 @@ class ActivityLog
     if log.response == ''
         log.response = '{}'
     logString = '
-                            <div style="display: none" class="accordion-group" id="' + id + '">
+                            <div class="accordion-group" id="' + id + '">
                                 <div class="accordion-heading">
                                     <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion">
                                         ' + log.time.split('.')[0] + ' | ' + log.messages[0].text +  '
