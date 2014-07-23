@@ -75,7 +75,6 @@ class TripList
 
     @tripsInListById[trip.getId()] = trip
     $('#' + @containerId).prepend @getTripTag(trip)
-    $('#' + trip.getContainerId()).slideDown()
 
   updateTrip: (trip) =>
     if trip.getId() in @pendingUpdateTripsIds and trip.getPickupLocation().getAddress()?
@@ -84,14 +83,13 @@ class TripList
 
   removeTrip: (trip) =>
     delete @tripsInListById[trip.getId()]
-    $('#' + trip.getContainerId()).slideUp()
-
+    $('#' + trip.getContainerId()).remove()
 
   getTripTag: (trip) =>
     tripPickupLocation = trip.getPickupLocation().getAddress()
     pickupLocation = if tripPickupLocation then tripPickupLocation else 'loading...'
     '
-                <div class="well trip" id="' + trip.getContainerId() + '" style="display:none;">
+                <div class="well trip" id="' + trip.getContainerId() + '">
                     <h1>' + trip.getId() + '</h1>
                     <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
                     <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
