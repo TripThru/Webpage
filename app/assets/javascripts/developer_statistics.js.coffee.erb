@@ -1082,39 +1082,40 @@ class TimeSeries
               }
         intensity = trips.length
       else
-        locationLateness = {}
-        for id ,trip of @tripsById
-          if @selectedStat.isPickupStat
-            locationId = '<' + trip.pickupLocation.lat + ',' + trip.pickupLocation.lng + '>'
-            location = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
-          else
-            locationId = '<' + trip.dropoffLocation.lat + ',' + trip.dropoffLocation.lng + '>'
-            location = new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-          lateness = trip.getLatenessMilliseconds()/60000
-          if !locationLateness[locationId]?
-            locationLateness[locationId] = {location: location, averageLateness: lateness, count: 1}
-            trips.push {
-              lat: new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
-              lng: new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-            }
-          else
-            locationLateness[locationId].averageLateness += lateness
-            locationLateness[locationId].count++
+        if @selectedStat.name == @serviceLateness.name
+          locationLateness = {}
+          for id ,trip of @tripsById
+            if @selectedStat.isPickupStat
+              locationId = '<' + trip.pickupLocation.lat + ',' + trip.pickupLocation.lng + '>'
+              location = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
+            else
+              locationId = '<' + trip.dropoffLocation.lat + ',' + trip.dropoffLocation.lng + '>'
+              location = new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
+            lateness = trip.getLatenessMilliseconds()/60000
+            if !locationLateness[locationId]?
+              locationLateness[locationId] = {location: location, averageLateness: lateness, count: 1}
+              trips.push {
+                lat: new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
+                lng: new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
+              }
+            else
+              locationLateness[locationId].averageLateness += lateness
+              locationLateness[locationId].count++
 
-        max = 0
-        for id, location of locationLateness
-          location.averageLateness = location.averageLateness/location.count
-          if location.averageLateness > max
-            max = location.averageLateness
+          max = 0
+          for id, location of locationLateness
+            location.averageLateness = location.averageLateness/location.count
+            if location.averageLateness > max
+              max = location.averageLateness
 
-        for id, location of locationLateness
-          count = Math.floor(location.averageLateness * 100 / max)
-          for i in [0..count]
-            taxiData.push {
-              location: location.location,
-              weight: count * 0.2
-            }
-          intensity++
+          for id, location of locationLateness
+            count = Math.floor(location.averageLateness * 100 / max)
+            for i in [0..count]
+              taxiData.push {
+                location: location.location,
+                weight: count * 0.2
+              }
+            intensity++
 
       @setMapZoom(trips)
       @heatmap.setMap null
