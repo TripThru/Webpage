@@ -236,7 +236,8 @@ class MongoDbController < ApplicationController
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
             'PickupLocation' => 1,
-            'DropoffLocation' => 1
+            'DropoffLocation' => 1,
+            'LatenessMilliseconds' => 1
         }
     }
 

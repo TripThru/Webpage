@@ -123,7 +123,7 @@ class window.Location
 class window.Trip
 
     constructor: (@id, @passengerName, @pickupTime, @pickupLocation, @origin, @servicing, @status, @ETA,
-                  @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation) ->
+                  @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation, @latenessMilliseconds) ->
         @containerId = id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
         @passengerRating = (Math.random() * 2.5) + 2.5
         @driverRating = (Math.random() * 2.5) + 2.5
@@ -166,4 +166,6 @@ class window.Trip
         @historyEnrouteList
     getHistoryPickUpList: () =>
         @historyPickUpList
+    getLatenessMilliseconds: () =>
+        @latenessMilliseconds
 

@@ -323,13 +323,13 @@ class TimeSeries
 
     @update()
 
-  createSeriesObject: (name, isPickupStat, basedOnLocationConcentration, show) =>
+  createSeriesObject: (name, isPickupStat, isBasedOnLocationConcentration, show) =>
     stat = {
       name: name
       id: name
       data: []
       isPickupStat: isPickupStat
-      basedOnLocationConcentration: basedOnLocationConcentration
+      isBasedOnLocationConcentration: isBasedOnLocationConcentration
       show: show
     }
     @stats.push stat
@@ -1050,27 +1050,29 @@ class TimeSeries
 
   drawHeatMap: () =>
       taxiData = []
-      weight = 0
-      max = 0
-      for value in @selectedStat.data
-        weight += value[1]
-        if value[1] > max
-          max = value[1]
-      weight /= @selectedStat.data.length
-      weight *= 100 / max
       trips = []
-      for key of @tripsById
-          trip = @tripsById[key]
-          locationPickUp = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
+
+      if @selectedStat.isBasedOnLocationConcentration
+        weight = 0
+        max = 0
+        for value in @selectedStat.data
+          weight += value[1]
+          if value[1] > max
+            max = value[1]
+        weight /= @selectedStat.data.length
+        weight *= 100 / max
+
+        for id, trip of @tripsById
+          locationPickup = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
           locationDropoff =  new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-          if !window.selectedGeographicZone? or (window.selectedGeographicZone.isHere(locationPickUp) and window.selectedGeographicZone.isHere(locationDropoff))
+          if !window.selectedGeographicZone? or (window.selectedGeographicZone.isHere(locationPickup) and window.selectedGeographicZone.isHere(locationDropoff))
             trips.push {
-                  lat: trip.pickupLocation.lat
-                  lng: trip.pickupLocation.lng
-                }
+              lat: trip.pickupLocation.lat
+              lng: trip.pickupLocation.lng
+            }
             if @selectedStat.isPickupStat
               taxiData.push {
-                location: locationPickUp,
+                location: locationPickup,
                 weight: weight
               }
             else
@@ -1078,6 +1080,41 @@ class TimeSeries
                 location: locationDropoff,
                 weight: weight
               }
+        intensity = trips.length
+      else
+        locationLateness = {}
+        for id ,trip of @tripsById
+          if @selectedStat.isPickupStat
+            locationId = '<' + trip.pickupLocation.lat + ',' + trip.pickupLocation.lng + '>'
+            location = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
+          else
+            locationId = '<' + trip.dropoffLocation.lat + ',' + trip.dropoffLocation.lng + '>'
+            location = new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
+          lateness = trip.getLatenessMilliseconds()/60000
+          if !locationLateness[locationId]?
+            locationLateness[locationId] = {location: location, averageLateness: lateness, count: 1}
+            trips.push {
+              lat: new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
+              lng: new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
+            }
+          else
+            locationLateness[locationId].averageLateness += lateness
+            locationLateness[locationId].count++
+
+        max = 0
+        for id, location of locationLateness
+          location.averageLateness = location.averageLateness/location.count
+          if location.averageLateness > max
+            max = location.averageLateness
+
+        for id, location of locationLateness
+          count = Math.floor(location.averageLateness * 100 / max)
+          for i in [0..count]
+            taxiData.push {
+              location: location.location,
+              weight: count * 0.2
+            }
+          intensity++
 
       @setMapZoom(trips)
       @heatmap.setMap null
@@ -1085,7 +1122,7 @@ class TimeSeries
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
           radius: 20,
-          maxIntensity: trips.length,
+          maxIntensity: intensity,
           gradient: gradient,
       })
       @heatmap.setMap window.map
@@ -1131,6 +1168,7 @@ class TimeSeries
               driverLocation
               new Location(newTrip.DropoffLocation.Lat, newTrip.DropoffLocation.Lng, null, false)
               driverInitialLocation
+              newTrip.LatenessMilliseconds
       )
       @tripsById[trip.getId()] = trip
 
