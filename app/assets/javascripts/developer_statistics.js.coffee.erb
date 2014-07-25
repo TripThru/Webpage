@@ -25,7 +25,7 @@ class TimeSeries
     @fleets = {}
     @drivers = {}
     @tripsById = {}
-    @series = null
+    @stats = []
 
 
     @selectedStat = 'tripsCompleted'
@@ -74,20 +74,6 @@ class TimeSeries
     $('#start-date').data('DateTimePicker').setDate(@startDate)
     $('#end-date').data('DateTimePicker').setDate(@endDate)
 
-    @tripsRequestedSelected =   true
-    @tripsCompletedSelected =   true
-    @tripsCancelledSelected =   true
-    @tripsRejectedSelected =    true
-    @tripsErrorSelected =       true
-    @timeEnrouteSelected =      false
-    @timeOccupiedSelected =     false
-    @timeIdleSelected =         false
-    @mileageEnrouteSelected =   false
-    @mileageOccupiedSelected =  false
-    @serviceLatenessSelected =  false
-    @ratingDriversSelected =    false
-    @ratingPassengersSelected = false
-
     $('#trips-requested-filter-button').addClass('active')
     $('#trips-completed-filter-button').addClass('active')
     $('#trips-rejected-filter-button').addClass('active')
@@ -101,19 +87,19 @@ class TimeSeries
     $('#datepicker>input').attr("disabled", true)
     $('#time-range-panel').addClass('hidden')
 
-    @tripsRequested =   { name: 'Requested trips', id: 'Requested trips', data: []}
-    @tripsCompleted = { name: 'Completed trips', id: 'Completed trips', data: []}
-    @tripsCancelled = { name: 'Cancelled trips', id: 'Cancelled trips', data: []}
-    @tripsRejected =  { name: 'Rejected trips', id: 'Rejected trips', data: []}
-    @tripsError =     { name: 'Error trips', id: 'Error trips', data: []}
-    @timeEnroute =      { name: 'Time enroute', id: 'Time enroute', data: []}
-    @timeOccupied =     { name: 'Time occupied', id: 'Time occupied', data: []}
-    @timeIdle =         { name: 'Time idle', id: 'Time idle', data: []}
-    @mileageEnroute =   { name: 'Mileage enroute', id: 'Mileage enroute', data: []}
-    @mileageOccupied =  { name: 'Mileage occupied', id: 'Mileage occupied', data: []}
-    @serviceLateness =  { name: 'Lateness', id: 'Lateness', data: []}
-    @ratingDrivers =    { name: 'Drivers rating', id: 'Drivers rating', data: []}
-    @ratingPassengers = { name: 'Passengers rating', id: 'Passengers rating', data: []}
+    @tripsRequested =   @createSeriesObject('Requested trips',  true, true, true)
+    @tripsCompleted =   @createSeriesObject('Completed trips',  false, true, true)
+    @tripsCancelled =   @createSeriesObject('Cancelled trips',  true, true, true)
+    @tripsRejected =    @createSeriesObject('Rejected trips',   true, true, true)
+    @tripsError =       @createSeriesObject('Error trips',      true, true, true)
+    @serviceLateness =  @createSeriesObject('Lateness',         true, false, false)
+    @timeEnroute =      @createSeriesObject('Time enroute',     true, true, false)
+    @timeOccupied =     @createSeriesObject('Time occupied',    true, true, false)
+    @timeIdle =         @createSeriesObject('Time idle',        true, true, false)
+    @mileageEnroute =   @createSeriesObject('Mileage enroute',  true, true, false)
+    @mileageOccupied =  @createSeriesObject('Mileage occupied', true, true, false)
+    @ratingDrivers =    @createSeriesObject('Drivers rating',   true, true, false)
+    @ratingPassengers = @createSeriesObject('Passengers rating',true, true, false)
 
     @loadCharts()
     $('#forecast-chart-container').hide()
@@ -337,6 +323,18 @@ class TimeSeries
 
     @update()
 
+  createSeriesObject: (name, isPickupStat, basedOnLocationConcentration, show) =>
+    stat = {
+      name: name
+      id: name
+      data: []
+      isPickupStat: isPickupStat
+      basedOnLocationConcentration: basedOnLocationConcentration
+      show: show
+    }
+    @stats.push stat
+    return stat
+
   toggleRealTime: () =>
       @togglesChanged = true
       if @realtimeMode
@@ -354,7 +352,7 @@ class TimeSeries
 
           $('#trips-requested-filter-button').off('click').on 'click', =>
             $('#trips-requested-filter-button').toggleClass('active')
-            @tripsRequestedSelected= not @tripsRequestedSelected
+            @tripsRequested.show= not @tripsRequested.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -365,7 +363,7 @@ class TimeSeries
           
           $('#trips-completed-filter-button').off('click').on 'click', =>
             $('#trips-completed-filter-button').toggleClass('active')
-            @tripsCompletedSelected= not @tripsCompletedSelected
+            @tripsCompleted.show= not @tripsCompleted.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -376,7 +374,7 @@ class TimeSeries
 
           $('#trips-rejected-filter-button').off('click').on 'click', =>
             $('#trips-rejected-filter-button').toggleClass('active')
-            @tripsRejectedSelected= not @tripsRejectedSelected
+            @tripsRejected.show= not @tripsRejected.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -387,7 +385,7 @@ class TimeSeries
 
           $('#trips-cancelled-filter-button').off('click').on 'click', =>
             $('#trips-cancelled-filter-button').toggleClass('active')
-            @tripsCancelledSelected= not @tripsCancelledSelected
+            @tripsCancelled.show= not @tripsCancelled.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -398,7 +396,7 @@ class TimeSeries
 
           $('#trips-error-filter-button').off('click').on 'click', =>
             $('#trips-error-filter-button').toggleClass('active')
-            @tripsErrorSelected= not @tripsErrorSelected
+            @tripsError.show= not @tripsError.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -409,7 +407,7 @@ class TimeSeries
 
           $('#time-enroute-filter-button').off('click').on 'click', =>
             $('#time-enroute-filter-button').toggleClass('active')
-            @timeEnrouteSelected = not @timeEnrouteSelected
+            @timeEnroute.show = not @timeEnroute.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -420,7 +418,7 @@ class TimeSeries
 
           $('#time-occupied-filter-button').off('click').on 'click', =>
             $('#time-occupied-filter-button').toggleClass('active')
-            @timeOccupiedSelected = not @timeOccupiedSelected
+            @timeOccupied.show = not @timeOccupied.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -431,7 +429,7 @@ class TimeSeries
 
           $('#time-idle-filter-button').off('click').on 'click', =>
             $('#time-idle-filter-button').toggleClass('active')
-            @timeIdleSelected = not @timeIdleSelected
+            @timeIdle.show = not @timeIdle.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -442,7 +440,7 @@ class TimeSeries
 
           $('#mileage-enroute-filter-button').off('click').on 'click', =>
             $('#mileage-enroute-filter-button').toggleClass('active')
-            @mileageEnrouteSelected = not @mileageEnrouteSelected
+            @mileageEnroute.show = not @mileageEnroute.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -453,7 +451,7 @@ class TimeSeries
 
           $('#mileage-occupied-filter-button').off('click').on 'click', =>
             $('#mileage-occupied-filter-button').toggleClass('active')
-            @mileageOccupiedSelected = not @mileageOccupiedSelected
+            @mileageOccupied.show = not @mileageOccupied.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -464,7 +462,7 @@ class TimeSeries
 
           $('#service-lateness-filter-button').off('click').on 'click', =>
             $('#service-lateness-filter-button').toggleClass('active')
-            @serviceLatenessSelected = not @serviceLatenessSelected
+            @serviceLateness.show = not @serviceLateness.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -475,7 +473,7 @@ class TimeSeries
 
           $('#ratings-drivers-filter-button').off('click').on 'click', =>
             $('#ratings-drivers-filter-button').toggleClass('active')
-            @ratingDriversSelected = not @ratingDriversSelected
+            @ratingDrivers.show = not @ratingDrivers.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -486,7 +484,7 @@ class TimeSeries
 
           $('#ratings-passengers-filter-button').off('click').on 'click', =>
             $('#ratings-passengers-filter-button').toggleClass('active')
-            @ratingPassengersSelected = not @ratingPassengersSelected
+            @ratingPassengers.show = not @ratingPassengers.show
             @togglesChanged = true
             @selectedStatsChanged = true
             @update(
@@ -495,15 +493,15 @@ class TimeSeries
                 @selectedStatsChanged = false
             )
       else
-          @selectedStat = 'Completed trips'
+          @selectedStat = @tripsCompleted
           $('.filter-button').removeClass('active')
           $('#trips-completed-filter-button').addClass('active')
 
           $('#trips-requested-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Requested trips'
+            if @selectedStat.name != @tripsRequested.name
               $('.filter-button').removeClass('active')
               $('#trips-requested-filter-button').addClass('active')
-              @selectedStat = 'Requested trips'
+              @selectedStat = @tripsRequested
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -513,10 +511,10 @@ class TimeSeries
               )
 
           $('#trips-completed-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Completed trips'
+            if @selectedStat.name != @tripsCompleted.name
               $('.filter-button').removeClass('active')
               $('#trips-completed-filter-button').addClass('active')
-              @selectedStat = 'Completed trips'
+              @selectedStat = @tripsCompleted
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -527,10 +525,10 @@ class TimeSeries
 
 
           $('#trips-rejected-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Rejected trips'
+            if @selectedStat.name != @tripsRejected.name
               $('.filter-button').removeClass('active')
               $('#trips-rejected-filter-button').addClass('active')
-              @selectedStat = 'Rejected trips'
+              @selectedStat = @tripsRejected
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -541,10 +539,10 @@ class TimeSeries
 
 
           $('#trips-cancelled-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Cancelled trips'
+            if @selectedStat.name != @tripsCancelled.name
               $('.filter-button').removeClass('active')
               $('#trips-cancelled-filter-button').addClass('active')
-              @selectedStat = 'Cancelled trips'
+              @selectedStat = @tripsCancelled
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -555,10 +553,10 @@ class TimeSeries
 
 
           $('#trips-error-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Error trips'
+            if @selectedStat.name != @tripsError.name
               $('.filter-button').removeClass('active')
               $('#trips-error-filter-button').addClass('active')
-              @selectedStat = 'Error trips'
+              @selectedStat = @tripsError
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -569,10 +567,10 @@ class TimeSeries
 
 
           $('#time-enroute-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Time enroute'
+            if @selectedStat.name != @timeEnroute.name
               $('.filter-button').removeClass('active')
               $('#time-enroute-filter-button').addClass('active')
-              @selectedStat = 'Time enroute'
+              @selectedStat = @timeEnroute
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -583,10 +581,10 @@ class TimeSeries
 
 
           $('#time-occupied-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Time occupied'
+            if @selectedStat.name != @timeOccupied.name
               $('.filter-button').removeClass('active')
               $('#time-occupied-filter-button').addClass('active')
-              @selectedStat = 'Time occupied'
+              @selectedStat = @timeOccupied
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -597,10 +595,10 @@ class TimeSeries
 
 
           $('#time-idle-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Time idle'
+            if @selectedStat.name != @timeIdle.name
               $('.filter-button').removeClass('active')
               $('#time-idle-filter-button').addClass('active')
-              @selectedStat = 'Time idle'
+              @selectedStat = @timeIdle
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -611,10 +609,10 @@ class TimeSeries
 
 
           $('#mileage-enroute-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Mileage enroute'
+            if @selectedStat.name != @mileageEnroute.name
               $('.filter-button').removeClass('active')
               $('#mileage-enroute-filter-button').addClass('active')
-              @selectedStat = 'Mileage enroute'
+              @selectedStat = @mileageEnroute
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -625,10 +623,10 @@ class TimeSeries
 
 
           $('#mileage-occupied-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Mileage occupied'
+            if @selectedStat.name != @mileageOccupied.name
                 $('.filter-button').removeClass('active')
                 $('#mileage-occupied-filter-button').addClass('active')
-                @selectedStat = 'Mileage occupied'
+                @selectedStat = @mileageOccupied
                 @togglesChanged = true
                 @selectedStatsChanged = true
                 @update(
@@ -638,10 +636,10 @@ class TimeSeries
                 )
 
           $('#service-lateness-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Lateness'
+            if @selectedStat.name != @serviceLateness.name
               $('.filter-button').removeClass('active')
               $('#service-lateness-filter-button').addClass('active')
-              @selectedStat = 'Lateness'
+              @selectedStat = @serviceLateness
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -652,10 +650,10 @@ class TimeSeries
 
 
           $('#ratings-drivers-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Rating drivers'
+            if @selectedStat.name != @ratingDrivers.name
               $('.filter-button').removeClass('active')
               $('#ratings-drivers-filter-button').addClass('active')
-              @selectedStat = 'Rating drivers'
+              @selectedStat = @ratingDrivers
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -666,10 +664,10 @@ class TimeSeries
 
 
           $('#ratings-passengers-filter-button').off('click').on 'click', =>
-            if @selectedStat != 'Rating passengers'
+            if @selectedStat.name != @ratingPassengers.name
               $('.filter-button').removeClass('active')
               $('#ratings-passengers-filter-button').addClass('active')
-              @selectedStat = 'Rating passengers'
+              @selectedStat = @ratingPassengers
               @togglesChanged = true
               @selectedStatsChanged = true
               @update(
@@ -677,18 +675,6 @@ class TimeSeries
                   @togglesChanged = false
                   @selectedStatsChanged = false
               )
-
-  enableSerie: (name) =>
-    for serie in @series
-      if serie.name == name
-        serie.load = true
-        return
-
-  disableSerie: (name) =>
-    for serie in @series
-      if serie.name == name
-        serie.load = false
-        return
 
   update: (_callback) =>
       if @chartTypeChanged and @chartType == 'series'
@@ -746,7 +732,7 @@ class TimeSeries
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
     $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
       $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
-        @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals), _callback
+        @setStats @mongoDbTripCountToStats(countByStatus, totalCount, dates, intervals), _callback
 
   getTripsCountRealTimeQuery: () =>
       startDate = new Date()
@@ -788,29 +774,9 @@ class TimeSeries
       [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
         $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
-          @setSeries @mongoDbTripCountToSeries(countByStatus, totalCount, dates, intervals), _callback
+          @setStats @mongoDbTripCountToStats(countByStatus, totalCount, dates, intervals), _callback
     else
-      if @tripsRequestedSelected
-        @enableSerie('Requested trips')
-      else
-        @disableSerie('Requested trips')
-      if @tripsCompletedSelected
-        @enableSerie('Completed trips')
-      else
-        @disableSerie('Completed trips')
-      if @tripsRejectedSelected
-        @enableSerie('Rejected trips')
-      else
-        @disableSerie('Rejected trips')
-      if @tripsCancelledSelected
-        @enableSerie('Cancelled trips')
-      else
-        @disableSerie('Cancelled trips')
-      if @tripsErrorSelected
-        @enableSerie('Error trips')
-      else
-        @disableSerie('Error trips')
-      @setSeries @series, _callback
+      @setStats @stats, _callback
 
   getTripsCountTimeRangeQuery: (startDate, endDate) =>
     startMoment = moment(startDate)
@@ -891,140 +857,111 @@ class TimeSeries
                   startDate.setDate(startDate.getDate() + 7)
       return [dates, intervalIds]
 
-  mongoDbTripCountToSeries: (countByStatus, totalCount, dates, intervals) =>
-      @tripsRequested.data = []
-      @tripsCompleted.data = []
-      @tripsRejected.data = []
-      @tripsCancelled.data = []
-      @tripsError.data = []
-      @serviceLateness.data = []
+  mongoDbTripCountToStats: (countByStatus, totalCount, dates, intervals) =>
 
-      @YAxisMax = 0
-      i = 0
-      for interval in intervals
-          date = dates[i]
-          id = interval
+    for stat in @stats
+      stat.data = []
+
+    @YAxisMax = 0
+    i = 0
+    for interval in intervals
+        date = dates[i]
+        id = interval
+        countComplete = 0
+        countCancelled = 0
+        countRejected = 0
+        countError = 0
+        latenessAverage = 0
+
+        latenessAverages = countByStatus.filter((v) ->
+                    (v._id.Status == 'Complete' or
+                    v._id.Status == 'Cancelled' or
+                    v._id.Status == 'Rejected' or
+                    v._id.Status == 'Error') and
+                    v._id.Interval == parseInt(id))
+        latenessAverage = 0
+        for val in latenessAverages
+          latenessAverage += val.lateness
+        if latenessAverages.length > 0
+          latenessAverage /= latenessAverages.length
+          latenessAverage /= 60000
+
+        count = countByStatus.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
+        countComplete = if count.length == 0 then 0 else count[0].count
+        count = countByStatus.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
+        countCancelled = if count.length == 0 then 0 else count[0].count
+        count = countByStatus.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
+        countRejected = if count.length == 0 then 0 else count[0].count
+        count = countByStatus.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
+        countError = if count.length == 0 then 0 else count[0].count
+        count = totalCount.filter((v) -> v._id.Interval == parseInt(id))
+        countRequested = if count.length == 0 then 0 else count[0].count
+        total = countComplete + countCancelled + countRejected + countError
+
+        if not @tripsCompleted.show
           countComplete = 0
+        if not @tripsCancelled.show
           countCancelled = 0
+        if not @tripsRejected.show
           countRejected = 0
+        if not @tripsError.show
           countError = 0
+        if not @tripsRequested.show
+          countRequested = 0
+        if not @serviceLateness.show
           latenessAverage = 0
 
-          latenessAverages = countByStatus.filter((v) ->
-                      (v._id.Status == 'Complete' or
-                      v._id.Status == 'Cancelled' or
-                      v._id.Status == 'Rejected' or
-                      v._id.Status == 'Error') and
-                      v._id.Interval == parseInt(id))
-          latenessAverage = 0
-          for val in latenessAverages
-            latenessAverage += val.lateness
-          if latenessAverages.length > 0
-            latenessAverage /= latenessAverages.length
-            latenessAverage /= 60000
+        if @percentageMode
+            countRequested = if countRequested > 0 then 100 else 0
+            countComplete = if countComplete > 0 then countComplete * 100 / total else 0
+            countCancelled = if countCancelled > 0 then countCancelled * 100 / total else 0
+            countRejected = if countRejected > 0 then countRejected * 100 / total else 0
+            countError = if countError > 0 then countError * 100 / total else 0
 
-          count = countByStatus.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
-          countComplete = if count.length == 0 then 0 else count[0].count
-          count = countByStatus.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
-          countCancelled = if count.length == 0 then 0 else count[0].count
-          count = countByStatus.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
-          countRejected = if count.length == 0 then 0 else count[0].count
-          count = countByStatus.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
-          countError = if count.length == 0 then 0 else count[0].count
-          count = totalCount.filter((v) -> v._id.Interval == parseInt(id))
-          countRequested = if count.length == 0 then 0 else count[0].count
-          total = countComplete + countCancelled + countRejected + countError
+        if @tripsRequested.show
+            @tripsRequested.data.push [date, countRequested]
+            @YAxisMax = if countRequested > @YAxisMax then countRequested else @YAxisMax
+        if @tripsCompleted.show
+            @tripsCompleted.data.push [date, countComplete]
+            @YAxisMax = if countComplete > @YAxisMax then countComplete else @YAxisMax
+        if @tripsRejected.show
+            @tripsRejected.data.push [date, countRejected]
+            @YAxisMax = if countRejected > @YAxisMax then countRejected else @YAxisMax
+        if @tripsCancelled.show
+            @tripsCancelled.data.push [date, countCancelled]
+            @YAxisMax = if countCancelled > @YAxisMax then countCancelled else @YAxisMax
+        if @tripsError.show
+            @tripsError.data.push [date, countError]
+            @YAxisMax = if countError > @YAxisMax then countError else @YAxisMax
+        if @serviceLateness.show
+            @serviceLateness.data.push [date, latenessAverage]
+            @YAxisMax = if latenessAverage > @YAxisMax then latenessAverage else @YAxisMax
 
-          if not @tripsCompletedSelected
-            countComplete = 0
-          if not @tripsCancelledSelected
-            countCancelled = 0
-          if not @tripsRejectedSelected
-            countRejected = 0
-          if not @tripsErrorSelected
-            countError = 0
-          if not @tripsRequestedSelected
-            countRequested = 0
-          if not @serviceLatenessSelected
-            latenessAverage = 0
+        i++
+    @stats
 
-          if @percentageMode
-              countRequested = if countRequested > 0 then 100 else 0
-              countComplete = if countComplete > 0 then countComplete * 100 / total else 0
-              countCancelled = if countCancelled > 0 then countCancelled * 100 / total else 0
-              countRejected = if countRejected > 0 then countRejected * 100 / total else 0
-              countError = if countError > 0 then countError * 100 / total else 0
-
-          if @tripsRequestedSelected
-              @tripsRequested.data.push [date, countRequested]
-              @YAxisMax = if countRequested > @YAxisMax then countRequested else @YAxisMax
-          if @tripsCompletedSelected
-              @tripsCompleted.data.push [date, countComplete]
-              @YAxisMax = if countComplete > @YAxisMax then countComplete else @YAxisMax
-          if @tripsRejectedSelected
-              @tripsRejected.data.push [date, countRejected]
-              @YAxisMax = if countRejected > @YAxisMax then countRejected else @YAxisMax
-          if @tripsCancelledSelected
-              @tripsCancelled.data.push [date, countCancelled]
-              @YAxisMax = if countCancelled > @YAxisMax then countCancelled else @YAxisMax
-          if @tripsErrorSelected
-              @tripsError.data.push [date, countError]
-              @YAxisMax = if countError > @YAxisMax then countError else @YAxisMax
-          if @serviceLatenessSelected
-              @serviceLateness.data.push [date, latenessAverage]
-              @YAxisMax = if latenessAverage > @YAxisMax then latenessAverage else @YAxisMax
-
-          i++
-
-      updateData = []
-      updateData.push({
-          name: 'Requested trips'
-          data: @tripsRequested
-          load: @tripsRequestedSelected
-      })
-      updateData.push({
-          name: 'Completed trips'
-          data: @tripsCompleted
-          load: @tripsCompletedSelected
-      })
-      updateData.push({
-          name: 'Rejected trips'
-          data: @tripsRejected
-          load: @tripsRejectedSelected
-      })
-      updateData.push({
-          name: 'Cancelled trips'
-          data: @tripsCancelled
-          load: @tripsCancelledSelected
-      })
-      updateData.push({
-          name: 'Error trips'
-          data: @tripsError
-          load: @tripsErrorSelected
-      })
-      updateData.push({
-          name: 'Lateness'
-          data: @serviceLateness
-          load: @serviceLatenessSelected
-      })
-      return updateData
-
-  setSeries: (series, _callback) =>
-    @series = series
+  setStats: (stats, _callback) =>
     if @chartType == 'series'
-        for serie in series
+        for stat in stats
+            serie = {name: stat.name, id: stat.id, data: stat.data}
             if @forecastDataMode
-                s = @forecastChart.get(serie.data.name)
-                if s?
-                    s.remove(false)
-                if serie.load
-                    @forecastChart.addSeries(serie.data, false, false)
+                existingSerie = @forecastChart.get(stat.name)
+                if stat.show
+                  if existingSerie?
+                    existingSerie.update({pointStart: stat.data[0], data: stat.data})
+                  else
+                    @forecastChart.addSeries(serie, false, false)
+                else
+                  existingSerie.remove(false)
             else
-                s = @historicChart.get(serie.data.name)
-                if s?
-                    s.remove(false)
-                if serie.load
-                    @historicChart.addSeries(serie.data, false, false)
+                existingSerie = @historicChart.get(stat.name)
+                if stat.show
+                  if existingSerie?
+                    existingSerie.update({pointStart: stat.data[0], data: stat.data})
+                  else
+                    @historicChart.addSeries(serie, false, false)
+                else if existingSerie?
+                  existingSerie.remove(false)
         if not @percentageMode
             if @forecastDataMode
                 @forecastChart.yAxis[0].setExtremes(0, @YAxisMax)
@@ -1112,16 +1049,14 @@ class TimeSeries
       @drawHeatMap()
 
   drawHeatMap: () =>
-      data = @series.filter((serie) => serie.name == @selectedStat)
-      serie = data[0].data.data
       taxiData = []
       weight = 0
       max = 0
-      for value in serie
+      for value in @selectedStat.data
         weight += value[1]
         if value[1] > max
           max = value[1]
-      weight /= serie.length
+      weight /= @selectedStat.data.length
       weight *= 100 / max
       trips = []
       for key of @tripsById
@@ -1133,14 +1068,14 @@ class TimeSeries
                   lat: trip.pickupLocation.lat
                   lng: trip.pickupLocation.lng
                 }
-            if @selectedStat is 'Completed trips'
+            if @selectedStat.isPickupStat
               taxiData.push {
-                location: locationDropoff,
+                location: locationPickUp,
                 weight: weight
               }
             else
               taxiData.push {
-                location: locationPickUp,
+                location: locationDropoff,
                 weight: weight
               }
 
