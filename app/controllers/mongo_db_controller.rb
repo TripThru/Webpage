@@ -71,6 +71,7 @@ class MongoDbController < ApplicationController
             'LatenessMilliseconds' => 1,
             'ServicingPartnerId' => 1,
             'OriginatingPartnerId' => 1,
+            'SamplingPercentage' => 1,
             'Interval' => interval
         }
     }
@@ -183,7 +184,7 @@ class MongoDbController < ApplicationController
         '$group' => {
           '_id' => id,
           'lateness' => { '$avg' => '$LatenessMilliseconds'},
-          'count' => { '$sum' => 1 }
+          'count' => { '$sum' => {'$divide' => [1, '$SamplingPercentage']} }
         }
     }
 
