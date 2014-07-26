@@ -820,6 +820,8 @@ class TimeSeries
 
     [dates, intervalIds] = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
 
+    startDate.setDate(startDate.getDate() - 1)
+    endDate.setDate(endDate.getDate() + 1)
     query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + @getCommonQuery()
 
     return [query, dates, intervalIds]
