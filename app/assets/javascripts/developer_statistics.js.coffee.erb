@@ -900,19 +900,6 @@ class TimeSeries
         countRequested = if count.length == 0 then 0 else count[0].count
         total = countComplete + countCancelled + countRejected + countError
 
-        if not @tripsCompleted.show
-          countComplete = 0
-        if not @tripsCancelled.show
-          countCancelled = 0
-        if not @tripsRejected.show
-          countRejected = 0
-        if not @tripsError.show
-          countError = 0
-        if not @tripsRequested.show
-          countRequested = 0
-        if not @serviceLateness.show
-          latenessAverage = 0
-
         if @percentageMode
             countRequested = if countRequested > 0 then 100 else 0
             countComplete = if countComplete > 0 then countComplete * 100 / total else 0
@@ -920,23 +907,25 @@ class TimeSeries
             countRejected = if countRejected > 0 then countRejected * 100 / total else 0
             countError = if countError > 0 then countError * 100 / total else 0
 
+
+        @tripsRequested.data.push [date, countRequested]
+        @tripsCompleted.data.push [date, countComplete]
+        @tripsRejected.data.push [date, countRejected]
+        @tripsCancelled.data.push [date, countCancelled]
+        @tripsError.data.push [date, countError]
+        @serviceLateness.data.push [date, latenessAverage]
+
         if @tripsRequested.show
-            @tripsRequested.data.push [date, countRequested]
             @YAxisMax = if countRequested > @YAxisMax then countRequested else @YAxisMax
         if @tripsCompleted.show
-            @tripsCompleted.data.push [date, countComplete]
             @YAxisMax = if countComplete > @YAxisMax then countComplete else @YAxisMax
         if @tripsRejected.show
-            @tripsRejected.data.push [date, countRejected]
             @YAxisMax = if countRejected > @YAxisMax then countRejected else @YAxisMax
         if @tripsCancelled.show
-            @tripsCancelled.data.push [date, countCancelled]
             @YAxisMax = if countCancelled > @YAxisMax then countCancelled else @YAxisMax
         if @tripsError.show
-            @tripsError.data.push [date, countError]
             @YAxisMax = if countError > @YAxisMax then countError else @YAxisMax
         if @serviceLateness.show
-            @serviceLateness.data.push [date, latenessAverage]
             @YAxisMax = if latenessAverage > @YAxisMax then latenessAverage else @YAxisMax
 
         i++
