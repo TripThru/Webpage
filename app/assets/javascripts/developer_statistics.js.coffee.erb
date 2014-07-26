@@ -9,8 +9,6 @@ class TimeSeries
     @gateway.getPartners(@loadSelectorFilters)
     @data = null
 
-    @YAxisMax = 100
-
     @historicChart = null
     @forecastChart = null
     window.map = null
@@ -915,76 +913,67 @@ class TimeSeries
         @tripsError.data.push [date, countError]
         @serviceLateness.data.push [date, latenessAverage]
 
-        if @tripsRequested.show
-            @YAxisMax = if countRequested > @YAxisMax then countRequested else @YAxisMax
-        if @tripsCompleted.show
-            @YAxisMax = if countComplete > @YAxisMax then countComplete else @YAxisMax
-        if @tripsRejected.show
-            @YAxisMax = if countRejected > @YAxisMax then countRejected else @YAxisMax
-        if @tripsCancelled.show
-            @YAxisMax = if countCancelled > @YAxisMax then countCancelled else @YAxisMax
-        if @tripsError.show
-            @YAxisMax = if countError > @YAxisMax then countError else @YAxisMax
-        if @serviceLateness.show
-            @YAxisMax = if latenessAverage > @YAxisMax then latenessAverage else @YAxisMax
-
         i++
     @stats
 
   setStats: (stats, _callback) =>
     if @chartType == 'series'
-        for stat in stats
-            serie = {name: stat.name, id: stat.id, data: stat.data}
-            if @forecastDataMode
-                existingSerie = @forecastChart.get(stat.name)
-                if stat.show
-                  if existingSerie?
-                    existingSerie.update({pointStart: stat.data[0], data: stat.data})
-                  else
-                    @forecastChart.addSeries(serie, false, false)
+      yAxisMax = 0
+      for stat in stats
+          serie = {name: stat.name, id: stat.id, data: stat.data}
+          for val in stat.data
+            if val[1] > yAxisMax
+              yAxisMax = val[1]
+          if @forecastDataMode
+              existingSerie = @forecastChart.get(stat.name)
+              if stat.show
+                if existingSerie?
+                  existingSerie.update({pointStart: stat.data[0], data: stat.data})
                 else
-                  existingSerie.remove(false)
-            else
-                existingSerie = @historicChart.get(stat.name)
-                if stat.show
-                  if existingSerie?
-                    existingSerie.update({pointStart: stat.data[0], data: stat.data})
-                  else
-                    @historicChart.addSeries(serie, false, false)
-                else if existingSerie?
-                  existingSerie.remove(false)
-        if not @percentageMode
-            if @forecastDataMode
-                @forecastChart.yAxis[0].setExtremes(0, @YAxisMax)
-            else
-                @historicChart.yAxis[0].setExtremes(0, @YAxisMax)
-        else
-            if @forecastDataMode
-                @forecastChart.yAxis[0].setExtremes(0, 100)
-            else
-                @historicChart.yAxis[0].setExtremes(0, 100)
-        @refreshCharts()
-        @hideLoadingIndicator()
-        if _callback?
-          _callback()
-    else
-        query = ''
-        if @realtimeMode
-          query = @getTripsListRealTimeQuery()
-        else
-          if @shouldUpdateTimeRangeTrips()
-            query = @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+                  @forecastChart.addSeries(serie, false, false)
+              else
+                existingSerie.remove(false)
           else
-            @drawHeatMap()
-            @hideLoadingIndicator()
-            if _callback?
-              _callback()
-            return
-        $.get '/mongo_db/trips_list?' + query , (trips) =>
-          @loadHeatMapTrips(trips)
+              existingSerie = @historicChart.get(stat.name)
+              if stat.show
+                if existingSerie?
+                  existingSerie.update({pointStart: stat.data[0], data: stat.data})
+                else
+                  @historicChart.addSeries(serie, false, false)
+              else if existingSerie?
+                existingSerie.remove(false)
+      if not @percentageMode
+          if @forecastDataMode
+              @forecastChart.yAxis[0].setExtremes(0, yAxisMax)
+          else
+              @historicChart.yAxis[0].setExtremes(0, yAxisMax)
+      else
+          if @forecastDataMode
+              @forecastChart.yAxis[0].setExtremes(0, 100)
+          else
+              @historicChart.yAxis[0].setExtremes(0, 100)
+      @refreshCharts()
+      @hideLoadingIndicator()
+      if _callback?
+        _callback()
+    else
+      query = ''
+      if @realtimeMode
+        query = @getTripsListRealTimeQuery()
+      else
+        if @shouldUpdateTimeRangeTrips()
+          query = @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+        else
+          @drawHeatMap()
           @hideLoadingIndicator()
           if _callback?
             _callback()
+          return
+      $.get '/mongo_db/trips_list?' + query , (trips) =>
+        @loadHeatMapTrips(trips)
+        @hideLoadingIndicator()
+        if _callback?
+          _callback()
 
   shouldUpdateTimeRangeTrips: () =>
     return @zoomChanged or @dateChanged or @timeModeChanged or (Object.keys(@tripsById).length == 0) or (@selectedFleet != @selectedFleetTemp) or (@selectedNetwork != @selectedNetworkTemp)
