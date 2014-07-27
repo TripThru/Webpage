@@ -85,19 +85,19 @@ class TimeSeries
     $('#datepicker>input').attr("disabled", true)
     $('#time-range-panel').addClass('hidden')
 
-    @tripsRequested =   @createSeriesObject('Requested trips',  true, true, true)
-    @tripsCompleted =   @createSeriesObject('Completed trips',  false, true, true)
-    @tripsCancelled =   @createSeriesObject('Cancelled trips',  true, true, true)
-    @tripsRejected =    @createSeriesObject('Rejected trips',   true, true, true)
-    @tripsError =       @createSeriesObject('Error trips',      true, true, true)
-    @serviceLateness =  @createSeriesObject('Lateness',         true, false, false)
-    @timeEnroute =      @createSeriesObject('Time enroute',     true, true, false)
-    @timeOccupied =     @createSeriesObject('Time occupied',    true, true, false)
-    @timeIdle =         @createSeriesObject('Time idle',        true, true, false)
-    @mileageEnroute =   @createSeriesObject('Mileage enroute',  true, true, false)
-    @mileageOccupied =  @createSeriesObject('Mileage occupied', true, true, false)
-    @ratingDrivers =    @createSeriesObject('Drivers rating',   true, true, false)
-    @ratingPassengers = @createSeriesObject('Passengers rating',true, true, false)
+    @tripsRequested =   @createSeriesObject('Requested trips',  '#6FC6F5', true, true, true)
+    @tripsCompleted =   @createSeriesObject('Completed trips',  '#009933', false, true, true)
+    @tripsCancelled =   @createSeriesObject('Cancelled trips',  '#FF9900', true, true, true)
+    @tripsRejected =    @createSeriesObject('Rejected trips',   '#BB6FF5', true, true, true)
+    @tripsError =       @createSeriesObject('Error trips',      '#CC0000', true, true, true)
+    @serviceLateness =  @createSeriesObject('Lateness',         '#3482B3', true, false, false)
+    @timeEnroute =      @createSeriesObject('Time enroute',     '#993366', true, true, false)
+    @timeOccupied =     @createSeriesObject('Time occupied',    '#D17445', true, true, false)
+    @timeIdle =         @createSeriesObject('Time idle',        '#993300', true, true, false)
+    @mileageEnroute =   @createSeriesObject('Mileage enroute',  '#339966', true, true, false)
+    @mileageOccupied =  @createSeriesObject('Mileage occupied', '#FF9999', true, true, false)
+    @ratingDrivers =    @createSeriesObject('Drivers rating',   '#3399FF', true, true, false)
+    @ratingPassengers = @createSeriesObject('Passengers rating','#00CC99', true, true, false)
 
     @loadCharts()
     $('#forecast-chart-container').hide()
@@ -321,10 +321,11 @@ class TimeSeries
 
     @update()
 
-  createSeriesObject: (name, isPickupStat, isBasedOnLocationConcentration, show) =>
+  createSeriesObject: (name, color, isPickupStat, isBasedOnLocationConcentration, show) =>
     stat = {
       name: name
       id: name
+      color: color
       data: []
       isPickupStat: isPickupStat
       isBasedOnLocationConcentration: isBasedOnLocationConcentration
@@ -920,7 +921,17 @@ class TimeSeries
     if @chartType == 'series'
       yAxisMax = 0
       for stat in stats
-          serie = {name: stat.name, id: stat.id, data: stat.data}
+          serie = {
+            name: stat.name
+            id: stat.id
+            color: stat.color
+            data: stat.data
+            marker: {
+              enabled: true,
+              radius: 3
+              symbol: 'circle'
+            }
+          }
           for val in stat.data
             if val[1] > yAxisMax
               yAxisMax = val[1]
