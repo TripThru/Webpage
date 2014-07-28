@@ -799,9 +799,10 @@ class TimeSeries
               symbol: 'circle'
             }
           }
-          for val in stat.data
-            if val[1] > yAxisMax
-              yAxisMax = val[1]
+          if stat.show
+            for val in stat.data
+              if val[1] > yAxisMax
+                yAxisMax = val[1]
           if @forecastDataMode
               existingSerie = @forecastChart.get(stat.name)
               if stat.show
