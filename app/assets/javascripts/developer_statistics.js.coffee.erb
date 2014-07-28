@@ -284,11 +284,11 @@ class TimeSeries
 
     $('#data-mode-toggle-container>#toggle-button').click =>
         if @percentageMode
-            $('#absolute-toggle').hide()
-            $('#percentage-toggle').show()
+          $('#percentage-toggle').hide()
+          $('#absolute-toggle').show()
         else
-            $('#percentage-toggle').hide()
-            $('#absolute-toggle').show()
+          $('#absolute-toggle').hide()
+          $('#percentage-toggle').show()
         @percentageMode = not @percentageMode
         updateRequest = @createUpdateRequest({togglesUpdate: true})
         @update(updateRequest)
