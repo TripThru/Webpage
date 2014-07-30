@@ -842,7 +842,7 @@ class TimeSeries
         if @shouldUpdateTimeRangeTrips(updateRequest)
           query = @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate))
         else
-          @drawHeatMap()
+          @drawHeatMap(updateRequest)
           updateRequest.makeObsolete()
           @hideLoadingIndicator()
           return
