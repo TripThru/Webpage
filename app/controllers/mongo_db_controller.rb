@@ -349,7 +349,7 @@ class MongoDbController < ApplicationController
 
     group = {}
     if group_by != nil
-      id = {}
+      id = {'Status' => '$Status'}
       if group_by == 'dropoff'
         id['location'] = '$DropoffLocation'
       else

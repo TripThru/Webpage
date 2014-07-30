@@ -592,14 +592,20 @@ class TimeSeries
 
       if @realtimeMode
         @showLoadingIndicator()
-        @updateRealTime(updateRequest)
+        if @chartType == 'series'
+          @updateSeriesRealTime(updateRequest)
+        else
+          @updateHeatMapRealTime(updateRequest)
       else if not @realtimeMode and (updateRequest.isDateUpdate() or updateRequest.isToggleUpdate() or updateRequest.isChartTypeUpdate() or updateRequest.isDataModeUpdate())
         @showLoadingIndicator()
-        @updateTimeRange(updateRequest)
+        if @chartType == 'series'
+          @updateSeriesTimeRange(updateRequest)
+        else
+          @updateHeatMapTimeRange(updateRequest)
       else
         updateRequest.makeObsolete()
       
-  updateRealTime: (updateRequest) =>
+  updateSeriesRealTime: (updateRequest) =>
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
     if query != @latestCountQuery
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
@@ -644,7 +650,7 @@ class TimeSeries
 
       return [query, dates, intervalIds]
 
-  updateTimeRange: (updateRequest) =>
+  updateSeriesTimeRange: (updateRequest) =>
     [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
     if not updateRequest.isSelectedStatsUpdate() and query != @latestCountQuery
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
@@ -846,24 +852,6 @@ class TimeSeries
       @refreshCharts()
       @hideLoadingIndicator()
       updateRequest.makeObsolete()
-    else
-      query = ''
-      if @realtimeMode
-        query = @getTripsListRealTimeQuery()
-      else
-        query = @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate))
-      if query == @latestListQuery
-          @drawHeatMap(updateRequest)
-          updateRequest.makeObsolete()
-          @hideLoadingIndicator()
-      else
-        $.get '/mongo_db/trips_list?' + query , (trips) =>
-          @loadHeatMapTrips(trips)
-          @latestListQuery = query
-          if not updateRequest.isObsolete()
-            @drawHeatMap(updateRequest)
-            @hideLoadingIndicator()
-            updateRequest.makeObsolete()
 
   getTripsListRealTimeQuery: () =>
     startDate = new Date()
@@ -906,17 +894,33 @@ class TimeSeries
 
     return selectedGeographicZone + networkId
 
-  loadHeatMapTrips: (trips) =>
-      tripsIds = []
-      for newTrip in trips
-        newTripId = '<' + newTrip._id.location.Lat + ',' + newTrip._id.location.Lng + '>'
-        tripsIds.push newTripId
-        if newTripId not of @tripsById
-          @tripsById[newTripId] = { location: newTrip._id.location, count: newTrip.count, lateness: newTrip.lateness }
+  updateHeatMapRealTime: (updateRequest) =>
+    @loadHeatMapTrips(updateRequest, @getTripsListRealTimeQuery())
 
-      for id, trip of @tripsById
-        if id not in tripsIds
-          delete @tripsById[id]
+  updateHeatMapTimeRange: (updateRequest) =>
+    @loadHeatMapTrips(updateRequest, @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate)))
+
+  loadHeatMapTrips: (updateRequest, query) =>
+    if query == @latestListQuery
+      @drawHeatMap(updateRequest)
+      updateRequest.makeObsolete()
+      @hideLoadingIndicator()
+    else
+      $.get '/mongo_db/trips_list?' + query , (trips) =>
+        tripsIds = []
+        for newTrip in trips
+          newTripId = '<' + newTrip._id.location.Lat + ',' + newTrip._id.location.Lng + '>'
+          tripsIds.push newTripId
+          if newTripId not of @tripsById
+            @tripsById[newTripId] = { location: newTrip._id.location, count: newTrip.count, lateness: newTrip.lateness }
+        for id, trip of @tripsById
+          if id not in tripsIds
+            delete @tripsById[id]
+        @latestListQuery = query
+        if not updateRequest.isObsolete()
+          @drawHeatMap(updateRequest)
+          @hideLoadingIndicator()
+          updateRequest.makeObsolete()
 
   drawHeatMap: (updateRequest) =>
       taxiData = []
@@ -924,14 +928,6 @@ class TimeSeries
       intensity = 0
 
       #if @selectedStat.isBasedOnLocationConcentration
-      weight = 0
-      max = 0
-      for value in @selectedStat.data
-        weight += value[1]
-        if value[1] > max
-          max = value[1]
-      weight /= @selectedStat.data.length
-      weight *= 100 / max
 
       for id, trip of @tripsById
         location = new google.maps.LatLng(trip.location.Lat,trip.location.Lng)
@@ -943,7 +939,7 @@ class TimeSeries
           for i in [0..trip.count]
             taxiData.push {
               location: location,
-              weight: weight
+              weight: 1
             }
             intensity++
       #else
