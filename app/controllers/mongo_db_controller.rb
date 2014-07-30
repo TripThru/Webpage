@@ -219,6 +219,13 @@ class MongoDbController < ApplicationController
       date_field = 'Creation'
     end
 
+    group_by = nil
+    if params[:group_by] == 'pickup'
+      group_by = 'pickup'
+    elsif params[:group_by] == 'dropoff'
+      group_by = 'dropoff'
+    end
+
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       geo_near['$geoNear'] = {
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
@@ -340,6 +347,23 @@ class MongoDbController < ApplicationController
 
     limit = {'$limit' => documents_limit}
 
+    group = {}
+    if group_by != nil
+      id = {}
+      if group_by == 'dropoff'
+        id['location'] = '$DropoffLocation'
+      else
+        id['location'] = '$PickupLocation'
+      end
+      group = {
+          '$group' => {
+              '_id' => id,
+              'lateness' => { '$avg' => '$LatenessMilliseconds'},
+              'count' => { '$sum' => 1 }
+          }
+      }
+    end
+
     parameters = []
     if geo_near.length > 0
       parameters << geo_near
@@ -349,6 +373,9 @@ class MongoDbController < ApplicationController
     parameters << project
     if match.length > 0
       parameters << match
+    end
+    if group.length > 0
+      parameters << group
     end
 
     res = Trip.collection.aggregate(parameters)
