@@ -76,9 +76,9 @@ class MongoDbController < ApplicationController
         }
     }
 
-    match = { }
+    match = { '$match' => {} }
     if by_status
-      match['$match'] = {'Status' => {'$or' => ['Complete', 'Rejected', 'Cancelled']}}
+      match['$match']['$or'] = [{'Status' => 'Complete'}, {'Status' => 'Rejected'}, {'Status' => 'Cancelled'}]
     end
 
     if params[:startDate] != nil or params[:endDate] != nil
@@ -253,9 +253,9 @@ class MongoDbController < ApplicationController
         }
     }
 
-    match = { '$match' => {'Status' => {'$or' => ['Complete', 'Rejected', 'Cancelled']}} }
+    match = { '$match' => {'$or' => [{'Status' => 'Complete'}, {'Status' => 'Rejected'}, {'Status' => 'Cancelled'}] } }
     if params[:startDate] != nil or params[:endDate] != nil
-      match['$match'] = { date_field => { } }
+      match['$match'][date_field] = { }
       if params[:startDate] != nil
         match['$match'][date_field]['$gte'] = Time.at(params[:startDate].to_f)
       end
