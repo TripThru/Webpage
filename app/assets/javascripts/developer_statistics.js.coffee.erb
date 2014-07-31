@@ -654,7 +654,7 @@ class TimeSeries
 
   updateSeriesTimeRange: (updateRequest) =>
     [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
-    if not updateRequest.isSelectedStatsUpdate() and query != @latestCountQuery
+    if query != @latestCountQuery
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
         $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
           @latestCountQuery = query
@@ -903,7 +903,7 @@ class TimeSeries
     @loadHeatMapTrips(updateRequest, @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate)))
 
   loadHeatMapTrips: (updateRequest, query) =>
-    if query == @latestListQuery or updateRequest.isSelectedStatsUpdate()
+    if query == @latestListQuery
       @drawHeatMap(updateRequest)
       updateRequest.makeObsolete()
       @hideLoadingIndicator()
