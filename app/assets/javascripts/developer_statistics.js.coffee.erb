@@ -937,18 +937,19 @@ class TimeSeries
       #if @selectedStat.isBasedOnLocationConcentration
 
       for id, trip of @tripsById
-        location = new google.maps.LatLng(trip.location.Lat,trip.location.Lng)
-        if !window.selectedGeographicZone? or (window.selectedGeographicZone.isHere(location))
-          trips.push {
-            lat: trip.location.Lat
-            lng: trip.location.Lng
-          }
-          for i in [0..trip.count]
-            taxiData.push {
-              location: location,
-              weight: 20
+        if trip.status in @selectedStat.tripStatuses
+          location = new google.maps.LatLng(trip.location.Lat,trip.location.Lng)
+          if !window.selectedGeographicZone? or (window.selectedGeographicZone.isHere(location))
+            trips.push {
+              lat: trip.location.Lat
+              lng: trip.location.Lng
             }
-            intensity++
+            for i in [0..trip.count]
+              taxiData.push {
+                location: location,
+                weight: 20
+              }
+              intensity++
       #else
 
       @setMapZoom(trips, updateRequest)
