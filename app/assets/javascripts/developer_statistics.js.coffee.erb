@@ -903,7 +903,7 @@ class TimeSeries
     @loadHeatMapTrips(updateRequest, @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate)))
 
   loadHeatMapTrips: (updateRequest, query) =>
-    if query == @latestListQuery
+    if query == @latestListQuery or updateRequest.isSelectedStatsUpdate()
       @drawHeatMap(updateRequest)
       updateRequest.makeObsolete()
       @hideLoadingIndicator()
