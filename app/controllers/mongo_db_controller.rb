@@ -110,12 +110,9 @@ class MongoDbController < ApplicationController
 
       if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$match']['$and'] = [
-              { '$or' => [
-                  {'ServicingPartnerId' => params[:servicingNetworkId]},
-                  {'OriginatingPartnerId' => params[:originatingNetworkId]}
-              ]},
-              match_status_or
+          match['$match']['$or'] = [
+              {'ServicingPartnerId' => params[:servicingNetworkId]},
+              {'OriginatingPartnerId' => params[:originatingNetworkId]}
           ]
         else
           match['$match']['$and'] = [
@@ -127,47 +124,42 @@ class MongoDbController < ApplicationController
               {'$or' => [
                   {'ServicingPartnerId' => {'$ne' => params[:servicingNetworkId]}},
                   {'OriginatingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
-              ]},
-              match_status_or
+              ]}
           ]
         end
       elsif params[:servicingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$match']['$and'] = [
+          match['$match']['$or'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
               {'$and' => [
                   {'ServicingPartnerId' => params[:servicingNetworkId]},
                   {'OriginatingPartnerId' => params[:servicingNetworkId]}
-              ]},
-              match_status_or
+              ]
+              }
           ]
         else
           match['$match']['$and'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
-              {'OriginatingPartnerId' => {'$ne' => params[:servicingNetworkId]}},
-              match_status_or
+              'OriginatingPartnerId' => {'$ne' => params[:servicingNetworkId]}
           ]
         end
       elsif params[:originatingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$match']['$and'] = [
+          match['$match']['$or'] = [
               {'OriginatingPartnerId' => params[:originatingNetworkId]},
               {'$and' => [
                   {'ServicingPartnerId' => params[:originatingNetworkId]},
                   {'OriginatingPartnerId' => params[:originatingNetworkId]}
-              ]},
-              match_status_or
+              ]}
           ]
         else
           match['$match']['$and'] = [
               {'OriginatingPartnerId' => params[:originatingNetworkId]},
-              {'ServicingPartnerId' => {'$ne' => params[:originatingNetworkId]}},
-              match_status_or
+              {'ServicingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
           ]
         end
       end
     else
-      match['$match'] << match_status_or
       if params[:localNetworkId] == 'all' and params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil
         project['$project']['isLocal'] = { '$eq' => [ '$ServicingPartnerId', '$OriginatingPartnerId' ] }
         match['$match']['isLocal'] = true
