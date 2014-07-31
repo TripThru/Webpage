@@ -88,6 +88,8 @@ class TimeSeries
     @updatingRealTime = false
     @updatingTimeRange = false
     @firstTimeShowingMap = true
+    @pickupTripsLoaded = false
+    @dropoffTripsLoaded = false
     @latestCountQuery = ''
     @latestListQuery = ''
     @realtimeModeInterval  = {
@@ -903,26 +905,40 @@ class TimeSeries
     @loadHeatMapTrips(updateRequest, @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate)))
 
   loadHeatMapTrips: (updateRequest, query) =>
-    if query == @latestListQuery
+    isPickupStat = @selectedStat.isPickupStat
+    if query == @latestListQuery or
+        updateRequest.isSelectedStatsUpdate() and
+        ((isPickupStat and @pickupTripsLoaded) or (not isPickupStat and @dropoffTripsLoaded))
       @drawHeatMap(updateRequest)
       updateRequest.makeObsolete()
       @hideLoadingIndicator()
     else
+      if not updateRequest.isSelectedStatsUpdate()
+        @pickupTripsLoaded = false
+        @dropoffTripsLoaded = false
       $.get '/mongo_db/trips_list?' + query , (trips) =>
         tripsIds = []
         for newTrip in trips
-          newTripId = '<' + newTrip._id.status + ',' + newTrip._id.location.Lat + ',' + newTrip._id.location.Lng + '>'
+          newTripId = '<' + isPickupStat + ',' + newTrip._id.status + ',' + newTrip._id.location.Lat + ',' + newTrip._id.location.Lng + '>'
           tripsIds.push newTripId
-          if newTripId not of @tripsById
+          if newTripId not of @tripsById or
+              (isPickupStat and !@tripsById[newTripId].pickupLocation?) or
+              (not isPickupStat and !@tripsById[newTripId].dropoffLocation)
+
             @tripsById[newTripId] = {
                                       location: newTrip._id.location
                                       status: newTrip._id.status
                                       count: newTrip.count
                                       lateness: newTrip.lateness
+                                      isPickupLocation: isPickupStat
                                     }
         for id, trip of @tripsById
-          if id not in tripsIds
+          if id not in tripsIds and isPickupStat == trip.isPickupLocation
             delete @tripsById[id]
+        if isPickupStat
+          @pickupTripsLoaded = true
+        else
+          @dropoffTripsLoaded = true
         @latestListQuery = query
         if not updateRequest.isObsolete()
           @drawHeatMap(updateRequest)
@@ -937,7 +953,7 @@ class TimeSeries
       #if @selectedStat.isBasedOnLocationConcentration
 
       for id, trip of @tripsById
-        if trip.status in @selectedStat.tripStatuses
+        if trip.status in @selectedStat.tripStatuses and trip.isPickupLocation == @selectedStat.isPickupStat
           location = new google.maps.LatLng(trip.location.Lat,trip.location.Lng)
           if !window.selectedGeographicZone? or (window.selectedGeographicZone.isHere(location))
             trips.push {
