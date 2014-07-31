@@ -909,10 +909,15 @@ class TimeSeries
       $.get '/mongo_db/trips_list?' + query , (trips) =>
         tripsIds = []
         for newTrip in trips
-          newTripId = '<' + newTrip._id.location.Lat + ',' + newTrip._id.location.Lng + '>'
+          newTripId = '<' + newTrip._id.status + ',' + newTrip._id.location.Lat + ',' + newTrip._id.location.Lng + '>'
           tripsIds.push newTripId
           if newTripId not of @tripsById
-            @tripsById[newTripId] = { location: newTrip._id.location, count: newTrip.count, lateness: newTrip.lateness }
+            @tripsById[newTripId] = {
+                                      location: newTrip._id.location
+                                      status: newTrip._id.status
+                                      count: newTrip.count
+                                      lateness: newTrip.lateness
+                                    }
         for id, trip of @tripsById
           if id not in tripsIds
             delete @tripsById[id]
@@ -939,7 +944,7 @@ class TimeSeries
           for i in [0..trip.count]
             taxiData.push {
               location: location,
-              weight: 1
+              weight: 20
             }
             intensity++
       #else

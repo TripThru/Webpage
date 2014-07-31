@@ -77,6 +77,10 @@ class MongoDbController < ApplicationController
     }
 
     match = { }
+    if by_status
+      match['$match'] = {'Status' => {'$or' => ['Complete', 'Rejected', 'Cancelled']}}
+    end
+
     if params[:startDate] != nil or params[:endDate] != nil
       match['$match'] = { date_field => { } }
       if params[:startDate] != nil
@@ -249,7 +253,7 @@ class MongoDbController < ApplicationController
         }
     }
 
-    match = { }
+    match = { '$match' => {'Status' => {'$or' => ['Complete', 'Rejected', 'Cancelled']}} }
     if params[:startDate] != nil or params[:endDate] != nil
       match['$match'] = { date_field => { } }
       if params[:startDate] != nil
@@ -349,7 +353,7 @@ class MongoDbController < ApplicationController
 
     group = {}
     if group_by != nil
-      id = {'Status' => '$Status'}
+      id = {'status' => '$Status'}
       if group_by == 'dropoff'
         id['location'] = '$DropoffLocation'
       else
