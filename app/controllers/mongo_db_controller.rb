@@ -76,7 +76,11 @@ class MongoDbController < ApplicationController
         }
     }
 
-    match = { }
+    match = { '$match' => {} }
+    if by_status
+      match['$match']['$or'] = [{'Status' => 'Complete'}, {'Status' => 'Rejected'}, {'Status' => 'Cancelled'}]
+    end
+
     if params[:startDate] != nil or params[:endDate] != nil
       match['$match'] = { date_field => { } }
       if params[:startDate] != nil
@@ -219,6 +223,13 @@ class MongoDbController < ApplicationController
       date_field = 'Creation'
     end
 
+    group_by = nil
+    if params[:group_by] == 'pickup'
+      group_by = 'pickup'
+    elsif params[:group_by] == 'dropoff'
+      group_by = 'dropoff'
+    end
+
     if params[:centerLat] != nil and params[:centerLng] != nil and params[:centerRadius] != nil
       geo_near['$geoNear'] = {
           'near' => [ params[:centerLng].to_f, params[:centerLat].to_f ],
@@ -242,9 +253,10 @@ class MongoDbController < ApplicationController
         }
     }
 
-    match = { }
+    match_status_or = {'$or' => [{'Status' => 'Complete'}, {'Status' => 'Rejected'}, {'Status' => 'Cancelled'}] }
+    match = { '$match' => {} }
     if params[:startDate] != nil or params[:endDate] != nil
-      match['$match'] = { date_field => { } }
+      match['$match'][date_field] = { }
       if params[:startDate] != nil
         match['$match'][date_field]['$gte'] = Time.at(params[:startDate].to_f)
       end
@@ -275,9 +287,12 @@ class MongoDbController < ApplicationController
 
       if params[:servicingNetworkId] != nil and params[:originatingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$match']['$or'] = [
-              {'ServicingPartnerId' => params[:servicingNetworkId]},
-              {'OriginatingPartnerId' => params[:originatingNetworkId]}
+          match['$match']['$and'] = [
+              { '$or' => [
+                {'ServicingPartnerId' => params[:servicingNetworkId]},
+                {'OriginatingPartnerId' => params[:originatingNetworkId]}
+              ]},
+              match_status_or
           ]
         else
           match['$match']['$and'] = [
@@ -289,42 +304,47 @@ class MongoDbController < ApplicationController
               {'$or' => [
                   {'ServicingPartnerId' => {'$ne' => params[:servicingNetworkId]}},
                   {'OriginatingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
-              ]}
+              ]},
+              match_status_or
           ]
         end
       elsif params[:servicingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$match']['$or'] = [
-              {'ServicingPartnerId' => params[:servicingNetworkId]},
-              {'$and' => [
-                  {'ServicingPartnerId' => params[:servicingNetworkId]},
-                  {'OriginatingPartnerId' => params[:servicingNetworkId]}
-              ]
-              }
+          match['$match']['$and'] = [
+                {'ServicingPartnerId' => params[:servicingNetworkId]},
+                {'$and' => [
+                    {'ServicingPartnerId' => params[:servicingNetworkId]},
+                    {'OriginatingPartnerId' => params[:servicingNetworkId]}
+                ]},
+                match_status_or
           ]
         else
           match['$match']['$and'] = [
               {'ServicingPartnerId' => params[:servicingNetworkId]},
-              'OriginatingPartnerId' => {'$ne' => params[:servicingNetworkId]}
+              {'OriginatingPartnerId' => {'$ne' => params[:servicingNetworkId]}},
+              match_status_or
           ]
         end
       elsif params[:originatingNetworkId] != nil
         if params[:localNetworkId] != nil
-          match['$match']['$or'] = [
+          match['$match']['$and'] = [
               {'OriginatingPartnerId' => params[:originatingNetworkId]},
               {'$and' => [
                   {'ServicingPartnerId' => params[:originatingNetworkId]},
                   {'OriginatingPartnerId' => params[:originatingNetworkId]}
-              ]}
+              ]},
+              match_status_or
           ]
         else
           match['$match']['$and'] = [
               {'OriginatingPartnerId' => params[:originatingNetworkId]},
-              {'ServicingPartnerId' => {'$ne' => params[:originatingNetworkId]}}
+              {'ServicingPartnerId' => {'$ne' => params[:originatingNetworkId]}},
+              match_status_or
           ]
         end
       end
     else
+      match['$match']['$or'] = match_status_or['$or']
       if params[:localNetworkId] == 'all' and params[:servicingNetworkId] == nil and params[:originatingNetworkId] == nil
         project['$project']['isLocal'] = { '$eq' => [ '$ServicingPartnerId', '$OriginatingPartnerId' ] }
         match['$match']['isLocal'] = true
@@ -340,6 +360,23 @@ class MongoDbController < ApplicationController
 
     limit = {'$limit' => documents_limit}
 
+    group = {}
+    if group_by != nil
+      id = {'status' => '$Status'}
+      if group_by == 'dropoff'
+        id['location'] = '$DropoffLocation'
+      else
+        id['location'] = '$PickupLocation'
+      end
+      group = {
+          '$group' => {
+              '_id' => id,
+              'lateness' => { '$avg' => '$LatenessMilliseconds'},
+              'count' => { '$sum' => 1 }
+          }
+      }
+    end
+
     parameters = []
     if geo_near.length > 0
       parameters << geo_near
@@ -349,6 +386,9 @@ class MongoDbController < ApplicationController
     parameters << project
     if match.length > 0
       parameters << match
+    end
+    if group.length > 0
+      parameters << group
     end
 
     res = Trip.collection.aggregate(parameters)

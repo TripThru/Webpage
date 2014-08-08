@@ -87,6 +87,11 @@ class TimeSeries
     @localTripsMode = true
     @updatingRealTime = false
     @updatingTimeRange = false
+    @firstTimeShowingMap = true
+    @pickupTripsLoaded = false
+    @dropoffTripsLoaded = false
+    @latestCountQuery = ''
+    @latestListQuery = ''
     @realtimeModeInterval  = {
         seconds: true
         minutes: false
@@ -123,19 +128,20 @@ class TimeSeries
     $('#datepicker>input').attr("disabled", true)
     $('#time-range-panel').addClass('hidden')
 
-    @tripsRequested =   @createSeriesObject('Requested trips',  '#6FC6F5', true, true, true)
-    @tripsCompleted =   @createSeriesObject('Completed trips',  '#009933', false, true, true)
-    @tripsCancelled =   @createSeriesObject('Cancelled trips',  '#FF9900', true, true, true)
-    @tripsRejected =    @createSeriesObject('Rejected trips',   '#BB6FF5', true, true, true)
-    @tripsError =       @createSeriesObject('Error trips',      '#CC0000', true, true, true)
-    @serviceLateness =  @createSeriesObject('Lateness',         '#3482B3', true, false, false)
-    @timeEnroute =      @createSeriesObject('Time enroute',     '#993366', true, true, false)
-    @timeOccupied =     @createSeriesObject('Time occupied',    '#D17445', true, true, false)
-    @timeIdle =         @createSeriesObject('Time idle',        '#993300', true, true, false)
-    @mileageEnroute =   @createSeriesObject('Mileage enroute',  '#339966', true, true, false)
-    @mileageOccupied =  @createSeriesObject('Mileage occupied', '#FF9999', true, true, false)
-    @ratingDrivers =    @createSeriesObject('Drivers rating',   '#3399FF', true, true, false)
-    @ratingPassengers = @createSeriesObject('Passengers rating','#00CC99', true, true, false)
+    allStatuses = ['Complete', 'Rejected', 'Cancelled', 'Error']
+    @tripsRequested =   @createSeriesObject('Requested trips',  allStatuses, '#6FC6F5', true, true, true)
+    @tripsCompleted =   @createSeriesObject('Completed trips',  ['Complete'],  '#009933', false, true, true)
+    @tripsCancelled =   @createSeriesObject('Cancelled trips',  ['Cancelled'],  '#FF9900', true, true, true)
+    @tripsRejected =    @createSeriesObject('Rejected trips',   ['Rejected'],  '#BB6FF5', true, true, true)
+    @tripsError =       @createSeriesObject('Error trips',      ['Error'],  '#CC0000', true, true, true)
+    @serviceLateness =  @createSeriesObject('Lateness',         allStatuses,  '#3482B3', true, false, false)
+    @timeEnroute =      @createSeriesObject('Time enroute',     allStatuses,  '#993366', true, true, false)
+    @timeOccupied =     @createSeriesObject('Time occupied',    allStatuses,  '#D17445', true, true, false)
+    @timeIdle =         @createSeriesObject('Time idle',        allStatuses,  '#993300', true, true, false)
+    @mileageEnroute =   @createSeriesObject('Mileage enroute',  allStatuses,  '#339966', true, true, false)
+    @mileageOccupied =  @createSeriesObject('Mileage occupied', allStatuses,  '#FF9999', true, true, false)
+    @ratingDrivers =    @createSeriesObject('Drivers rating',   allStatuses,  '#3399FF', true, true, false)
+    @ratingPassengers = @createSeriesObject('Passengers rating',allStatuses,  '#00CC99', true, true, false)
 
     @loadCharts()
     $('#forecast-chart-container').hide()
@@ -267,7 +273,11 @@ class TimeSeries
             $('#heatmap-toggle').hide()
             $('#statistics-toggle').show()
         @setFilterEvents()
-        updateRequest = @createUpdateRequest({chartTypeUpdate: true})
+        events = {chartTypeUpdate: true}
+        if @firstTimeShowingMap
+          events.clearZoomUpdate = true
+          @firstTimeShowingMap = false
+        updateRequest = @createUpdateRequest(events)
         @update(updateRequest)
 
     $('#historic-toggle-container>#toggle-button').click =>
@@ -335,10 +345,11 @@ class TimeSeries
     @pendingUpdateRequests.push newUpdate
     return newUpdate
 
-  createSeriesObject: (name, color, isPickupStat, isBasedOnLocationConcentration, show) =>
+  createSeriesObject: (name, tripStatuses, color, isPickupStat, isBasedOnLocationConcentration, show) =>
     stat = {
       name: name
       id: name
+      tripStatuses: tripStatuses
       color: color
       data: []
       isPickupStat: isPickupStat
@@ -585,18 +596,28 @@ class TimeSeries
 
       if @realtimeMode
         @showLoadingIndicator()
-        @updateRealTime(updateRequest)
+        if @chartType == 'series'
+          @updateSeriesRealTime(updateRequest)
+        else
+          @updateHeatMapRealTime(updateRequest)
       else if not @realtimeMode and (updateRequest.isDateUpdate() or updateRequest.isToggleUpdate() or updateRequest.isChartTypeUpdate() or updateRequest.isDataModeUpdate())
         @showLoadingIndicator()
-        @updateTimeRange(updateRequest)
+        if @chartType == 'series'
+          @updateSeriesTimeRange(updateRequest)
+        else
+          @updateHeatMapTimeRange(updateRequest)
       else
         updateRequest.makeObsolete()
       
-  updateRealTime: (updateRequest) =>
+  updateSeriesRealTime: (updateRequest) =>
     [query, dates, intervals] = @getTripsCountRealTimeQuery()
-    $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
-      $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
-        @setStats @mongoDbTripCountToStats(countByStatus, totalCount, dates, intervals), updateRequest
+    if query != @latestCountQuery
+      $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
+        $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
+          @latestCountQuery = query
+          @setStats @mongoDbTripCountToStats(countByStatus, totalCount, dates, intervals), updateRequest
+    else
+      @setStats @stats, updateRequest
 
   getTripsCountRealTimeQuery: () =>
       startDate = new Date()
@@ -633,11 +654,12 @@ class TimeSeries
 
       return [query, dates, intervalIds]
 
-  updateTimeRange: (updateRequest) =>
-    if not updateRequest.isSelectedStatsUpdate()
-      [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+  updateSeriesTimeRange: (updateRequest) =>
+    [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+    if query != @latestCountQuery
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
         $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
+          @latestCountQuery = query
           @setStats @mongoDbTripCountToStats(countByStatus, totalCount, dates, intervals), updateRequest
     else
       @setStats @stats, updateRequest
@@ -834,28 +856,6 @@ class TimeSeries
       @refreshCharts()
       @hideLoadingIndicator()
       updateRequest.makeObsolete()
-    else
-      query = ''
-      if @realtimeMode
-        query = @getTripsListRealTimeQuery()
-      else
-        if @shouldUpdateTimeRangeTrips(updateRequest)
-          query = @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate))
-        else
-          @drawHeatMap(updateRequest)
-          updateRequest.makeObsolete()
-          @hideLoadingIndicator()
-          return
-      if not updateRequest.isObsolete()
-        $.get '/mongo_db/trips_list?' + query , (trips) =>
-          @loadHeatMapTrips(trips)
-          if not updateRequest.isObsolete()
-            @drawHeatMap(updateRequest)
-            @hideLoadingIndicator()
-            updateRequest.makeObsolete()
-
-  shouldUpdateTimeRangeTrips: (updateRequest) =>
-    return updateRequest.isZoomUpdate() or updateRequest.isDateUpdate() or updateRequest.isTimeModeUpdate() or updateRequest.isFleetUpdate() or (Object.keys(@tripsById).length == 0)
 
   getTripsListRealTimeQuery: () =>
     startDate = new Date()
@@ -871,10 +871,13 @@ class TimeSeries
       startDate.setMonth(startDate.getMonth()-3)
     date = +(new Date(startDate)) / 1000
 
-    return 'startDate=' + date + @getCommonQuery()
+    group_by = if @selectedStat.isPickupStat then 'pickup' else 'dropoff'
+
+    return 'startDate=' + date + '&group_by=' + group_by + @getCommonQuery()
 
   getTripsListTimeRangeQuery: (startDate, endDate) =>
-    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + @getCommonQuery()
+    group_by = if @selectedStat.isPickupStat then 'pickup' else 'dropoff'
+    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&group_by=' + group_by + @getCommonQuery()
 
   getCommonQuery: () =>
     selectedGeographicZone = ''
@@ -895,85 +898,74 @@ class TimeSeries
 
     return selectedGeographicZone + networkId
 
-  loadHeatMapTrips: (trips) =>
-      tripsIds = []
-      for newTrip in trips
-        tripsIds.push newTrip._id
-        if newTrip.id not of @tripsById
-          @processTrip(newTrip)
+  updateHeatMapRealTime: (updateRequest) =>
+    @loadHeatMapTrips(updateRequest, @getTripsListRealTimeQuery())
 
-      for id, trip of @tripsById
-          if id not in tripsIds
-              delete @tripsById[id]
+  updateHeatMapTimeRange: (updateRequest) =>
+    @loadHeatMapTrips(updateRequest, @getTripsListTimeRangeQuery(new Date(@startDate), new Date(@endDate)))
+
+  loadHeatMapTrips: (updateRequest, query) =>
+    isPickupStat = @selectedStat.isPickupStat
+    if query == @latestListQuery or
+        updateRequest.isSelectedStatsUpdate() and
+        ((isPickupStat and @pickupTripsLoaded) or (not isPickupStat and @dropoffTripsLoaded))
+      @drawHeatMap(updateRequest)
+      updateRequest.makeObsolete()
+      @hideLoadingIndicator()
+    else
+      if not updateRequest.isSelectedStatsUpdate()
+        @pickupTripsLoaded = false
+        @dropoffTripsLoaded = false
+      $.get '/mongo_db/trips_list?' + query , (trips) =>
+        tripsIds = []
+        for newTrip in trips
+          newTripId = '<' + isPickupStat + ',' + newTrip._id.status + ',' + newTrip._id.location.Lat + ',' + newTrip._id.location.Lng + '>'
+          tripsIds.push newTripId
+          if newTripId not of @tripsById or
+              (isPickupStat and !@tripsById[newTripId].pickupLocation?) or
+              (not isPickupStat and !@tripsById[newTripId].dropoffLocation)
+
+            @tripsById[newTripId] = {
+                                      location: newTrip._id.location
+                                      status: newTrip._id.status
+                                      count: newTrip.count
+                                      lateness: newTrip.lateness
+                                      isPickupLocation: isPickupStat
+                                    }
+        for id, trip of @tripsById
+          if id not in tripsIds and isPickupStat == trip.isPickupLocation
+            delete @tripsById[id]
+        if isPickupStat
+          @pickupTripsLoaded = true
+        else
+          @dropoffTripsLoaded = true
+        @latestListQuery = query
+        if not updateRequest.isObsolete()
+          @drawHeatMap(updateRequest)
+          @hideLoadingIndicator()
+          updateRequest.makeObsolete()
 
   drawHeatMap: (updateRequest) =>
       taxiData = []
       trips = []
+      intensity = 0
 
-      if @selectedStat.isBasedOnLocationConcentration
-        weight = 0
-        max = 0
-        for value in @selectedStat.data
-          weight += value[1]
-          if value[1] > max
-            max = value[1]
-        weight /= @selectedStat.data.length
-        weight *= 100 / max
+      #if @selectedStat.isBasedOnLocationConcentration
 
-        for id, trip of @tripsById
-          locationPickup = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
-          locationDropoff =  new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-          if !window.selectedGeographicZone? or (window.selectedGeographicZone.isHere(locationPickup) and window.selectedGeographicZone.isHere(locationDropoff))
+      for id, trip of @tripsById
+        if trip.status in @selectedStat.tripStatuses and trip.isPickupLocation == @selectedStat.isPickupStat
+          location = new google.maps.LatLng(trip.location.Lat,trip.location.Lng)
+          if !window.selectedGeographicZone? or (window.selectedGeographicZone.isHere(location))
             trips.push {
-              lat: trip.pickupLocation.lat
-              lng: trip.pickupLocation.lng
+              lat: trip.location.Lat
+              lng: trip.location.Lng
             }
-            if @selectedStat.isPickupStat
-              taxiData.push {
-                location: locationPickup,
-                weight: weight
-              }
-            else
-              taxiData.push {
-                location: locationDropoff,
-                weight: weight
-              }
-        intensity = trips.length
-      else
-        if @selectedStat.name == @serviceLateness.name
-          locationLateness = {}
-          for id ,trip of @tripsById
-            if @selectedStat.isPickupStat
-              locationId = '<' + trip.pickupLocation.lat + ',' + trip.pickupLocation.lng + '>'
-              location = new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
-            else
-              locationId = '<' + trip.dropoffLocation.lat + ',' + trip.dropoffLocation.lng + '>'
-              location = new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-            lateness = trip.getLatenessMilliseconds()/60000
-            if !locationLateness[locationId]?
-              locationLateness[locationId] = {location: location, averageLateness: lateness, count: 1}
-              trips.push {
-                lat: new google.maps.LatLng(trip.pickupLocation.lat,trip.pickupLocation.lng)
-                lng: new google.maps.LatLng(trip.dropoffLocation.lat,trip.dropoffLocation.lng)
-              }
-            else
-              locationLateness[locationId].averageLateness += lateness
-              locationLateness[locationId].count++
-
-          max = 0
-          for id, location of locationLateness
-            location.averageLateness = location.averageLateness/location.count
-            if location.averageLateness > max
-              max = location.averageLateness
-
-          for id, location of locationLateness
-            count = Math.floor(location.averageLateness * 100 / max)
-            for i in [0..count]
-              taxiData.push {
-                location: location.location,
-                weight: count * 0.2
-              }
+            taxiData.push {
+              location: location,
+              weight: trip.count*20
+            }
             intensity++
+      #else
 
       @setMapZoom(trips, updateRequest)
       @heatmap.setMap null
@@ -1004,29 +996,6 @@ class TimeSeries
       else
         window.map.panTo new google.maps.LatLng(37.09024, -95.712891)
         window.map.setZoom 4
-
-  processTrip: (newTrip) =>
-      driverLocation =
-          if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, null) else null
-      driverInitialLocation =
-          if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, null) else null
-      trip = new Trip(
-              newTrip._id
-              newTrip.passengerName
-              newTrip.pickupTime
-              new Location(newTrip.PickupLocation.Lat, newTrip.PickupLocation.Lng, null, false)
-              newTrip.OriginatingPartnerName
-              newTrip.ServicingPartnerName
-              newTrip.status
-              newTrip.eta
-              newTrip.price
-              newTrip.driverName
-              driverLocation
-              new Location(newTrip.DropoffLocation.Lat, newTrip.DropoffLocation.Lng, null, false)
-              driverInitialLocation
-              newTrip.LatenessMilliseconds
-      )
-      @tripsById[trip.getId()] = trip
 
   loadMap: () =>
       mapOptions =
