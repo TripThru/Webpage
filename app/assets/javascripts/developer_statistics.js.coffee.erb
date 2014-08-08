@@ -960,12 +960,11 @@ class TimeSeries
               lat: trip.location.Lat
               lng: trip.location.Lng
             }
-            for i in [0..trip.count]
-              taxiData.push {
-                location: location,
-                weight: 20
-              }
-              intensity++
+            taxiData.push {
+              location: location,
+              weight: trip.count*20
+            }
+            intensity++
       #else
 
       @setMapZoom(trips, updateRequest)
