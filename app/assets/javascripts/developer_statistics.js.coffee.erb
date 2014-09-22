@@ -566,7 +566,7 @@ class TimeSeries
   update: (updateRequest) =>
       if !updateRequest?
         activeRequests = @getPendingRequestsNotObsolete()
-        if activeRequests? and activeRequests.length > 0
+        if activeRequests? and activeRequests.length == 0
           updateRequest = @createUpdateRequest({})
         else
           return
