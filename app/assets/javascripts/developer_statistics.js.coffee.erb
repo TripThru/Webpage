@@ -337,13 +337,16 @@ class TimeSeries
     zoomUpdated =       type.zoomUpdate? and type.zoomUpdate
     clearZoomUpdated =  type.clearZoomUpdate? and type.clearZoomUpdate
 
-    @pendingUpdateRequests = $.grep(@pendingUpdateRequests, (updateRequest) => !updateRequest.isObsolete())
+    @pendingUpdateRequests = @getPendingRequestsNotObsolete()
     newUpdate = new UpdateRequest(chartTypeUpdated, dataModeUpdated, togglesUpdated, dateUpdated, timeModeUpdated, fleetUpdated, selectedStatsUpdated, zoomUpdated, clearZoomUpdated)
     for update in @pendingUpdateRequests
       if update.equals(newUpdate)
         update.makeObsolete()
     @pendingUpdateRequests.push newUpdate
     return newUpdate
+
+  getPendingRequestsNotObsolete: () =>
+    $.grep(@pendingUpdateRequests, (updateRequest) => !updateRequest.isObsolete())
 
   createSeriesObject: (name, tripStatuses, color, isPickupStat, isBasedOnLocationConcentration, show) =>
     stat = {
@@ -562,7 +565,11 @@ class TimeSeries
 
   update: (updateRequest) =>
       if !updateRequest?
-        updateRequest = @createUpdateRequest({})
+        activeRequests = @getPendingRequestsNotObsolete()
+        if activeRequests? and activeRequests.length > 0
+          updateRequest = @createUpdateRequest({})
+        else
+          return
       if updateRequest.isObsolete()
         return
       if updateRequest.isChartTypeUpdate() and @chartType == 'series'
