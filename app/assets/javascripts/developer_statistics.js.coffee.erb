@@ -300,7 +300,7 @@ class TimeSeries
           $('#absolute-toggle').hide()
           $('#percentage-toggle').show()
         @percentageMode = not @percentageMode
-        updateRequest = @createUpdateRequest({togglesUpdate: true})
+        updateRequest = @createUpdateRequest({dataModeUpdate: true})
         @update(updateRequest)
 
     $('#farmedin-button').click =>
@@ -663,7 +663,7 @@ class TimeSeries
 
   updateSeriesTimeRange: (updateRequest) =>
     [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
-    if query != @latestCountQuery
+    if query != @latestCountQuery or updateRequest.isDataModeUpdate()
       $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
         $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
           @latestCountQuery = query
