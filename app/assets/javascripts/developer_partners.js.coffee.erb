@@ -163,10 +163,10 @@ class CoverageMap
     citymap = {}
     count = 0
     for fleet in @fleets
-      if fleet.fleetName == "TripThru San Francisco" or (fleet.partnerId.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
+      if fleet.name == "TripThru San Francisco" or (fleet.partner.id.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
         continue
       driver++
-      citymap[fleet.fleetName]=
+      citymap[fleet.name]=
         center: new google.maps.LatLng(fleet.coverage[0].center.lat, fleet.coverage[0].center.lng)
         population: fleet.coverage[0].radius
         drivers: driversTotal[driver]
@@ -207,7 +207,7 @@ class PartnerOptions
         if partner?
             $('#' + @containerId).html('
                 <div class="col-md-5 col-md-push-1 col-sm-5" id="partner-info-main">
-                  <h1>' + partner.fleetName + '</h1>
+                  <h1>' + partner.name + '</h1>
                   <div class="row">
                      <input type="submit" id="partnership-button" value="Request partnership"/>
                   </div>
@@ -246,7 +246,8 @@ class PartnersManager
 
         $('#' + @selectorId).change =>
             selected = $('#' + @selectorId + ' option:selected').val()
-            @updatePartner(@partnersById[selected])
+            partner = @partnersById[selected]
+            @updatePartner(partner)
 
 
         @stats = new Stats(@partnerStatsId, @partnerRatingsId)
@@ -257,10 +258,10 @@ class PartnersManager
         partners = partners.fleets
         @coverageMap = new CoverageMap(@coverageMapId, partners)
         for fleet in partners
-            if fleet.fleetName == "TripThru San Francisco" or (fleet.partnerId.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
+            if fleet.name == "TripThru San Francisco" or (fleet.partner.id.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
                 continue
-            @partnersById[fleet.fleetName] = fleet
-            $('#' + @selectorId).append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
+            @partnersById[fleet.id] = fleet
+            $('#' + @selectorId).append('<option value="' + fleet.id + '">' + fleet.name + '</option>')
         #$('#loadingImage').hide()
         @update()
         @updatePartner(null)

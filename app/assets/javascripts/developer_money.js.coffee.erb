@@ -44,13 +44,13 @@ class Money
     partnersList: (fleets) =>
         firstFleet = null
         for fleet in fleets.fleets
-            if fleet.fleetName == "TripThru San Francisco" or (fleet.partnerId.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
+            if fleet.name == "TripThru San Francisco" or (fleet.partner.id.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
                 continue
             if !firstFleet?
-                firstFleet = fleet.partnerId
-                $('#' + @selectorId).append('<option selected="selected" value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
+                firstFleet = fleet.partner.id
+                $('#' + @selectorId).append('<option selected="selected" value="' + fleet.partner.id + '">' + fleet.name + '</option>')
             else
-                $('#' + @selectorId).append('<option value="' + fleet.partnerId + '">' + fleet.fleetName + '</option>')
+                $('#' + @selectorId).append('<option value="' + fleet.partner.id + '">' + fleet.name + '</option>')
         $('#' + @selectorId).change =>
             @selectedFleet = $('#' + @selectorId + ' option:selected').val()
             @updateStats()
@@ -79,7 +79,7 @@ class Money
         $.get '/mongo_db/trips_list?startDate=' + date + network, (trips) =>
             content = '<ul class="list-group">'
             trips.forEach (trip) =>
-              content += '<li class="list-group-item">' + trip._id + '</li>'
+              content += '<li class="list-group-item">' + trip.id + '</li>'
             content += '</ul>'
 
             if @origin is 'out'

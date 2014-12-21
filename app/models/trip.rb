@@ -1,23 +1,23 @@
 class Trip
   include Mongoid::Document
 
-  field :_id, type:String
+  field :id, type:String
   field :loc, type:Locpoint
-  field :LastStatusChange, type: String
-  field :OriginatingPartnerName, type: String
-  field :OriginatingPartnerId, type: String
-  field :ServicingPartnerId, type: String
-  field :ServicingNetworkId, type: String
-  field :PassengerName, type: String
-  field :PickupLocation, type: Location
-  field :DropoffLocation, type: Location
-  field :PickupTime, type: DateTime
-  field :OccupiedTime, type: String
-  field :EnrouteTime, type: String
-  field :IdleTime, type: String
-  field :EnrouteDistance, type: String
-  field :LastUpdate, type: DateTime
-  field :ServiceGoalMet, type: Boolean
-  field :Lateness, type: String
+  field :lastStatusChange, type: String
+  field :originatingPartner, type: Identity
+  field :servicingPartner, type: Identity
+  field :originatingPartnerId, type: String
+  field :servicingPartnerId, type: String
+  field :passenger, type: Identity
+  field :pickupLocation, type: Location
+  field :dropoffLocation, type: Location
+  field :pickupTime, type: DateTime
+  field :occupiedTime, type: String
+  field :enrouteTime, type: String
+  field :idleTime, type: String
+  field :enrouteDistance, type: String
+  field :lastUpdate, type: DateTime
+  field :serviceGoalMet, type: Boolean
+  field :lateness, type: String
 
 end

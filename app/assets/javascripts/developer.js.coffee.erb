@@ -7,7 +7,7 @@ window.tripthruinterval = null
 class window.TripThru
 
     constructor: (@accessToken) ->
-        @baseUrl = 'http://107.170.240.134/TripThru.TripThruGateway/'
+        @baseUrl = 'http://localhost:3300/'
         if not @accessToken?
             console.error('Wrong parameters')
 
@@ -15,8 +15,8 @@ class window.TripThru
         @baseUrl
 
     getStats: (_callback) =>
-        $.get(@baseUrl + 'stats?format=json&access_token=' + @accessToken, (data) =>
-            if data.result == 'OK'
+        $.get(@baseUrl + 'stats', (data) =>
+            if data.result == 100
                 _callback(data)
             else
                 _callback(null)
@@ -27,9 +27,9 @@ class window.TripThru
         return
 
     getLog: (tripId, _callback) =>
-        id = if tripId? then '&tripId=' + tripId else ''
-        $.get(@baseUrl + 'log?format=json&access_token=' + @accessToken + id, (data) =>
-            if data.result == 'OK'
+        id = if tripId? then tripId else 'all'
+        $.get(@baseUrl + 'log/' + id, (data) =>
+            if data.result == 100
                 _callback(data)
             else
                 _callback(null)
@@ -40,9 +40,9 @@ class window.TripThru
         return
 
     getTrips: (status, _callback) =>
-        status = if status? then '&status=' + status else ''
-        $.get(@baseUrl + 'trips?format=json&access_token=' + @accessToken + status, (data) =>
-            if data.result == 'OK'
+        status = if status? then status else 'all'
+        $.get(@baseUrl + 'trips/' + status, (data) =>
+            if data.result == 100
                 _callback(data)
             else
                 _callback(null)
@@ -53,9 +53,9 @@ class window.TripThru
         return
 
     getTripStatus: (tripId, _callback) =>
-        $.get(@baseUrl + 'tripstatus?format=json&access_token=' + @accessToken + '&tripid=' + tripId, (data) =>
-            if data.result == 'OK'
-                $.get(@baseUrl + 'routetrip?format=json&access_token=' + @accessToken + '&tripid=' + tripId, (trip) =>
+        $.get(@baseUrl + 'tripstatus/' + tripId, (data) =>
+            if data.result == 100
+                $.get(@baseUrl + 'triproute/' + tripId, (trip) =>
                     data.historyEnrouteList = trip.historyEnrouteList
                     data.historyPickUpList = trip.historyPickUpList
                     _callback(data)
@@ -71,8 +71,8 @@ class window.TripThru
         return
 
     getPartners: (_callback) =>
-        $.get(@baseUrl + 'networks?format=json&access_token=' + @accessToken, (data) =>
-            if data.result == 'OK'
+        $.get(@baseUrl + 'networks', (data) =>
+            if data.result == 100
                 _callback(data)
             else
                 _callback(null)

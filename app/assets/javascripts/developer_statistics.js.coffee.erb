@@ -128,12 +128,12 @@ class TimeSeries
     $('#datepicker>input').attr("disabled", true)
     $('#time-range-panel').addClass('hidden')
 
-    allStatuses = ['Complete', 'Rejected', 'Cancelled', 'Error']
+    allStatuses = ['complete', 'rejected', 'cancelled', 'error']
     @tripsRequested =   @createSeriesObject('Requested trips',  allStatuses, '#6FC6F5', true, true, true)
-    @tripsCompleted =   @createSeriesObject('Completed trips',  ['Complete'],  '#009933', false, true, true)
-    @tripsCancelled =   @createSeriesObject('Cancelled trips',  ['Cancelled'],  '#FF9900', true, true, true)
-    @tripsRejected =    @createSeriesObject('Rejected trips',   ['Rejected'],  '#BB6FF5', true, true, true)
-    @tripsError =       @createSeriesObject('Error trips',      ['Error'],  '#CC0000', true, true, true)
+    @tripsCompleted =   @createSeriesObject('Completed trips',  ['complete'],  '#009933', false, true, true)
+    @tripsCancelled =   @createSeriesObject('Cancelled trips',  ['cancelled'],  '#FF9900', true, true, true)
+    @tripsRejected =    @createSeriesObject('Rejected trips',   ['rejected'],  '#BB6FF5', true, true, true)
+    @tripsError =       @createSeriesObject('Error trips',      ['error'],  '#CC0000', true, true, true)
     @serviceLateness =  @createSeriesObject('Lateness',         allStatuses,  '#3482B3', true, false, false)
     @timeEnroute =      @createSeriesObject('Time enroute',     allStatuses,  '#993366', true, true, false)
     @timeOccupied =     @createSeriesObject('Time occupied',    allStatuses,  '#D17445', true, true, false)
@@ -246,7 +246,7 @@ class TimeSeries
       $('#fleets-select').html '<option value="All" selected="selected">All</option>'
       if @selectedNetwork == 'All'
         for id, fleet of @fleets
-          $('#fleets-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
+          $('#fleets-select').append('<option value="' + fleet.name + '">' + fleet.name + '</option>')
       else
         for fleet in @networks[@selectedNetwork].fleets
           $('#fleets-select').append('<option value="' + fleet + '">' + fleet + '</option>')
@@ -769,11 +769,11 @@ class TimeSeries
         latenessAverage = 0
 
         latenessAverages = countByStatus.filter((v) ->
-                    (v._id.Status == 'Complete' or
-                    v._id.Status == 'Cancelled' or
-                    v._id.Status == 'Rejected' or
-                    v._id.Status == 'Error') and
-                    v._id.Interval == parseInt(id))
+                    (v._id.status == 'complete' or
+                    v._id.status == 'cancelled' or
+                    v._id.status == 'rejected' or
+                    v._id.status == 'error') and
+                    v._id.interval == parseInt(id))
         latenessAverage = 0
         for val in latenessAverages
           latenessAverage += val.lateness
@@ -781,15 +781,15 @@ class TimeSeries
           latenessAverage /= latenessAverages.length
           latenessAverage /= 60000
 
-        count = countByStatus.filter((v) -> v._id.Status == 'Complete' and v._id.Interval == parseInt(id))
+        count = countByStatus.filter((v) -> v._id.status == 'complete' and v._id.interval == parseInt(id))
         countComplete = if count.length == 0 then 0 else count[0].count
-        count = countByStatus.filter((v) -> v._id.Status == 'Cancelled' and v._id.Interval == parseInt(id))
+        count = countByStatus.filter((v) -> v._id.status == 'cancelled' and v._id.interval == parseInt(id))
         countCancelled = if count.length == 0 then 0 else count[0].count
-        count = countByStatus.filter((v) -> v._id.Status == 'Rejected' and v._id.Interval == parseInt(id))
+        count = countByStatus.filter((v) -> v._id.status == 'rejected' and v._id.interval == parseInt(id))
         countRejected = if count.length == 0 then 0 else count[0].count
-        count = countByStatus.filter((v) -> v._id.Status == 'Error' and v._id.Interval == parseInt(id))
+        count = countByStatus.filter((v) -> v._id.status == 'error' and v._id.interval == parseInt(id))
         countError = if count.length == 0 then 0 else count[0].count
-        count = totalCount.filter((v) -> v._id.Interval == parseInt(id))
+        count = totalCount.filter((v) -> v._id.interval == parseInt(id))
         countRequested = if count.length == 0 then 0 else count[0].count
         total = countComplete + countCancelled + countRejected + countError
 
@@ -926,7 +926,7 @@ class TimeSeries
       $.get '/mongo_db/trips_list?' + query , (trips) =>
         tripsIds = []
         for newTrip in trips
-          newTripId = '<' + isPickupStat + ',' + newTrip._id.status + ',' + newTrip._id.location.Lat + ',' + newTrip._id.location.Lng + '>'
+          newTripId = '<' + isPickupStat + ',' + newTrip._id.status + ',' + newTrip._id.location.lat + ',' + newTrip._id.location.lng + '>'
           tripsIds.push newTripId
           if newTripId not of @tripsById or
               (isPickupStat and !@tripsById[newTripId].pickupLocation?) or
@@ -961,15 +961,15 @@ class TimeSeries
 
       for id, trip of @tripsById
         if trip.status in @selectedStat.tripStatuses and trip.isPickupLocation == @selectedStat.isPickupStat
-          location = new google.maps.LatLng(trip.location.Lat,trip.location.Lng)
+          location = new google.maps.LatLng(trip.location.lat,trip.location.lng)
           if !window.selectedGeographicZone? or (window.selectedGeographicZone.isHere(location))
             trips.push {
-              lat: trip.location.Lat
-              lng: trip.location.Lng
+              lat: trip.location.lat
+              lng: trip.location.lng
             }
             taxiData.push {
               location: location,
-              weight: trip.count*20
+              weight: trip.count*5
             }
             intensity++
       #else
@@ -980,7 +980,7 @@ class TimeSeries
       @heatmap = new google.maps.visualization.HeatmapLayer({
           data: taxiData,
           radius: 20,
-          maxIntensity: intensity,
+          maxIntensity: intensity*2,
           gradient: gradient,
       })
       @heatmap.setMap window.map
@@ -1050,19 +1050,19 @@ class TimeSeries
 
   loadSelectorFilters: (fleets) =>
       for fleet in fleets.fleets
-          if fleet.partnerName == "TDispatch" or (fleet.partnerId.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
+          if fleet.partner.name == "TDispatch" or (fleet.partner.id.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
               continue
-          if fleet.partnerName of @networks
-              @networks[fleet.partnerName].fleets.push fleet.fleetName
+          if fleet.partner.name of @networks
+              @networks[fleet.partner.name].fleets.push fleet.name
           else
-              @networks[fleet.partnerName] =  {id: fleet.partnerId, fleets: [fleet.fleetName]}
-          @fleets[fleet.fleetName] = fleet
+              @networks[fleet.partner.name] =  {id: fleet.partner.id, fleets: [fleet.name]}
+          @fleets[fleet.name] = fleet
           if $('#getUserRole').html() is 'partner'
-            $('#networks-select').append('<option value="' + fleet.partnerName + '" selected="selected" >' + fleet.partnerName + '</option>')
-            @selectedNetwork = fleet.partnerName
+            $('#networks-select').append('<option value="' + fleet.partner.name + '" selected="selected" >' + fleet.partner.name + '</option>')
+            @selectedNetwork = fleet.partner.name
           else
-            $('#networks-select').append('<option value="' + fleet.partnerName + '">' + fleet.partnerName + '</option>')
-          $('#fleets-select').append('<option value="' + fleet.fleetName + '">' + fleet.fleetName + '</option>')
+            $('#networks-select').append('<option value="' + fleet.partner.name + '">' + fleet.partner.name + '</option>')
+          $('#fleets-select').append('<option value="' + fleet.name + '">' + fleet.name + '</option>')
 
   HomeControl: (controlDiv, map) =>
         controlDiv.style.padding = "5px"

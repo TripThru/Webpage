@@ -314,12 +314,12 @@ class TripTracker
         if driverLocation? and pickupLocation? and dropoffLocation?
           routes = []
           switch trip.status
-            when "Enroute"
+            when "enroute"
               routes = [
                 origin: initialLocation
                 destination: driverCurrentLocation
               ]
-            when "PickedUp"
+            when "pickedup"
               routes = [
                 origin: initialLocation
                 destination: passengerLocation
@@ -327,7 +327,7 @@ class TripTracker
                 origin: passengerLocation
                 destination: driverCurrentLocation
               ]
-            when "Complete"
+            when "complete"
               routes = [
                 origin: initialLocation
                 destination: passengerLocation
@@ -372,7 +372,7 @@ class ActivityLog
   updateLog: (logList, currentTripId) =>
     if logList? and logList.length > 0
       logList = logList.reverse()
-      newLatest = logList[0].time
+      newLatest = logList[0].creation
       logs = []
       if !@latestAddedLogDate? or @tcurrentTripIdripId != currentTripId
         @tcurrentTripIdripId = currentTripId
@@ -380,7 +380,7 @@ class ActivityLog
         $('#' + @containerId).html('')
       else
         for log in logList
-          if Date.parse(log.time) > Date.parse(@latestAddedLogDate)
+          if Date.parse(log.creation) > Date.parse(@latestAddedLogDate)
             logs.push log
           else
             break
@@ -392,30 +392,24 @@ class ActivityLog
           $('#' + @containerId).prepend(logString)
 
         Prism.highlightAll()
-        @latestAddedLogDate = logList[logList.length-1].time
+        @latestAddedLogDate = logList[logList.length-1].creation
 
       @tripId = currentTripId
       @latestAddedLogDate = newLatest
 
   getLogTag: (id, log) =>
     id =  id + 'parent-accordion'
-    if log.request == ''
-        log.request = '{}'
-    if log.response == ''
-        log.response = '{}'
+    request = if log.messages[0].json? then log.messages[0].json else {}
+    response = if log.messages.length > 1 and log.messages[log.messages.length-1].json? then log.messages[log.messages.length-1].json else undefined
     logString = '
                             <div class="accordion-group" id="' + id + '">
                                 <div class="accordion-heading">
                                     <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion">
-                                        ' + log.time.split('.')[0] + ' | ' + log.messages[0].text +  '
+                                        ' + log.creation.split('.')[0] + ' | ' + log.messages[0].text +  '
                                     </a>
                                 </div>
                                 <div id="' + id + '-accordion" class="accordion-body collapse">
                                     <div class="accordion-inner">
-                            '
-
-    if log.request?
-      logString += '
                                               <div class="accordion-group json-inner-log">
                                                   <div class="accordion-heading">
                                                       <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-request">
@@ -424,7 +418,7 @@ class ActivityLog
                                                   </div>
                                                   <div id="' + id + '-accordion-request" class="accordion-body collapse">
                                                       <div class="accordion-inner">
-                                                          <pre><code class="language-javascript">' + FormatJSON(JSON.parse(log.request)) + '</code></pre>
+                                                          <pre><code class="language-javascript">' + FormatJSON(request) + '</code></pre>
                                                       </div>
                                                   </div>
                                               </div>
@@ -434,16 +428,8 @@ class ActivityLog
     i = 1
     while(i < log.messages.length - 1)
       message = log.messages[i]
-      padding = if message.indent is 0 then '' else 'padding-left: ' + message.indent + 'px'
-
-      logString += '<div style="' + padding + '">'
 
       if message.json?
-        if message.json == ''
-            message.json = '{}'
-        hasResponse = ((i + 1) < (log.messages.length - 1)) and
-          log.messages[i + 1].text.indexOf('Response') != -1 and
-          log.messages[i + 1].json
 
         logString += '
                                                     <div class="accordion-group json-inner-log">
@@ -454,20 +440,14 @@ class ActivityLog
                                                         </div>
                                                         <div id="' + id + '-accordion-' + i + '" class="accordion-body collapse">
                                                             <div class="accordion-inner">
-                                                                <pre><code class="language-javascript">'
-
-        logString +=                'Request:\n' + FormatJSON(JSON.parse(message.json))
-
-        if hasResponse
-          logString +=            '\n\nResponse:\n' + FormatJSON(JSON.parse(log.messages[i + 1].json))
-          i++
-
-        logString += '          </code></pre>
+                                                                <pre><code class="language-javascript">
+                                                                  Request:\n' + FormatJSON(message.json) + '
+                                                                </code></pre>
                                                             </div>
                                                         </div>
                                                     </div>'
       else
-        logString +='<div class="accordion-group simple-inner-log">
+        logString +='                               <div class="accordion-group simple-inner-log">
                                                         <div class="accordion-heading">
                                                             <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-' + i + '">
                                                                 ' + message.text + '
@@ -475,31 +455,26 @@ class ActivityLog
                                                         </div>
                                                      </div>
                                                         '
-
-      logString += ' </div>'
       i++
 
-    if log.response?
+    if response?
       logString += '
-                                              <div class="accordion-group json-inner-log">
-                                                  <div class="accordion-heading">
-                                                      <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-response">
-                                                          Response
-                                                      </a>
-                                                  </div>
-                                                  <div id="' + id + '-accordion-response" class="accordion-body collapse">
-                                                      <div class="accordion-inner">
-                                                          <pre><code class="language-javascript">' + FormatJSON(JSON.parse(log.response)) + '</code></pre>
-                                                      </div>
-                                                  </div>
-                                              </div>
-
-                          '
-    logString +=
-      '           </div>
-                                      </div>
-                                  </div>
-                                '
+                                                <div class="accordion-group json-inner-log">
+                                                    <div class="accordion-heading">
+                                                        <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-response">
+                                                        Response
+                                                        </a>
+                                                    </div>
+                                                    <div id="' + id + '-accordion-response" class="accordion-body collapse">
+                                                        <div class="accordion-inner">
+                                                            <pre><code class="language-javascript">' + FormatJSON(response) + '</code></pre>
+                                                        </div>
+                                                    </div>
+                                                </div>'
+    logString +=                        '</div>
+                                    </div>
+                                </div>
+                              '
 
     return [id, logString]
 
@@ -579,16 +554,16 @@ class StatisticsDashboard
           cancelled = 0
           error = 0
           for entry in data
-              switch entry._id.Status
-                  when 'Request'
+              switch entry._id.status
+                  when 'request'
                       request += entry.count
-                  when 'Complete'
+                  when 'complete'
                       completed += entry.count
-                  when 'Cancelled'
+                  when 'cancelled'
                       cancelled += entry.count
-                  when 'Rejected'
-                      rejected += entry.count
-                  when 'Error'
+                  when 'rejected'
+                    rejected += entry.count
+                  when 'error'
                       error += entry.count
           total = request + completed + rejected + cancelled + error
           @update(80, 90, 55, 32, 70, 80, 15, total, request, cancelled, completed, rejected, error, 15, 95)
@@ -767,21 +742,25 @@ class DashboardManager
     @updatingTrips = false
 
   processTrip: (newTrip) =>
-    driverLocation =
-      if newTrip.driverLocation? then new Location(newTrip.driverLocation.lat, newTrip.driverLocation.lng, null) else null
-    driverInitialLocation =
-      if newTrip.driverInitialLocation? then new Location(newTrip.driverInitialLocation.lat, newTrip.driverInitalLocation.lng, null) else null
+    driverId = null
+    driverLocation = null
+    driverInitialLocation = null
+    if newTrip.driver?
+      driverId = newTrip.driver.id
+      driverLocation = new Location(newTrip.driver.location.lat, newTrip.driver.location.lng)
+      if newTrip.driver.initialLocation?
+        driverInitialLocation =  new Location(newTrip.driver.initialLocation.lat, newTrip.driver.initialLocation.lng, null)
     trip = new Trip(
       newTrip.id
-      newTrip.passengerName
+      newTrip.passenger.name
       newTrip.pickupTime
       new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, null)
-      newTrip.originatingPartnerName
-      newTrip.servicingPartnerName
+      if newTrip.originatingPartner then newTrip.originatingPartner.id else null
+      if newTrip.servicingPartner then newTrip.servicingPartner.id else null
       newTrip.status
       newTrip.eta
       newTrip.price
-      newTrip.driverName
+      driverId
       driverLocation
       new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, null)
       driverInitialLocation
@@ -811,26 +790,24 @@ class DashboardManager
 
   updateActiveTrip: (data) =>
     if data?
-      if !@activeTrip? or (data.driverLocation? and !@activeTrip.getDriverLocation()?) or
-        (data.driverLocation? and
+      if !@activeTrip? or (data.driver? and data.driver.location? and !@activeTrip.getDriverLocation()?) or
+        (data.driver? and data.driver.location? and
           @activeTrip.getDriverLocation()? and
-          data.driverLocation.lat != @activeTrip.getDriverLocation().lat and
-          data.driverLocation.lng != @activeTrip.getDriverLocation().lng)
-
-        driverLocation = new Location(data.driverLocation.lat, data.driverLocation.lng, null)
+          data.driver.location.lat != @activeTrip.getDriverLocation().lat and
+          data.driver.location.lng != @activeTrip.getDriverLocation().lng)
+        driverLocation = new Location(data.driver.location.lat, data.driver.location.lng, null)
       else
         driverLocation = @activeTrip.getDriverLocation()
 
-      if !@activeTrip? or (data.historyEnrouteList and data.historyEnrouteList[0] and !@activeTrip.getDriverInitialLocation()?)
-
-        driverInitialLocation = new Location(data.historyEnrouteList[0].lat, data.historyEnrouteList[0].lng, null)
+      if !@activeTrip? or (data.historyEnrouteList and !@activeTrip.getDriverInitialLocation()?)
+        driverInitialLocation = new Location(data.historyEnrouteList.lat, data.historyEnrouteList.lng, null)
       else
         driverInitialLocation = @activeTrip.getDriverInitialLocation()
 
       if @activeTrip != null
         @activeTrip.update(
           if data.status? then data.status else @activeTrip.getStatus()
-          data.driverName
+          if data.driver? then data.driver.id else ''
           driverLocation
           driverInitialLocation
           data.historyEnrouteList
@@ -851,7 +828,7 @@ class DashboardManager
       for listener in @listeners
         if typeof listener.updateLog is 'function'
           try
-            listener.updateLog(data.logList, tripId)
+            listener.updateLog(data.logs, tripId)
           catch error
             console.error listener + ' updateLogs failed: ' + error
     @updatingLogs = false

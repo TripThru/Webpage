@@ -91,7 +91,7 @@ User.create!(
 )
 
 User.create!(
-    ClientId: 'los@tripthru.com',
+    ClientId: 'lostaxiblus@tripthru.com',
     UserName: 'lostaxiblus',
     password_digest: BCrypt::Password.create('lostaxiblus'),
     Email: 'los@tripthru.com',
@@ -123,7 +123,7 @@ User.create!(
 )
 
 User.create!(
-    ClientId: 'tampacab@tripthru.com',
+    ClientId: 'tampa@tripthru.com',
     UserName: 'tampacab',
     password_digest: BCrypt::Password.create('tampacab'),
     Email: 'tampacab@tripthru.com',
