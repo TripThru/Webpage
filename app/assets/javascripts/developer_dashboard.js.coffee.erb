@@ -74,7 +74,10 @@ class TripList
       @pendingUpdateTripsIds.push trip.getId()
 
     @tripsInListById[trip.getId()] = trip
-    $('#' + @containerId).prepend @getTripTag(trip)
+    if trip.id.indexOf('web') > -1
+      $('#' + @containerId).prepend @getTripTag(trip)
+    else
+      $('#' + @containerId).append @getTripTag(trip)
 
   updateTrip: (trip) =>
     if trip.getId() in @pendingUpdateTripsIds and trip.getPickupLocation().getAddress()?
@@ -724,6 +727,11 @@ class DashboardManager
   updateTrips: (data) =>
     if data?
       tripsIds = []
+      for i in [0...data.trips.length]
+        trip = data.trips[i]
+        if trip.id.indexOf('web') > -1
+          data.trips.move(i, data.trips.length-1)
+
       for newTrip in data.trips
         tripsIds.push newTrip.id
         if newTrip.id not of @tripsById
