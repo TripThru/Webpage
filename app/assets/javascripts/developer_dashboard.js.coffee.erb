@@ -32,9 +32,31 @@ class TripList
 
   constructor: (@containerId) ->
     @tripsInListById = {}
-    @pendingUpdateTripsIds = []
     @currentStatus = null
     @statusChanged = false
+    $('#trips').scroll @loadAddressIfVisible
+    $('#main').scroll @loadAddressIfVisible
+    @loadingAddresses = false
+
+  loadAddressIfVisible: () =>
+    if !@loadingAddresses
+      @loadingAddresses = true
+      for id, trip of @tripsInListById
+        if $('#' + trip.getContainerId())? and $('#' + trip.getContainerId()).visible() and $('#' + trip.getContainerId()).find('.triplist-trip-pickup').html() == 'loading...'
+          @setAddress(trip)
+      @loadingAddresses = false
+
+  setAddress: (trip) =>
+    if !trip.loadingAddress
+      address = trip.getPickupLocation().getAddress()
+      address = if address? then address else 'loading...'
+      $('#' + trip.getContainerId()).find('.triplist-trip-pickup').fadeOut().html(address).fadeIn()
+      if address == 'loading...'
+        setTimeout(() =>
+            @setAddress(trip)
+        , 500);
+      else
+        trip.loadingAddress = true
 
   tripChanged: (trip) =>
     if not trip?
@@ -67,36 +89,28 @@ class TripList
         else
           @updateTrip(trip)
 
-  updateActiveTrip: (trip) =>
+  updateTrip: (trip) =>
 
   addTrip: (trip) =>
-    if !trip.getPickupLocation().getAddress()?
-      @pendingUpdateTripsIds.push trip.getId()
-
     @tripsInListById[trip.getId()] = trip
     if trip.id.indexOf('web') > -1
       $('#' + @containerId).prepend @getTripTag(trip)
     else
       $('#' + @containerId).append @getTripTag(trip)
-
-  updateTrip: (trip) =>
-    if trip.getId() in @pendingUpdateTripsIds and trip.getPickupLocation().getAddress()?
-      $('#' + trip.getContainerId()).find('.triplist-trip-pickup').fadeOut().html(trip.getPickupLocation().getAddress()).fadeIn()
-      @pendingUpdateTripsIds.splice($.inArray(trip.getId(), @pendingUpdateTripsIds), 1);
+    if $('#' + trip.getContainerId()).visible()
+      @setAddress(trip)
 
   removeTrip: (trip) =>
     delete @tripsInListById[trip.getId()]
     $('#' + trip.getContainerId()).remove()
 
   getTripTag: (trip) =>
-    tripPickupLocation = trip.getPickupLocation().getAddress()
-    pickupLocation = if tripPickupLocation then tripPickupLocation else 'loading...'
     '
                 <div class="well trip" id="' + trip.getContainerId() + '">
                     <h1>' + trip.getId() + '</h1>
                     <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
                     <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
-                    <p><span>Pickup:</span> <i class="triplist-trip-pickup">' + pickupLocation + '</i></p>
+                    <p><span>Pickup:</span> <i class="triplist-trip-pickup">loading...</i></p>
                 </div>
             '
 

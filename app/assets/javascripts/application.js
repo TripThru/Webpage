@@ -35,6 +35,7 @@
 //= require flickerplate.js
 //= require jquery-finger-v0.1.0.min.js
 //= require modernizr-custom-v2.7.1.min.js
+//= require jquery.visible.min.js
 //= require_tree .
 
 Array.prototype.move = function (old_index, new_index) {
