@@ -373,7 +373,9 @@ class ActivityLog
     @lastLogId = 0
 
   updateLog: (logList, currentTripId) =>
-    if logList? and logList.length > 0
+    if !currentTripId?
+      $('#' + @containerId).html('Select a trip')
+    else if logList? and logList.length > 0
       logList = logList.reverse()
       newLatest = logList[0].creation
       logs = []
@@ -399,6 +401,8 @@ class ActivityLog
 
       @tripId = currentTripId
       @latestAddedLogDate = newLatest
+    else
+      $('#' + @containerId).html('No activity logged')
 
   getLogTag: (id, log) =>
     id =  id + 'parent-accordion'
@@ -705,9 +709,11 @@ class DashboardManager
         @updateActiveTrip(null)
 
     if not @updatingLogs
-      @updatingLogs = true
-      tripId = if @activeTrip? then @activeTrip.getId() else null
-      @gateway.getLog(tripId, @updateLogs)
+      if @activeTrip?
+        @updatingLogs = true
+        @gateway.getLog(@activeTrip.getId(), @updateLogs)
+      else
+        @updateLogs(null)
 
   updateStats: (data) =>
     if data?
@@ -831,14 +837,14 @@ class DashboardManager
     @updatingActiveTrip = false
 
   updateLogs: (data) =>
-    if data?
-      tripId = if @activeTrip? then @activeTrip.getId() else null
-      for listener in @listeners
-        if typeof listener.updateLog is 'function'
-          try
-            listener.updateLog(data.logs, tripId)
-          catch error
-            console.error listener + ' updateLogs failed: ' + error
+    logs = if data? then data.logs else null
+    tripId = if @activeTrip? then @activeTrip.getId() else null
+    for listener in @listeners
+      if typeof listener.updateLog is 'function'
+        try
+          listener.updateLog(logs, tripId)
+        catch error
+          console.error listener + ' updateLogs failed: ' + error
     @updatingLogs = false
 
   updateStatus: () =>
