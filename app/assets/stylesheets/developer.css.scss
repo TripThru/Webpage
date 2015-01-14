@@ -412,8 +412,9 @@
             height: 64px;
           }
 
+
           h1 {
-            font-size: 22px;
+            font-size: 18px;
             padding: 0;
             margin: -3px 0 5px 0;
             text-align: center;
@@ -421,6 +422,17 @@
             span {
               font-size: 18px;
               color: #a1a1a1;
+            }
+            #logo {
+              margin: 0px 10px 0px 10px;
+              width: 18px;
+              height: 18px;
+              img {
+                width: 18px;
+                height: 18px;
+                margin: 5px 5px 0 0;
+              }
+              display: inline-block;
             }
           }
 
@@ -697,6 +709,17 @@
                 padding: 0;
                 color: #a1a1a1;
               }
+              #logo {
+                margin: 0px 10px 0px 10px;
+                width: 22px;
+                height: 22px;
+                img {
+                  width: 22px;
+                  height: 22px;
+                  margin: 5px 5px 0 0;
+                }
+                display: inline-block;
+              }
             }
 
             p {
@@ -830,6 +853,17 @@
                 font-size: 14px;
                 padding: 0;
                 color: #a1a1a1;
+              }
+              #logo {
+                margin: 0px 10px 0px 10px;
+                width: 18px;
+                height: 18px;
+                img {
+                  width: 18px;
+                  height: 18px;
+                  margin: 5px 5px 0 0;
+                }
+                display: inline-block;
               }
             }
 

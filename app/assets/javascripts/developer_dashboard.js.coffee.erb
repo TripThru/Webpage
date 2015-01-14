@@ -203,31 +203,35 @@ class TripTracker
       dropoffLocation = if tripDropoffLocation? then tripDropoffLocation else 'loading...'
       driverLocation = if tripDriverLocation? then ' @ ' + tripDriverLocation else ''
       driver = if tripDriverName? then tripDriverName + driverLocation else ''
+      farmedInLogo = '<div id="logo"><img alt="' + trip.getOrigin() + '" src="/assets/networks/' + trip.getOrigin() + '.png"/></div>'
+      farmedOutLogo = '<div id="logo"><img alt="' + trip.getOrigin() + '" src="/assets/networks/' + trip.getOrigin() + '.png"/></div>'
+      if trip.getServicing()
+        farmedOutLogo = '<div id="logo"><img alt="' + trip.getServicing() + '" src="/assets/networks/' + trip.getServicing() + '.png"/></div>'
 
       $('#' + @tripInfoContainerId).html(
           '<div>
-                              <h1>' + trip.getId() + '<span> - ' + trip.getStatus() + '</span></h1>
-                            <div><span>Passenger: </span><p>' + trip.getPassengerName() + '  </p>
-                               <div class="rating-container">
-                                    <div class="flexible-stars" data-isLocked="yes"
-                                            data-init="0" id="' + @passengerRatingChartId + '"></div>
-                               </div>
-                            </div>
-                            <div><span>Time: </span><p>' + trip.getPickupTime().split('.')[0] + '</p></div>
-                            <div><span>Pickup: </span><p>' + pickupLocation + '</p></div>
-                            <div><span>Dropoff: </span><p>' + dropoffLocation + '</p></div>
-                            <div>
-                              <span>Farmed-In: </span><p>' + trip.getOrigin() + ' - </p>
-                              <span>Farmed-Out: </span><p>' + trip.getServicing() + '</p>
-                            </div>
-                            <div><span>Driver: </span><p>' + driver + '  </p>
-                                <div class="rating-container">
-                                  <div class="flexible-stars" data-isLocked="yes"
-                                             data-init="0" id="' + @driverRatingChartId + '"></div>
-                                </div>
-                            </div>
-                         </div>
-                        '
+              <h1>' + farmedInLogo + trip.getId() + '<span> - ' + trip.getStatus() + farmedOutLogo + '</span></h1>
+              <div><span>Passenger: </span><p>' + trip.getPassengerName() + '  </p>
+                 <div class="rating-container">
+                      <div class="flexible-stars" data-isLocked="yes"
+                              data-init="0" id="' + @passengerRatingChartId + '"></div>
+                 </div>
+              </div>
+              <div><span>Time: </span><p>' + trip.getPickupTime().split('.')[0] + '</p></div>
+              <div><span>Pickup: </span><p>' + pickupLocation + '</p></div>
+              <div><span>Dropoff: </span><p>' + dropoffLocation + '</p></div>
+              <div>
+                <span>Farmed-In: </span><p>' + trip.getOrigin() + ' - </p>
+                <span>Farmed-Out: </span><p>' + trip.getServicing() + '</p>
+              </div>
+              <div><span>Driver: </span><p>' + driver + '  </p>
+                  <div class="rating-container">
+                    <div class="flexible-stars" data-isLocked="yes"
+                               data-init="0" id="' + @driverRatingChartId + '"></div>
+                  </div>
+              </div>
+           </div>
+          '
       )
 
       $('#' + @passengerRatingChartId).html('')
