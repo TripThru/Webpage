@@ -895,15 +895,20 @@ class TimeSeries
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
     networkId = ''
-    id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    fleetId = ''
+    nId = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    fId = if @selectedFleet != 'All' then @fleets[@selectedFleet].id else 'all'
     if @farmedInMode
-      networkId += '&servicingNetworkId=' + id
+      networkId += '&servicingNetworkId=' + nId
+      fleetId += '&servicingFleetId=' + fId
     if @farmedOutMode
-      networkId += '&originatingNetworkId=' + id
+      networkId += '&originatingNetworkId=' + nId
+      fleetId += '&originatingFleetId=' + fId
     if @localTripsMode
-      networkId += '&localNetworkId=' + id
+      networkId += '&localNetworkId=' + nId
+      fleetId += '&localFleetId=' + fId
 
-    return selectedGeographicZone + networkId
+    return selectedGeographicZone + networkId + fleetId
 
   updateHeatMapRealTime: (updateRequest) =>
     @loadHeatMapTrips(updateRequest, @getTripsListRealTimeQuery())
@@ -994,7 +999,7 @@ class TimeSeries
         bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
         window.map.fitBounds(bounds)
       else if @selectedFleet != 'All'
-        partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage[0].center.lat, @fleets[@selectedFleet].coverage[0].center.lng)
+        partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage.center.lat, @fleets[@selectedFleet].coverage.center.lng)
         if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
           window.selectedGeographicZone.setMap null
           window.selectedGeographicZone = null

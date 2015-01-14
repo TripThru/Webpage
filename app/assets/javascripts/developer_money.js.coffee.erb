@@ -15,7 +15,7 @@ class Money
           $('#farmed-out-container').addClass('hidden')
           $('#local-container').addClass('hidden')
           @origin = 'in'
-          @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+          @selectedPartner = $('#' + @selectorId + ' option:selected').val()
           @updateStats()
 
         $('#farmedout-button').click =>
@@ -27,7 +27,7 @@ class Money
           $('#local-container').addClass('hidden')
 
           @origin = 'out'
-          @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+          @selectedPartner = $('#' + @selectorId + ' option:selected').val()
           @updateStats()
 
         $('#local-button').click =>
@@ -38,44 +38,50 @@ class Money
           $('#farmed-in-container').addClass('hidden')
           $('#local-container').removeClass('hidden')
           @origin = 'local'
-          @selectedFleet = $('#' + @selectorId + ' option:selected').val()
+          @selectedPartner = $('#' + @selectorId + ' option:selected').val()
           @updateStats()
 
     partnersList: (fleets) =>
-        firstFleet = null
-        for fleet in fleets.fleets
-            if fleet.name == "TripThru San Francisco" or (fleet.partner.id.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
-                continue
-            if !firstFleet?
-                firstFleet = fleet.partner.id
-                $('#' + @selectorId).append('<option selected="selected" value="' + fleet.partner.id + '">' + fleet.name + '</option>')
-            else
-                $('#' + @selectorId).append('<option value="' + fleet.partner.id + '">' + fleet.name + '</option>')
-        $('#' + @selectorId).change =>
-            @selectedFleet = $('#' + @selectorId + ' option:selected').val()
-            @updateStats()
-        if firstFleet?
-            @selectedFleet = firstFleet
+      firstPartner = null
+      partners = {}
+      for fleet in fleets.fleets
+        if fleet.partner.name == "TDispatch" or (fleet.partner.id.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
+          continue
+        if not (fleet.partner.name of partners)
+          partners[fleet.partner.name] =  {id: fleet.partner.id, name: fleet.partner.name, fleets: [fleet]}
+          if !firstPartner?
+            firstPartner = fleet.partner.id
+            $('#' + @selectorId).append('<option selected="selected" value="' + fleet.partner.id + '">' + fleet.partner.name + '</option>')
+          else
+            $('#' + @selectorId).append('<option value="' + fleet.partner.id + '">' + fleet.partner.name + '</option>')
         else
-          document.getElementById("imageLoad").style.visibility = "hidden"
+          partners[fleet.partner.name].fleets.push fleet
+
+      $('#' + @selectorId).change =>
+        @selectedPartner = $('#' + @selectorId + ' option:selected').val()
         @updateStats()
 
+      if firstPartner?
+          @selectedPartner = firstPartner
+      else
+        document.getElementById("imageLoad").style.visibility = "hidden"
+      @updateStats()
+
     updateStats: () =>
-        if !@selectedFleet?
+        if !@selectedPartner?
           $('#balanceDiv').html "No fleets found"
           return
         document.getElementById("imageLoad").style.visibility = "visible"
         day = new Date();
         day.setHours(day.getHours()-24);
         date = +day / 1000;
-        iD = @selectedFleet
         network = ''
         if @origin == 'out'
-          network = '&originatingNetworkId=' + iD
+          network = '&originatingNetworkId=' + @selectedPartner
         else if @origin == 'in'
-          network = '&servicingNetworkId=' + iD
+          network = '&servicingNetworkId=' + @selectedPartner
         else
-          network = '&local=' + iD
+          network = '&localNetworkId=' + @selectedPartner
         $.get '/mongo_db/trips_list?startDate=' + date + network, (trips) =>
             content = '<ul class="list-group">'
             trips.forEach (trip) =>

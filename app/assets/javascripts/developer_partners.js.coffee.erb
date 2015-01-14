@@ -46,12 +46,14 @@ class Stats
 
         @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-    updateStats: (stats) =>
+    updateStats: (partner) =>
         lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate()-7);
         partnerId = ''
+        if partner
+          partnerId = '&servicingNetworkId=' + partner.id + '&originatingNetworkId=' + partner.id
         if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
-            partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
+          partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
         $.get '/mongo_db/trips_count?startDate=' + lastWeek + partnerId + '&interval=week&bucketSize=1&by_status=true', (data) =>
             request = 0
             completed = 0
@@ -59,16 +61,16 @@ class Stats
             cancelled = 0
             error = 0
             for entry in data
-                switch entry._id.Status
-                    when 'Request'
+                switch entry._id.status
+                    when 'request'
                         request += entry.count
-                    when 'Complete'
+                    when 'complete'
                         completed += entry.count
-                    when 'Cancelled'
+                    when 'cancelled'
                         cancelled += entry.count
-                    when 'Rejected'
+                    when 'rejected'
                         rejected += entry.count
-                    when 'Error'
+                    when 'error'
                         error += entry.count
             @update(80, 90, request, cancelled, completed, rejected, error, 15, 95)
 
@@ -131,21 +133,22 @@ class Stats
 
 class CoverageMap
 
-  constructor: (@containerId, @fleets) ->
+  constructor: (@containerId, @partner) ->
     @mapCanvas = null
+    @markers = []
     $('#' + @containerId).html('<%= image_tag('loading.gif', height: 128, width: 128) %>')
     google.maps.event.addDomListener window, "load", @init()
 
+
   init: () =>
-    if @fleets?
+    if @partner?
       $('#' + @containerId).html('')
       @loadMap()
       @updateCoverage()
 
   updatePartner: (partner) =>
-    if partner?
-     @mapCanvas.panTo(new google.maps.LatLng(partner.coverage.center.lat, partner.coverage.center.lng))
-     @mapCanvas.setZoom 8
+    @partner = partner
+    @updateCoverage()
 
   loadMap: () =>
       mapOptions =
@@ -154,15 +157,21 @@ class CoverageMap
           mapTypeId: google.maps.MapTypeId.TERRAIN
       @mapCanvas = new google.maps.Map(document.getElementById(@containerId), mapOptions)
 
-  updateCoverage: () =>
+  clearMap: () =>
+    for marker in @markers
+      marker.setMap(null)
+    @markers = []
 
+  updateCoverage: () =>
+    @clearMap()
     colors = [ "#006600", "#0D6B00", "#1A7000", "#267500", "#337A00", "#408000", "#4C8500", "#598A00", "#668F00", "#739400", "#809900", "#8C9E00", "#99A300", "#A6A800", "#B2AD00", "#BFB200", "#CCB800", "#D9BD00", "#E6C200", "#F2C700", "#FFCC00", "#FCC200", "#FAB800", "#F7AD00", "#F5A300", "#F29900", "#F08F00", "#ED8500", "#EB7A00", "#E87000", "#E66600", "#E35C00", "#E05200", "#DE4700", "#DB3D00", "#D93300", "#D62900", "#D41F00", "#D11400", "#CF0A00", "#CC0000" ]
     driversTotal = [89,5,37,90,35,18,51,47,31,19,74,10,92,65,65,20,32]
     driver = 0
 
     citymap = {}
     count = 0
-    for fleet in @fleets
+    locations = []
+    for fleet in @partner.fleets
       if fleet.name == "TripThru San Francisco" or (fleet.partner.id.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
         continue
       driver++
@@ -172,6 +181,7 @@ class CoverageMap
         drivers: driversTotal[driver]
       if count < driversTotal[driver]
         count = driversTotal[driver]
+      locations.push fleet.coverage.center
 
     steps = (colors.length / count)
     cityCircle = undefined
@@ -193,6 +203,38 @@ class CoverageMap
         title: city
       })
       cityCircle = new google.maps.Circle(populationOptions)
+      @markers.push marker
+      @markers.push cityCircle
+    @setMapZoom(locations)
+
+  setMapZoom: (locations) =>
+    if locations.length == 1
+      @mapCanvas.panTo new google.maps.LatLng(locations[0].lat, locations[0].lng)
+      @mapCanvas.setZoom 4
+    else if locations.length > 0
+      geoCenter = @getCentrePointFromListOfCoordinates(locations)
+      bounds = new google.maps.LatLngBounds()
+      bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+      bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+      @mapCanvas.fitBounds(bounds)
+    else
+      @mapCanvas.panTo new google.maps.LatLng(37.09024, -95.712891)
+      @mapCanvas.setZoom 4
+
+  getCentrePointFromListOfCoordinates: (list) =>
+    minlat = null
+    minlng = null
+    maxlat = null
+    maxlng = null
+    for point in list
+      minlat = if !minlat? or point.lat < minlat then point.lat else minlat
+      maxlat = if !maxlat? or point.lat > maxlat then point.lat else maxlat
+      minlng = if !minlng? or point.lng < minlng then point.lng else minlng
+      maxlng = if !maxlng? or point.lng > maxlng then point.lng else maxlng
+
+    lat = maxlat - ((maxlat - minlat)/2)
+    lng = maxlng - ((maxlng - minlng)/2)
+    {lat: lat, lng: lng, maxlat: maxlat, maxlng: maxlng, minlat: minlat, minlng: minlng}
 
 class PartnerOptions
 
@@ -204,7 +246,7 @@ class PartnerOptions
         $('#partner-options-rate').click =>
 
     updatePartner: (partner) =>
-        if partner?
+        if partner? and partner.name
             $('#' + @containerId).html('
                 <div class="col-md-5 col-md-push-1 col-sm-5" id="partner-info-main">
                   <h1>' + partner.name + '</h1>
@@ -242,11 +284,16 @@ class PartnersManager
         @coverageMap = null
         @stats = null
         @partnerOptions = null
-        @partnersById = {}
+        @partners = {}
+        @allFleets = { fleets: [] }
+        @selectedPartner = null
 
         $('#' + @selectorId).change =>
             selected = $('#' + @selectorId + ' option:selected').val()
-            partner = @partnersById[selected]
+            partner = @allFleets
+            if selected != 'All'
+              partner = @partners[selected]
+            @selectedPartner = partner
             @updatePartner(partner)
 
 
@@ -254,17 +301,21 @@ class PartnersManager
         @partnerOptions = new PartnerOptions(@partnerOptionsId)
         @gateway.getPartners(@initPartners)
 
-    initPartners: (partners) =>
-        partners = partners.fleets
-        @coverageMap = new CoverageMap(@coverageMapId, partners)
-        for fleet in partners
-            if fleet.name == "TripThru San Francisco" or (fleet.partner.id.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
-                continue
-            @partnersById[fleet.id] = fleet
-            $('#' + @selectorId).append('<option value="' + fleet.id + '">' + fleet.name + '</option>')
-        #$('#loadingImage').hide()
-        @update()
-        @updatePartner(null)
+    initPartners: (fleets) =>
+      for fleet in fleets.fleets
+        if fleet.partner.name == "TDispatch" or (fleet.partner.id.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
+          continue
+        if not (fleet.partner.name of @partners)
+          @partners[fleet.partner.name] =  {id: fleet.partner.id, name: fleet.partner.name, fleets: [fleet]}
+          if $('#getUserRole').html() is 'partner'
+            $('#' + @selectorId).append('<option value="' + fleet.partner.name + '" selected="selected" >' + fleet.partner.name + '</option>')
+            @selectedNetwork = fleet.partner.name
+          else
+            $('#' + @selectorId).append('<option value="' + fleet.partner.name + '">' + fleet.partner.name + '</option>')
+        else
+          @partners[fleet.partner.name].fleets.push fleet
+        @allFleets.fleets.push fleet
+      @coverageMap = new CoverageMap(@coverageMapId, @allFleets)
 
     update: () =>
         if @stats?
@@ -275,9 +326,10 @@ class PartnersManager
     updatePartner: (partner) =>
         @coverageMap.updatePartner(partner)
         @partnerOptions.updatePartner(partner)
+        @stats.updateStats(partner)
 
-    updateStats: (stats) =>
-        @stats.updateStats(stats)
+    updateStats: (partner) =>
+        @stats.updateStats(partner)
 
 
 $('.developer.networks').ready ->
