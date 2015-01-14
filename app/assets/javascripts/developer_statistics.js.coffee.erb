@@ -895,7 +895,7 @@ class TimeSeries
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
     networkId = ''
-    networkId = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
     if @farmedInMode
       networkId += '&servicingNetworkId=' + id
     if @farmedOutMode

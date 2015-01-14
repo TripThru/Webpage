@@ -144,7 +144,7 @@ class CoverageMap
 
   updatePartner: (partner) =>
     if partner?
-     @mapCanvas.panTo(new google.maps.LatLng(partner.coverage[0].center.lat, partner.coverage[0].center.lng))
+     @mapCanvas.panTo(new google.maps.LatLng(partner.coverage.center.lat, partner.coverage.center.lng))
      @mapCanvas.setZoom 8
 
   loadMap: () =>
@@ -167,8 +167,8 @@ class CoverageMap
         continue
       driver++
       citymap[fleet.name]=
-        center: new google.maps.LatLng(fleet.coverage[0].center.lat, fleet.coverage[0].center.lng)
-        population: fleet.coverage[0].radius
+        center: new google.maps.LatLng(fleet.coverage.center.lat, fleet.coverage.center.lng)
+        population: fleet.coverage.radius
         drivers: driversTotal[driver]
       if count < driversTotal[driver]
         count = driversTotal[driver]
