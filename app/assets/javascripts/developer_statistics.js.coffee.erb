@@ -895,7 +895,7 @@ class TimeSeries
       selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
 
     networkId = ''
-    id = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    networkId = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
     if @farmedInMode
       networkId += '&servicingNetworkId=' + id
     if @farmedOutMode
@@ -1052,16 +1052,16 @@ class TimeSeries
       for fleet in fleets.fleets
           if fleet.partner.name == "TDispatch" or (fleet.partner.id.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
               continue
-          if fleet.partner.name of @networks
-              @networks[fleet.partner.name].fleets.push fleet.name
-          else
+          if not (fleet.partner.name of @networks)
               @networks[fleet.partner.name] =  {id: fleet.partner.id, fleets: [fleet.name]}
-          @fleets[fleet.name] = fleet
-          if $('#getUserRole').html() is 'partner'
-            $('#networks-select').append('<option value="' + fleet.partner.name + '" selected="selected" >' + fleet.partner.name + '</option>')
-            @selectedNetwork = fleet.partner.name
+              if $('#getUserRole').html() is 'partner'
+                $('#networks-select').append('<option value="' + fleet.partner.name + '" selected="selected" >' + fleet.partner.name + '</option>')
+                @selectedNetwork = fleet.partner.name
+              else
+                $('#networks-select').append('<option value="' + fleet.partner.name + '">' + fleet.partner.name + '</option>')
           else
-            $('#networks-select').append('<option value="' + fleet.partner.name + '">' + fleet.partner.name + '</option>')
+            @networks[fleet.partner.name].fleets.push fleet.name
+          @fleets[fleet.name] = fleet
           $('#fleets-select').append('<option value="' + fleet.name + '">' + fleet.name + '</option>')
 
   HomeControl: (controlDiv, map) =>
