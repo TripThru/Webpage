@@ -164,6 +164,52 @@ class TripTracker
     @tripId = null
     @passengerRatingChartId = 'passenger-rating'
     @driverRatingChartId = 'driver-rating'
+    @latestAddedLogDate = null
+    @tcurrentTripIdripId = null
+    @pulseQueue = []
+    @animationDuration = 1000
+
+    setInterval(() =>
+      if @pulseQueue.length > 0
+        for i in [0..@pulseQueue.length]
+          pulse = @pulseQueue[i]
+          if pulse? and !pulse.animating
+            do (pulse) =>
+              delay = i * @animationDuration
+              pulse.animating = true
+              setTimeout(() =>
+                @animate(pulse)
+                @pulseQueue.shift()
+              , delay)
+    , 500)
+
+  animate: (pulse) =>
+    if pulse.type == 'driver-update'
+      @toggleAnimation('pulse-passenger-origin',    'quick', 'right', 0, 500)
+      @toggleAnimation('pulse-origin-tripthru',     'quick', 'right',50, 500)
+      @toggleAnimation('pulse-tripthru-servicing',  'quick', 'right',100, 500)
+      @toggleAnimation('pulse-servicing-driver',    'quick', 'right',150, 500)
+    else if pulse.direction == 'origin-tripthru'
+      @toggleAnimation('pulse-origin-tripthru',     'normal', 'right', 0, 1000)
+    else if pulse.direction == 'servicing-tripthru'
+      @toggleAnimation('pulse-servicing-tripthru',  'normal', 'left', 0, 1000)
+    else if pulse.direction == 'tripthru-origin'
+      @toggleAnimation('pulse-tripthru-origin',     'normal', 'left', 0, 1000)
+    else if pulse.direction == 'tripthru-servicing'
+      @toggleAnimation('pulse-tripthru-servicing',  'normal', 'right', 0, 1000)
+
+  toggleAnimation: (containerId, type, direction, delay, duration) =>
+    if !$('#' + containerId).hasClass('active') or ($('#' + containerId).hasClass('pulse-quick-right') and type != 'quick')
+      animation = if type == 'normal' then 'pulse-' else 'pulse-quick-'
+      animation += direction
+      setTimeout(() =>
+          $('#' + containerId).addClass(animation)
+          $('#' + containerId).addClass('active')
+          setTimeout(() =>
+            $('#' + containerId).removeClass(animation)
+            $('#' + containerId).removeClass('active')
+          , duration)
+      , delay)
 
   cleanMap: () =>
     @passengerMarker.setMap null  if @passengerMarker?
@@ -187,8 +233,52 @@ class TripTracker
     if typeof @directionsDisplay isnt "undefined" and typeof @directionsDisplay2 isnt "undefined" and typeof @directionsService isnt "undefined"
         @updateMap(trip)
     if trip?
+      @queuePulse('', '', 'driver-update')
       @tripId = trip.getId()
     @tripChange = false
+
+  updateLog: (logList, currentTripId) =>
+    if currentTripId? and logList? and logList.length > 0
+      newLatest = logList[0].creation
+      logs = []
+      if !@latestAddedLogDate? or @tcurrentTripIdripId != currentTripId
+        @tcurrentTripIdripId = currentTripId
+      else
+        for log in logList
+          if Date.parse(log.creation) > Date.parse(@latestAddedLogDate)
+            logs.push log
+          else
+            break
+
+      if logs.length > 0
+        for log in logs
+          if log.origin? and log.destination? and log.type?
+            @queuePulse(log.origin, log.destination, log.type)
+        @latestAddedLogDate = logList[logList.length-1].creation
+
+      @latestAddedLogDate = newLatest
+
+  queuePulse: (origin, destination, type) =>
+    message = null
+    if type == 'driver-update'
+      message = {type: type}
+    else
+      if origin == 'origin'
+        message = {direction: 'origin-tripthru'}
+      else if origin == 'servicing'
+        message = {direction: 'servicing-tripthru'}
+      else if origin == 'tripthru' and destination == 'origin'
+        message = {direction: 'tripthru-origin'}
+      else if origin == 'tripthru' and destination == 'servicing'
+        message = {direction: 'tripthru-servicing'}
+      message.type = type
+    if message?
+      if message.type != 'driver-update'
+        if @pulseQueue.length == 0 or @pulseQueue[@pulseQueue.length - 1].direction != message.direction
+          @pulseQueue.push(message)
+      else
+        if @pulseQueue.length == 0 or @pulseQueue[@pulseQueue.length - 1].type != message.type
+          @pulseQueue.push(message)
 
   updateTripInfo: (trip) =>
     if trip?
@@ -203,14 +293,27 @@ class TripTracker
       dropoffLocation = if tripDropoffLocation? then tripDropoffLocation else 'loading...'
       driverLocation = if tripDriverLocation? then ' @ ' + tripDriverLocation else ''
       driver = if tripDriverName? then tripDriverName + driverLocation else ''
-      farmedInLogo = '<div id="logo"><img alt="' + trip.getOrigin() + '" src="/assets/networks/' + trip.getOrigin() + '.png"/></div>'
-      farmedOutLogo = '<div id="logo"><img alt="' + trip.getOrigin() + '" src="/assets/networks/' + trip.getOrigin() + '.png"/></div>'
+      farmedInLogo = '<img alt="' + trip.getOrigin() + '" src="/assets/networks/' + trip.getOrigin() + '.png"/>'
+      farmedOutLogo = '<img alt="Netowrks" src="/assets/networks/all.png"/>'
       if trip.getServicing()
-        farmedOutLogo = '<div id="logo"><img alt="' + trip.getServicing() + '" src="/assets/networks/' + trip.getServicing() + '.png"/></div>'
+        farmedOutLogo = '<img alt="' + trip.getServicing() + '" src="/assets/networks/' + trip.getServicing() + '.png"/>'
+      pulse = '<div class="pulse"><div></div><div></div><div></div><div></div><div></div></div>'
 
       $('#' + @tripInfoContainerId).html(
           '<div>
-              <h1>' + farmedInLogo + trip.getId() + '<span> - ' + trip.getStatus() + farmedOutLogo + '</span></h1>
+              <div id="icons">
+                <div class="icon"><img alt="Passenger" src="/assets/passenger.png"/></div>
+                <div class="pulse" id="pulse-passenger-origin"><div></div><div></div><div></div><div></div><div></div></div>
+                <div class="icon">' + farmedInLogo + '</div>
+                <div class="pulse" id="pulse-origin-tripthru"><div></div><div></div><div></div><div></div><div></div></div>
+                <div id="tripthru"><img alt="TripThru" src="/assets/tripthrulogo.png"/></div>
+                <div class="pulse" id="pulse-tripthru-servicing"><div></div><div></div><div></div><div></div><div></div></div>
+                <div class="icon">' + farmedOutLogo + '</div>
+                <div class="pulse" id="pulse-servicing-driver"><div></div><div></div><div></div><div></div><div></div></div>
+                <div class="icon"><img alt="Driver" src="/assets/driver.png"/></div>
+              </div>
+              <div><span>Id: </span><p>' + trip.getId() + '</p></div>
+              <div><span>Status: </span><p>' + trip.getStatus() + '</p></div>
               <div><span>Passenger: </span><p>' + trip.getPassengerName() + '  </p>
                  <div class="rating-container">
                       <div class="flexible-stars" data-isLocked="yes"
@@ -394,7 +497,6 @@ class ActivityLog
     if !currentTripId?
       $('#' + @containerId).html('Select a trip')
     else if logList? and logList.length > 0
-      logList = logList.reverse()
       newLatest = logList[0].creation
       logs = []
       if !@latestAddedLogDate? or @tcurrentTripIdripId != currentTripId
@@ -573,27 +675,26 @@ class StatisticsDashboard
       if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
           partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
       $.get '/mongo_db/trips_count?startDate=' + lastHour + partnerId + '&interval=hour&bucketSize=1&by_status=true', (data) =>
-          request = 0
-          completed = 0
-          rejected = 0
-          cancelled = 0
-          error = 0
+          statuses = {
+            _new: 0,
+            queued: 0,
+            dispatched: 0,
+            enroute: 0,
+            pickedup: 0,
+            complete: 0,
+            rejected: 0,
+            cancelled: 0
+          }
+          total = 0
           for entry in data
-              switch entry._id.status
-                  when 'request'
-                      request += entry.count
-                  when 'complete'
-                      completed += entry.count
-                  when 'cancelled'
-                      cancelled += entry.count
-                  when 'rejected'
-                    rejected += entry.count
-                  when 'error'
-                      error += entry.count
-          total = request + completed + rejected + cancelled + error
-          @update(80, 90, 55, 32, 70, 80, 15, total, request, cancelled, completed, rejected, error, 15, 95)
+            if entry._id.status == 'new'
+              statuses._new += entry.count
+            else
+              statuses[entry._id.status] += entry.count
+            total += entry.count
+          @update(80, 90, 55, 32, 70, 80, 15, total, statuses, 15, 95)
 
-  update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,timeIdle, totalTrips, request, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
+  update: (passengerRating, driverRating, timeWithPassenger, mileageWithPassenger, timeEnroute, mileageEnroute,timeIdle, totalTrips, statuses, lateness, withinServiceGoal) =>
 
       if @lastValues.timeEnroute != timeEnroute or @lastValues.timeWithPassenger != timeWithPassenger or @lastValues.timeIdle != timeIdle
 
@@ -608,36 +709,35 @@ class StatisticsDashboard
                   {label: "Idle", value: timeIdle}
               ]
               colors: [
-                  '#2922DD'
                   '#0BA462'
+                  '#4DE452'
                   '#DD1D18'
               ]
               formatter: (x) -> x + "%"
           })
 
-      if @lastValues.request != request or @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
-          @lastValues.request = request
-          @lastValues.completed = completed
-          @lastValues.cancelled = cancelled
-          @lastValues.rejected = rejected
-          @lastValues.error = error
-          Morris.Donut({
-              element: @tripsPieChartId,
-              data: [
-                  {label: "Requested", value: request}
-                  {label: "Completed", value: completed}
-                  {label: "Rejected", value: rejected}
-                  {label: "Cancelled", value: cancelled}
-                  {label: "Error", value: error}
-              ]
-              colors: [
-                  '#2922DD'
-                  '#0BA462'
-                  '#DADD0F'
-                  '#DD1D18'
-                  '#DD1D18'
-              ]
-          })
+
+      Morris.Donut({
+          element: @tripsPieChartId,
+          data: [
+              {label: "New", value: statuses._new}
+              {label: "Dispatched", value: statuses.dispatched}
+              {label: "Enroute", value: statuses.enroute}
+              {label: "Picked up", value: statuses.pickedup}
+              {label: "Complete", value: statuses.complete}
+              {label: "Rejected", value: statuses.rejected}
+              {label: "Cancelled", value: statuses.cancelled}
+          ]
+          colors: [
+              '#4D99E4'
+              '#E4A54D'
+              '#C6E44D'
+              '#914DE4'
+              '#0BA462'
+              '#E4934D'
+              '#DD1D18'
+          ]
+      })
 
       if @lastValues.mileageEnroute != mileageEnroute or @lastValues.mileageWithPassenger != mileageWithPassenger
 
@@ -650,7 +750,7 @@ class StatisticsDashboard
                   {label: "Occupied", value: mileageWithPassenger}
               ]
               colors: [
-                  '#3C6ADD'
+                  '#4D99E4'
                   '#0BA462'
               ]
               formatter: (x) -> x + "%"
@@ -855,7 +955,7 @@ class DashboardManager
     @updatingActiveTrip = false
 
   updateLogs: (data) =>
-    logs = if data? then data.logs else null
+    logs = if data? then data.logs.reverse() else null
     tripId = if @activeTrip? then @activeTrip.getId() else null
     for listener in @listeners
       if typeof listener.updateLog is 'function'

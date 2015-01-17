@@ -411,28 +411,143 @@
             width: 64px;
             height: 64px;
           }
-
-
           h1 {
             font-size: 18px;
             padding: 0;
             margin: -3px 0 5px 0;
             text-align: center;
+          }
 
-            span {
-              font-size: 18px;
-              color: #a1a1a1;
+          $image-size: 22px;
+
+          #icons {
+            height: auto;
+            text-align: center;
+            .pulse{
+              display: inline-block;
+              div {
+                background: #10426e;
+                border-radius: 50%;
+                box-shadow: 0 0 2px #0d2e44;
+                display: inline-block;
+                height: 5px;
+                margin: 0 2px 10px 2px;
+                width: 5px;
+              }
             }
-            #logo {
-              margin: 0px 10px 0px 10px;
-              width: 18px;
-              height: 18px;
+            .active {
+              div {
+                animation: pulsate 1000ms forwards infinite;
+                -webkit-animation: pulsate 1000ms forwards infinite;
+                -moz-animation: pulsate 1000ms forwards infinite;
+              }
+            }
+            .pulse-quick-right {
+              div {
+                &:nth-child(1) {
+                  animation-delay: 0ms;
+                  -webkit-animation-delay: 0ms;
+                  -moz-animation-delay: 0ms;
+                }
+                &:nth-child(2) {
+                  animation-delay: 10ms;
+                  -webkit-animation-delay: 10ms;
+                  -moz-animation-delay: 10ms;
+                }
+                &:nth-child(3) {
+                  animation-delay: 15ms;
+                  -webkit-animation-delay: 15ms;
+                  -moz-animation-delay: 15ms;
+                }
+                &:nth-child(4) {
+                  animation-delay: 20ms;
+                  -webkit-animation-delay: 20ms;
+                  -moz-animation-delay: 20ms;
+                }
+                &:nth-child(5) {
+                  animation-delay: 25ms;
+                  -webkit-animation-delay: 25ms;
+                  -moz-animation-delay: 25ms;
+                }
+              }
+            }
+            .pulse-right {
+              div {
+                &:nth-child(1) {
+                  animation-delay: 0ms;
+                  -webkit-animation-delay: 0ms;
+                  -moz-animation-delay: 0ms;
+                }
+                &:nth-child(2) {
+                  animation-delay: 50ms;
+                  -webkit-animation-delay: 50ms;
+                  -moz-animation-delay: 50ms;
+                }
+                &:nth-child(3) {
+                  animation-delay: 100ms;
+                  -webkit-animation-delay: 100ms;
+                  -moz-animation-delay: 100ms;
+                }
+                &:nth-child(4) {
+                  animation-delay: 150ms;
+                  -webkit-animation-delay: 150ms;
+                  -moz-animation-delay: 150ms;
+                }
+                &:nth-child(5) {
+                  animation-delay: 200ms;
+                  -webkit-animation-delay: 200ms;
+                  -moz-animation-delay: 200ms;
+                }
+              }
+            }
+            .pulse-left {
+              div {
+                &:nth-child(5) {
+                  animation-delay: 0ms;
+                  -webkit-animation-delay: 0ms;
+                  -moz-animation-delay: 0ms;
+                }
+                &:nth-child(4) {
+                  animation-delay: 50ms;
+                  -webkit-animation-delay: 50ms;
+                  -moz-animation-delay: 50ms;
+                }
+                &:nth-child(3) {
+                  animation-delay: 100ms;
+                  -webkit-animation-delay: 100ms;
+                  -moz-animation-delay: 100ms;
+                }
+                &:nth-child(2) {
+                  animation-delay: 150ms;
+                  -webkit-animation-delay: 150ms;
+                  -moz-animation-delay: 150ms;
+                }
+                &:nth-child(1) {
+                  animation-delay: 200ms;
+                  -webkit-animation-delay: 200ms;
+                  -moz-animation-delay: 200ms;
+                }
+              }
+            }
+            .icon {
+              margin: 0px 5px 0px 5px;
               img {
-                width: 18px;
-                height: 18px;
+                width: $image-size;
+                height: $image-size;
                 margin: 5px 5px 0 0;
               }
               display: inline-block;
+            }
+            #tripthru {
+              display: inline-block;
+              max-height: $image-size;
+              max-width: $image-size*4;
+              img {
+                max-height: $image-size;
+                margin:0;
+                width: auto;
+                height: auto;
+              }
             }
           }
 
@@ -699,26 +814,38 @@
           height: 860px;
           #tracking-trip-info {
             height: 150px;
+
             h1 {
               font-size: 20px;
               padding: 0;
-              margin-bottom: 5px;
+              margin: -3px 0 5px 0;
+              text-align: center;
+            }
 
-              span {
-                font-size: 14px;
-                padding: 0;
-                color: #a1a1a1;
+            $image-size: 30px;
+
+            #icons {
+              .pulse{
+                div {
+                  height: 5px;
+                  margin: 0 2px 10px 2px;
+                  width: 5px;
+                }
               }
-              #logo {
+              .icon {
                 margin: 0px 10px 0px 10px;
-                width: 22px;
-                height: 22px;
                 img {
-                  width: 22px;
-                  height: 22px;
+                  width: $image-size;
+                  height: $image-size;
                   margin: 5px 5px 0 0;
                 }
-                display: inline-block;
+              }
+              #tripthru {
+                max-height: $image-size;
+                max-width: $image-size*4;
+                img {
+                  max-height: $image-size;
+                }
               }
             }
 
@@ -844,26 +971,38 @@
 
         #tracking-panel {
           #tracking-trip-info {
+
             h1 {
               font-size: 18px;
               padding: 0;
-              margin-bottom: 5px;
+              margin: -3px 0 5px 0;
+              text-align: center;
+            }
 
-              span {
-                font-size: 14px;
-                padding: 0;
-                color: #a1a1a1;
+            $image-size: 22px;
+
+            #icons {
+              .pulse{
+                div {
+                  height: 3px;
+                  margin: 0 2px 10px 2px;
+                  width: 3px;
+                }
               }
-              #logo {
-                margin: 0px 10px 0px 10px;
-                width: 18px;
-                height: 18px;
+              .icon {
+                margin: 0px 5px 0px 5px;
                 img {
-                  width: 18px;
-                  height: 18px;
+                  width: $image-size;
+                  height: $image-size;
                   margin: 5px 5px 0 0;
                 }
-                display: inline-block;
+              }
+              #tripthru {
+                max-height: $image-size;
+                max-width: $image-size*4;
+                img {
+                  max-height: $image-size;
+                }
               }
             }
 
@@ -965,13 +1104,8 @@
             h1 {
               font-size: 16px;
               padding: 0;
-              margin-bottom: 5px;
-
-              span {
-                font-size: 14px;
-                padding: 0;
-                color: #a1a1a1;
-              }
+              margin: -3px 0 5px 0;
+              text-align: center;
             }
 
             p {
@@ -2473,4 +2607,21 @@
       }
     }
   }
+}
+
+
+@keyframes pulsate {
+  0%   { transform: scale(1, 1); }
+  50%  { transform: scale(0.5, 0.5); }
+  100%  { transform: scale(1, 1); }
+}
+@-webkit-keyframes pulsate {
+  0%   { -webkit-transform: scale(1, 1); }
+  50%  { -webkit-transform: scale(0.5, 0.5); }
+  100%  { -webkit-transform: scale(1, 1); }
+}
+@-moz-keyframes pulsate {
+  0%   { -moz-transform: scale(1, 1); }
+  50%  { -moz-transform: scale(0.5, 0.5); }
+  100%  { -moz-transform: scale(1, 1); }
 }
