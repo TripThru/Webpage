@@ -432,111 +432,67 @@
           #icons {
             height: auto;
             text-align: center;
-            .pulse{
+            .pulse-line{
               display: inline-block;
-              div {
-                background: #10426e;
-                border-radius: 50%;
-                box-shadow: 0 0 2px #0d2e44;
-                display: inline-block;
-                height: 5px;
-                margin: 0 2px 10px 2px;
-                width: 5px;
-              }
+              border-bottom: 2px solid;
+              width: 60px;
+              height: 0px;
+              padding: 0 0 3px 0;
+              margin: 0 0 10px 0;
             }
-            .active {
-              div {
-                animation: pulsate 1000ms forwards infinite;
-                -webkit-animation: pulsate 1000ms forwards infinite;
-                -moz-animation: pulsate 1000ms forwards infinite;
-              }
+            .orb {
+              border-radius: 50%;
+              padding-bottom: 3px;
+              height: 8px;
+              width: 8px;
+              position: absolute;
+              animation-fill-mode: forwards;
+              -webkit-animation-fill-mode: forwards;
+              -moz-animation-fill-mode: forwards;
+            }
+            .red {
+              background: #e01712;
+              box-shadow: 0 0 2px #831c13;
+            }
+            .blue {
+              background: #2186e0;
+              box-shadow: 0 0 2px #195983;
+            }
+            .green {
+              background: #3ae03d;
+              box-shadow: 0 0 2px #2c832b;
+            }
+            .dark-blue {
+              background: #1418e0;
+              box-shadow: 0 0 2px #060983;
             }
             .pulse-quick-right {
-              div {
-                &:nth-child(1) {
-                  animation-delay: 0ms;
-                  -webkit-animation-delay: 0ms;
-                  -moz-animation-delay: 0ms;
-                }
-                &:nth-child(2) {
-                  animation-delay: 10ms;
-                  -webkit-animation-delay: 10ms;
-                  -moz-animation-delay: 10ms;
-                }
-                &:nth-child(3) {
-                  animation-delay: 15ms;
-                  -webkit-animation-delay: 15ms;
-                  -moz-animation-delay: 15ms;
-                }
-                &:nth-child(4) {
-                  animation-delay: 20ms;
-                  -webkit-animation-delay: 20ms;
-                  -moz-animation-delay: 20ms;
-                }
-                &:nth-child(5) {
-                  animation-delay: 25ms;
-                  -webkit-animation-delay: 25ms;
-                  -moz-animation-delay: 25ms;
-                }
-              }
+              padding-bottom: 2px;
+              height: 5px;
+              width: 5px;
+              animation: move-right 200ms;
+              -webkit-animation: move-right 200ms;
+              -moz-animation: move-right 200ms;
+            }
+            .pulse-quick-left {
+              padding-bottom: 2px;
+              height: 5px;
+              width: 5px;
+              margin-left: 60px;
+              animation: move-left 200ms;
+              -webkit-animation: move-left 200ms;
+              -moz-animation: move-left 200ms;
             }
             .pulse-right {
-              div {
-                &:nth-child(1) {
-                  animation-delay: 0ms;
-                  -webkit-animation-delay: 0ms;
-                  -moz-animation-delay: 0ms;
-                }
-                &:nth-child(2) {
-                  animation-delay: 50ms;
-                  -webkit-animation-delay: 50ms;
-                  -moz-animation-delay: 50ms;
-                }
-                &:nth-child(3) {
-                  animation-delay: 100ms;
-                  -webkit-animation-delay: 100ms;
-                  -moz-animation-delay: 100ms;
-                }
-                &:nth-child(4) {
-                  animation-delay: 150ms;
-                  -webkit-animation-delay: 150ms;
-                  -moz-animation-delay: 150ms;
-                }
-                &:nth-child(5) {
-                  animation-delay: 200ms;
-                  -webkit-animation-delay: 200ms;
-                  -moz-animation-delay: 200ms;
-                }
-              }
+              animation: move-right 500ms;
+              -webkit-animation: move-right 500ms;
+              -moz-animation: move-right 500ms;
             }
             .pulse-left {
-              div {
-                &:nth-child(5) {
-                  animation-delay: 0ms;
-                  -webkit-animation-delay: 0ms;
-                  -moz-animation-delay: 0ms;
-                }
-                &:nth-child(4) {
-                  animation-delay: 50ms;
-                  -webkit-animation-delay: 50ms;
-                  -moz-animation-delay: 50ms;
-                }
-                &:nth-child(3) {
-                  animation-delay: 100ms;
-                  -webkit-animation-delay: 100ms;
-                  -moz-animation-delay: 100ms;
-                }
-                &:nth-child(2) {
-                  animation-delay: 150ms;
-                  -webkit-animation-delay: 150ms;
-                  -moz-animation-delay: 150ms;
-                }
-                &:nth-child(1) {
-                  animation-delay: 200ms;
-                  -webkit-animation-delay: 200ms;
-                  -moz-animation-delay: 200ms;
-                }
-              }
+              margin-left: 60px;
+              animation: move-left 500ms;
+              -webkit-animation: move-left 500ms;
+              -moz-animation: move-left 500ms;
             }
             .icon {
               margin: 0px 5px 0px 5px;
@@ -834,12 +790,8 @@
             $image-size: 40px;
 
             #icons {
-              .pulse{
-                div {
-                  height: 5px;
-                  margin: 0 2px 18px 2px;
-                  width: 5px;
-                }
+              .pulse-line{
+                margin: 0 2px 18px 2px;
               }
               .icon {
                 margin: 0px 10px 0px 10px;
@@ -991,12 +943,8 @@
             $image-size: 22px;
 
             #icons {
-              .pulse{
-                div {
-                  height: 3px;
-                  margin: 0 2px 10px 2px;
-                  width: 3px;
-                }
+              .pulse-line{
+                margin: 0 2px 10px 2px;
               }
               .icon {
                 margin: 0px 5px 0px 5px;
@@ -2619,18 +2567,34 @@
 }
 
 
-@keyframes pulsate {
-  0%   { transform: scale(1, 1); }
-  50%  { transform: scale(0.5, 0.5); }
-  100%  { transform: scale(1, 1); }
+@keyframes move-right {
+  100%  {
+    transform: translateX(60px);
+  }
 }
-@-webkit-keyframes pulsate {
-  0%   { -webkit-transform: scale(1, 1); }
-  50%  { -webkit-transform: scale(0.5, 0.5); }
-  100%  { -webkit-transform: scale(1, 1); }
+@-webkit-keyframes move-right {
+   100%  {
+     -webkit-transform: translateX(60px);
+   }
 }
-@-moz-keyframes pulsate {
-  0%   { -moz-transform: scale(1, 1); }
-  50%  { -moz-transform: scale(0.5, 0.5); }
-  100%  { -moz-transform: scale(1, 1); }
+@-moz-keyframes move-right {
+  100%  {
+    -moz-transform: translateX(60px);
+  }
+}
+
+@keyframes move-left {
+  100%  {
+    transform: translateX(-60px);
+  }
+}
+@-webkit-keyframes move-left {
+  100%  {
+    -webkit-transform: translateX(-60px);
+  }
+}
+@-moz-keyframes move-left {
+  100%  {
+    -moz-transform: translateX(-60px);
+  }
 }

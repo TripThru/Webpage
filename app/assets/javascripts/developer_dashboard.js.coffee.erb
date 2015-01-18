@@ -168,64 +168,6 @@ class TripTracker
     @driverRatingChartId = 'driver-rating'
     @latestAddedLogDate = null
     @tcurrentTripIdripId = null
-    @pulseQueue = []
-    @animationDuration = 1000
-
-    setInterval(() =>
-      if @pulseQueue.length > 0
-        for i in [0..@pulseQueue.length]
-          pulse = @pulseQueue[i]
-          if pulse? and !pulse.animating
-            do (pulse) =>
-              delay = if i > 0 then @getPulsesDurations(i) else 0
-              pulse.animating = true
-              setTimeout(() =>
-                @animate(pulse)
-                @pulseQueue.shift()
-              , delay)
-    , 500)
-
-  getPulsesDurations: (lastIndex) =>
-    duration = 0
-    for i in [0..lastIndex]
-      pulse = @pulseQueue[i]
-      duration += if pulse? and pulse.type == 'update-trip-status' then @animationDuration*2 else @animationDuration
-    return duration
-
-  animate: (pulse) =>
-    if pulse.type == 'driver-update'
-      @toggleAnimation('pulse-passenger-origin',    'quick', 'right', 0, 500)
-      @toggleAnimation('pulse-origin-tripthru',     'quick', 'right',50, 500)
-      @toggleAnimation('pulse-tripthru-servicing',  'quick', 'right',100, 500)
-      @toggleAnimation('pulse-servicing-driver',    'quick', 'right',150, 500)
-    else if pulse.direction == 'origin-tripthru'
-      if pulse.type == 'update-trip-status'
-        @toggleAnimation('pulse-passenger-origin',  'normal', 'right', 0, 1000)
-      @toggleAnimation('pulse-origin-tripthru',     'normal', 'right', 1000, 1000)
-    else if pulse.direction == 'servicing-tripthru'
-      if pulse.type == 'update-trip-status'
-        @toggleAnimation('pulse-servicing-driver',  'normal', 'left', 0, 1000)
-      @toggleAnimation('pulse-tripthru-servicing',  'normal', 'left', 1000, 1000)
-    else if pulse.direction == 'tripthru-origin'
-      @toggleAnimation('pulse-origin-tripthru',     'normal', 'left', 0, 1000)
-      if pulse.type == 'update-trip-status'
-        @toggleAnimation('pulse-passenger-origin',  'normal', 'left', 1000, 1000)
-    else if pulse.direction == 'tripthru-servicing'
-      @toggleAnimation('pulse-tripthru-servicing',  'normal', 'right', 0, 1000)
-      if pulse.type == 'update-trip-status'
-        @toggleAnimation('pulse-servicing-driver',  'normal', 'right', 1000, 1000)
-
-  toggleAnimation: (containerId, type, direction, delay, duration) =>
-    animation = if type == 'normal' then 'pulse-' else 'pulse-quick-'
-    animation += direction
-    setTimeout(() =>
-        $('#' + containerId).addClass(animation)
-        $('#' + containerId).addClass('active')
-        setTimeout(() =>
-          $('#' + containerId).removeClass(animation)
-          $('#' + containerId).removeClass('active')
-        , duration)
-    , delay)
 
   cleanMap: () =>
     @passengerMarker.setMap null  if @passengerMarker?
@@ -291,13 +233,50 @@ class TripTracker
       else if origin == 'tripthru' and destination == 'servicing'
         message = {direction: 'tripthru-servicing'}
       message.type = type
-    if message?
-      if message.type != 'driver-update'
-        if @pulseQueue.length == 0 or @pulseQueue[@pulseQueue.length - 1].direction != message.direction
-          @pulseQueue.push(message)
-      else
-        if @pulseQueue.length == 0 or @pulseQueue[@pulseQueue.length - 1].type != message.type
-          @pulseQueue.push(message)
+    @animate(message)
+
+  animate: (pulse) =>
+    color = 'green'
+    if pulse.type == 'update-trip-status'
+      color = 'blue'
+    if pulse.type == 'driver-update'
+      @toggleAnimation('pulse-passenger-origin',    'quick', 'right', 'dark-blue', 0)
+      @toggleAnimation('pulse-origin-tripthru',     'quick', 'right', 'dark-blue', 150)
+      @toggleAnimation('pulse-tripthru-servicing',  'quick', 'right', 'dark-blue', 300)
+      @toggleAnimation('pulse-servicing-driver',    'quick', 'right', 'dark-blue', 450)
+      @toggleAnimation('pulse-servicing-driver',    'quick', 'left', 'dark-blue', 600)
+      @toggleAnimation('pulse-tripthru-servicing',  'quick', 'left', 'dark-blue', 750)
+      @toggleAnimation('pulse-origin-tripthru',     'quick', 'left', 'dark-blue', 900)
+      @toggleAnimation('pulse-passenger-origin',    'quick', 'left', 'dark-blue', 1050)
+    else if pulse.direction == 'origin-tripthru'
+      if pulse.type == 'update-trip-status'
+        @toggleAnimation('pulse-passenger-origin',  'normal', 'right', color, 0)
+      @toggleAnimation('pulse-origin-tripthru',     'normal', 'right', color, 400)
+    else if pulse.direction == 'servicing-tripthru'
+      if pulse.type == 'update-trip-status'
+        @toggleAnimation('pulse-servicing-driver',  'normal', 'left', color, 0)
+      @toggleAnimation('pulse-tripthru-servicing',  'normal', 'left', color, 400)
+    else if pulse.direction == 'tripthru-origin'
+      @toggleAnimation('pulse-origin-tripthru',     'normal', 'left', color, 0)
+      if pulse.type == 'update-trip-status'
+        @toggleAnimation('pulse-passenger-origin',  'normal', 'left', color, 400)
+    else if pulse.direction == 'tripthru-servicing'
+      @toggleAnimation('pulse-tripthru-servicing',  'normal', 'right', color, 0)
+      if pulse.type == 'update-trip-status'
+        @toggleAnimation('pulse-servicing-driver',  'normal', 'right', color, 400)
+
+  toggleAnimation: (containerId, type, direction, color, delay) =>
+    animation = if type == 'normal' then 'pulse-' else 'pulse-quick-'
+    animation += direction
+    duration = if type == 'normal' then 300 else 100
+    id = guid()
+    element = '<div id="' + id + '" class="orb ' + color + ' ' + animation + '"></div>'
+    setTimeout(() =>
+        $('#' + containerId).append(element)
+        setTimeout(() =>
+          $('#' + id).fadeOut(100, () => $(this).remove());
+        , duration)
+    , delay)
 
   updateTripInfo: (trip) =>
     if trip?
@@ -318,18 +297,18 @@ class TripTracker
       driverLogo = ''
       if trip.getServicing()
         farmedOutLogo = '<img alt="' + trip.getServicing() + '" src="/assets/networks/' + trip.getServicing() + '.png"/>'
-        driverLogo = '<div class="pulse" id="pulse-servicing-driver"><div></div><div></div><div></div><div></div><div></div></div>
-                  <div class="icon"><img alt="Driver" src="/assets/driver.png"/></div>'
-      if trip.getId() != @tripId
+        driverLogo = '<div class="pulse-line" id="pulse-servicing-driver"></div>
+                      <div class="icon"><img alt="Driver" src="/assets/driver.png"/></div>'
+      if $('#' + @tripInfoContainerId).html() == '<h1>Select a trip</h1>'
         $('#' + @tripInfoContainerId).html(
             '<div>
                 <div id="icons">
                   <div class="icon"><img alt="Passenger" src="/assets/passenger.png"/></div>
-                  <div class="pulse" id="pulse-passenger-origin"><div></div><div></div><div></div><div></div><div></div></div>
+                  <div class="pulse-line" id="pulse-passenger-origin"></div>
                   <div class="icon">' + farmedInLogo + '</div>
-                  <div class="pulse" id="pulse-origin-tripthru"><div></div><div></div><div></div><div></div><div></div></div>
+                  <div class="pulse-line" id="pulse-origin-tripthru"></div>
                   <div id="tripthru"><img alt="TripThru" src="/assets/tripthrulogo.png"/></div>
-                  <div class="pulse" id="pulse-tripthru-servicing"><div></div><div></div><div></div><div></div><div></div></div>
+                  <div class="pulse-line" id="pulse-tripthru-servicing"></div>
                   <div class="icon" id="farmed-out-logo">' + farmedOutLogo + '</div>
                   ' + driverLogo + '
                 </div>
