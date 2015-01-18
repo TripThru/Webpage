@@ -315,7 +315,16 @@
                 text-overflow: ellipsis;
                 margin-bottom: 5px;
 
+                img {
+                  display: inline-block;
+                  height: 13px;
+                  width: 13px;
+                  margin: 0 3px -1px 0;
+                  padding: 0;
+                }
+
                 h1 {
+                  display: inline-block;
                   font-weight: bold;
                   font-size: 13px;
                   margin: 0;
