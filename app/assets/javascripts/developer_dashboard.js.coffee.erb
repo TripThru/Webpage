@@ -169,16 +169,21 @@ class TripTracker
     @latestAddedLogDate = null
     @tcurrentTripIdripId = null
     @pulseQueue = []
+    @updatedTripAudio = document.createElement('audio');
+    @updatedTripAudio.setAttribute('src', '/assets/trip-status-update.mp3');
     setInterval(() =>
       if @pulseQueue.length > 0
         for i in [0..@pulseQueue.length]
           pulse = @pulseQueue[i]
           if pulse? and !pulse.animating
-            do (pulse) =>
-              delay = if i > 0 and @pulseQueue[i-1].type == 'update-trip-status' then 1000 else 0
-              pulse.animating = true
+            isSecondUpdateTripStatusPulse = pulse.type == 'update-trip-status' and (pulse.direction == 'tripthru-origin' or pulse.direction == 'tripthru-servicing') and (i > 0) and (@pulseQueue[i-1].type == 'update-trip-status')
+            delay = if isSecondUpdateTripStatusPulse then 1000 else 0
+            pulse.animating = true
+            do (pulse = pulse, isSecondUpdateTripStatusPulse = isSecondUpdateTripStatusPulse) =>
               setTimeout(() =>
                 @animate(pulse)
+                if pulse.type == 'update-trip-status' and !isSecondUpdateTripStatusPulse
+                  @updatedTripAudio.play()
                 @pulseQueue.shift()
               , delay)
     , 500)
