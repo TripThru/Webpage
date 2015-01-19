@@ -932,7 +932,7 @@ class DashboardManager
           data.historyEnrouteList
           data.historyPickUpList
         )
-      @activeTripCompleted = data.status == 'complete'
+      @activeTripCompleted = data.status == 'complete' or data.status == 'cancelled'
     for listener in @listeners
       if typeof listener.updateActiveTrip is 'function'
         try
