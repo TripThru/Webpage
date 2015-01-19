@@ -450,21 +450,33 @@
               -webkit-animation-fill-mode: forwards;
               -moz-animation-fill-mode: forwards;
             }
-            .red {
-              background: #e01712;
-              box-shadow: 0 0 2px #831c13;
-            }
-            .blue {
-              background: #2186e0;
-              box-shadow: 0 0 2px #195983;
-            }
-            .green {
-              background: #3ae03d;
-              box-shadow: 0 0 2px #2c832b;
-            }
-            .dark-blue {
+            .dark-blue-orb {
               background: #1418e0;
               box-shadow: 0 0 2px #060983;
+            }
+            .dispatched-orb {
+              background: #2DCBD6;
+              box-shadow: 0 0 2px #1b7a81;
+            }
+            .enroute-orb {
+              background: #E31010;
+              box-shadow: 0 0 2px #730808;
+            }
+            .pickedup-orb {
+              background: #24BD13;
+              box-shadow: 0 0 2px #156d0b;
+            }
+            .complete-orb {
+              background: #177b0c;
+              box-shadow: 0 0 2px #0d4a07;
+            }
+            .rejected-orb {
+              background: #2DCBD6;
+              box-shadow: 0 0 2px #196f75;
+            }
+            .cancelled-orb {
+              background: #E31010;
+              box-shadow: 0 0 2px #730808;
             }
             .pulse-quick-right {
               padding-bottom: 2px;
