@@ -788,6 +788,7 @@ class DashboardManager
     @updatingTrips = false
     @updatingActiveTrip = false
     @updatingLogs = false
+    @activeTripCompleted = false
 
     $('#' + @statusSelectorContainerId).change =>
       @selectedStatus = $('#' + @statusSelectorContainerId + ' option:selected').val()
@@ -804,7 +805,7 @@ class DashboardManager
       status = if @selectedStatus != 'All' then @selectedStatus else null
       @gateway.getTrips(status, @updateTrips)
 
-    if not @updatingActiveTrip
+    if not @updatingActiveTrip and not @activeTripCompleted
       @updatingActiveTrip = true
       if @activeTrip?
         @gateway.getTripStatus(@activeTrip.getId(), @updateActiveTrip)
@@ -884,6 +885,7 @@ class DashboardManager
     )
     @tripsById[trip.getId()] = trip
     $(document).off('click', '#' + trip.getContainerId()).on 'click', '#' + trip.getContainerId(),  =>
+      @activeTripCompleted = false
       @toggleActiveTrip(newTrip.id)
 
 
@@ -930,6 +932,7 @@ class DashboardManager
           data.historyEnrouteList
           data.historyPickUpList
         )
+      @activeTripCompleted = data.status == 'complete'
     for listener in @listeners
       if typeof listener.updateActiveTrip is 'function'
         try
