@@ -289,7 +289,7 @@ class TripTracker
       farmedInLogo = '<img alt="' + trip.getOrigin() + '" src="/assets/networks/' + trip.getOrigin() + '.png"/>'
       farmedOutLogo = '<img alt="Netowrks" src="/assets/networks/all.png"/>'
       driverLogo = ''
-      if trip.getServicing()
+      if trip.getServicing()?
         farmedOutLogo = '<img alt="' + trip.getServicing() + '" src="/assets/networks/' + trip.getServicing() + '.png"/>'
         driverLogo = '<div class="pulse-line" id="pulse-servicing-driver"></div>
                       <div class="icon"><img alt="Driver" src="/assets/driver.png"/></div>'
@@ -341,9 +341,9 @@ class TripTracker
           $('#' + @driverRatingChartId).flexibleStars({
             init: trip.getDriverRating()
           })
-      else if @trip
-        if trip.getServicing() != @trip.getServicing() and !$('#pulse-servicing-driver')?
-          $('#farmed-out-logo').hide().html(farmedOutLogo).fadeIn(500)
+      else
+        if trip.getServicing()? and !$('#pulse-servicing-driver').length
+          $('#farmed-out-logo').fadeOut(500).html(farmedOutLogo).fadeIn(500)
           $('#icons').append(driverLogo).hide().fadeIn(500)
           $('#farmed-out-tag').append(servicing)
         $('#driver-tag').html(driver)
@@ -1022,6 +1022,7 @@ class DashboardManager
       if @activeTrip != null
         @activeTrip.update(
           if data.status? then data.status else @activeTrip.getStatus()
+          if data.servicingPartner? then data.servicingPartner.id else @activeTrip.getServicing()
           if data.driver? then data.driver.id else ''
           driverLocation
           driverInitialLocation
