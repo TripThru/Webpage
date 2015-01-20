@@ -1,33 +1,5 @@
 ########## DASHBOARD #########
 
-class ActiveTripsChart
-
-  constructor: (chartContainer) ->
-    @chart = new JustGage({
-      id: chartContainer
-      value: 0
-      min: 0
-      max: 10
-      label: 'trips'
-      relativeGaugeSize: true
-    })
-    @activeTripsCount = []
-    @max = 0
-
-  updateStats: (stats) =>
-    @update(stats.activeTrips, stats.activeTrips)
-
-  update: (activeTrips, selectedTypeActiveTrips) =>
-    if not activeTrips? or not selectedTypeActiveTrips?
-      console.error('Wrong parameters')
-      return
-
-    @max = if activeTrips > @max then activeTrips else @max
-    upperLimit = if @max < 10 then 10 else Math.ceil(@max * 1.4)
-
-    @chart.refresh(selectedTypeActiveTrips, upperLimit)
-
-
 class TripList
 
   constructor: (@containerId) ->
@@ -171,6 +143,8 @@ class TripTracker
     @pulseQueue = []
     @updatedTripAudio = document.createElement('audio');
     @updatedTripAudio.setAttribute('src', '/assets/trip-status-update.mp3');
+    @tickAudio = document.createElement('audio');
+    @tickAudio.setAttribute('src', '/assets/tick.mp3');
     setInterval(() =>
       if @pulseQueue.length > 0
         for i in [0..@pulseQueue.length]
@@ -182,8 +156,10 @@ class TripTracker
             do (pulse = pulse, isSecondUpdateTripStatusPulse = isSecondUpdateTripStatusPulse) =>
               setTimeout(() =>
                 @animate(pulse)
-                if pulse.type == 'driver-update' or pulse.type == 'get-trip-status' or (pulse.type == 'update-trip-status' and !isSecondUpdateTripStatusPulse)
+                if pulse.type == 'update-trip-status' and !isSecondUpdateTripStatusPulse
                   @updatedTripAudio.play()
+                else if pulse.type == 'driver-update' or pulse.type == 'get-trip-status'
+                  @tickAudio.play()
                 @pulseQueue.shift()
               , delay)
     , 500)
@@ -633,15 +609,140 @@ class ActivityLog
 
     return [id, logString]
 
+
+class ActiveTripsChart
+
+  constructor: (@chartContainerId) ->
+    @total = -1
+    @chartId = 'active-trips-chart'
+    $('#' + @chartContainerId).html('''
+        <div id="' + @chartId + '"></div>
+    ''')
+
+  updateStats: (stats) =>
+    totalActiveStatuses = stats.new + stats.dispatched + stats.enroute + stats.pickedup
+    @update(totalActiveStatuses, stats)
+
+  update: (total, statuses) =>
+    if @total == total
+      return
+    @total = total
+    Morris.Donut({
+      element: @chartId,
+      data: [
+        {label: "New", value: statuses.new}
+        {label: "Dispatched", value: statuses.dispatched}
+        {label: "Enroute", value: statuses.enroute}
+        {label: "Picked up", value: statuses.pickedup}
+      ]
+      colors: [
+        '#2D5AD6'
+        '#24BD13'
+        '#2DCBD6'
+        '#E31010'
+      ]
+    })
+
+class Counter
+  sequence = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].join('\n')
+  constructor: (@el)->
+    @el.addClass('counter')
+    @el.html(@template)
+    @tenThousandsPlaceSequence = @el.find('.sequence').eq(0)
+    @thousandsPlaceSequence = @el.find('.sequence').eq(1)
+    @hundredsPlaceSequence = @el.find('.sequence').eq(2)
+    @tensPlaceSequence = @el.find('.sequence').eq(3)
+    @onesPlaceSequence = @el.find('.sequence').eq(4)
+
+  template: """
+    <div class='digit'>
+      <div class='sequence'>#{sequence}</div>
+    </div>
+    <div class='digit'>
+      <div class='sequence'>#{sequence}</div>
+    </div>
+    <div class='digit'>
+      <div class='sequence'>#{sequence}</div>
+    </div>
+    <div class='digit'>
+      <div class='sequence'>#{sequence}</div>
+    </div>
+    <div class='digit'>
+      <div class='sequence'>#{sequence}</div>
+    </div>
+  """
+
+  countUpTo: (number)->
+
+    n = '' + number
+    n = n.split("").reverse().join("")
+    tenThousandsPlace = n.substr(4, 1)
+    thousandsPlace = n.substr(3, 1)
+    hundredsPlace = n.substr(2, 1)
+    tensPlace = n.substr(1, 1)
+    onesPlace = n.substr(0, 1)
+
+    digits = n.length
+
+    if digits > 1
+      @tensPlaceSequence.removeClass('is-hidden')
+      setTimeout =>
+        @tensPlaceSequence.css
+          '-moz-transform': "translate3d(0, #{- (9 - tensPlace) * 10}%, 0)",
+          '-webkit-transform': "translate3d(0, #{- (9 - tensPlace) * 10}%, 0)",
+          '-ms-transform': "translate3d(0, #{- (9 - tensPlace) * 10}%, 0)"
+      ,0
+    else
+      @tensPlaceSequence.addClass('is-hidden')
+
+    if digits > 2
+      @hundredsPlaceSequence.removeClass('is-hidden')
+      setTimeout =>
+        @hundredsPlaceSequence.css
+          '-moz-transform': "translate3d(0, #{- (9 - hundredsPlace) * 10}%, 0)",
+          '-webkit-transform': "translate3d(0, #{- (9 - hundredsPlace) * 10}%, 0)",
+          '-ms-transform': "translate3d(0, #{- (9 - hundredsPlace) * 10}%, 0)"
+      ,0
+    else
+      @hundredsPlaceSequence.addClass('is-hidden')
+
+    if digits > 3
+      @thousandsPlaceSequence.removeClass('is-hidden')
+      setTimeout =>
+        @thousandsPlaceSequence.css
+          '-moz-transform': "translate3d(0, #{- (9 - thousandsPlace) * 10}%, 0)",
+          '-webkit-transform': "translate3d(0, #{- (9 - thousandsPlace) * 10}%, 0)",
+          '-ms-transform': "translate3d(0, #{- (9 - thousandsPlace) * 10}%, 0)"
+      ,0
+    else
+      @thousandsPlaceSequence.addClass('is-hidden')
+
+    if digits > 4
+      @tenThousandsPlaceSequence.removeClass('is-hidden')
+      setTimeout =>
+        @tenThousandsPlaceSequence.css
+          '-moz-transform': "translate3d(0, #{- (9 - tenThousandsPlace) * 10}%, 0)",
+          '-webkit-transform': "translate3d(0, #{- (9 - tenThousandsPlace) * 10}%, 0)",
+          '-ms-transform': "translate3d(0, #{- (9 - tenThousandsPlace) * 10}%, 0)"
+      ,0
+    else
+      @tenThousandsPlaceSequence.addClass('is-hidden')
+
+
+    @onesPlaceSequence.css
+      '-moz-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)",
+      '-webkit-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)",
+      '-ms-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)"
+
+
 class StatisticsDashboard
 
   constructor: (@statisticsContainerId, @ratingsContainerId) ->
-    @activeTripsPieChartId = 'trips-pie-chart'
-    @activeTripsPieChartTitleId = @activeTripsPieChartId + '-title'
     @completeTripsPieChartId = 'complete-trips-pie-chart'
     @servicePieChartId = 'service-pie-chart'
     @driversRatingChartId = 'drivers-rating-chart'
     @passengersRatingChartId = 'passengers-rating-chart'
+    @activeTripsCounter = 'statistics-active-trip-counter'
     @lastValues = {
       totalActive: -1,
       totalComplete: -1,
@@ -649,9 +750,8 @@ class StatisticsDashboard
     }
 
     $('#' + @statisticsContainerId).html('
-                            <div  class="dashboard-statistics-pie-chart" >
-                                <div class="title" id="' + @activeTripsPieChartTitleId + '">0 Trips</div>
-                                <div class="pie-chart" id="' + @activeTripsPieChartId + '"></div>
+                            <div class="dashboard-statistics-counter">
+                                <div id="' + @activeTripsCounter + '"></div>
                             </div>
                             <div  class="dashboard-statistics-pie-chart" >
                                 <div class="title">Completed</div>
@@ -678,17 +778,22 @@ class StatisticsDashboard
                             </div>
                         ')
 
+    @counter = new Counter($('#' + @activeTripsCounter))
+    @updateCounter(0)
+
   updateStats: (stats) =>
-    last24Hrs = new Date()
-    last24Hrs.setDate(last24Hrs.getDate()-1)
     partnerId = ''
     if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
         partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
 
     totalActiveStatuses = stats.new + stats.dispatched + stats.enroute + stats.pickedup
-    @updateActiveStatuses(totalActiveStatuses, stats)
+    totalCompleteStatuses = stats.complete + stats.rejected + stats.cancelled
+    @updateCounter(12345)
+    @updateCompleteStatuses(totalCompleteStatuses, stats)
     @updateServiceLevels(stats.serviceLevels)
     @updateRatings(80, 95)
+    ###last24Hrs = new Date()
+    last24Hrs.setDate(last24Hrs.getDate()-1)
     $.get '/mongo_db/trips_count?startDate=' + last24Hrs + partnerId + '&interval=day&bucketSize=1&by_status=true', (data) =>
         statuses = {
           complete: 0,
@@ -698,7 +803,12 @@ class StatisticsDashboard
         for entry in data
           statuses[entry._id.status] += entry.count
         total = statuses.complete + statuses.rejected + statuses.cancelled
-        @updateCompleteStatuses(total, statuses)
+        @updateCompleteStatuses(total, statuses)###
+
+  updateCounter: (total) =>
+    if @totalActive != total
+      @totalActive = total
+      @counter.countUpTo(total)
 
   updateServiceLevels: (serviceLevels) =>
     hasChanged = false
@@ -744,27 +854,6 @@ class StatisticsDashboard
         '#2DCBD6'
         '#E31010'
       ]
-    })
-
-  updateActiveStatuses: (total, statuses) =>
-    if @lastValues.totalActive == total
-      return
-    @lastValues.totalActive = total
-    $('#' + @activeTripsPieChartTitleId).fadeOut().html(total + ' trips').fadeIn()
-    Morris.Donut({
-        element: @activeTripsPieChartId,
-        data: [
-            {label: "New", value: statuses.new}
-            {label: "Dispatched", value: statuses.dispatched}
-            {label: "Enroute", value: statuses.enroute}
-            {label: "Picked up", value: statuses.pickedup}
-        ]
-        colors: [
-            '#2D5AD6'
-            '#24BD13'
-            '#2DCBD6'
-            '#E31010'
-        ]
     })
 
   updateRatings: (passengerRating, driverRating) =>

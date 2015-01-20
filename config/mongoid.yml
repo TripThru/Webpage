@@ -5,11 +5,11 @@ development:
     default:
       # Defines the name of the default database that Mongoid can connect to.
       # (required).
-      database: tripthru
+      database: TripThru
       # Provides the hosts the default session can connect to. Must be an array
       # of host:port pairs. (required)
       hosts:
-        - 107.170.220.160
+        - SG-TripThru-3328.servers.mongodirector.com
       options:
         # Change the default write concern. (default = { w: 1 })
         # write:
@@ -62,11 +62,11 @@ test:
     default:
       # Defines the name of the default database that Mongoid can connect to.
       # (required).
-      database: tripthru
+      database: TripThru
       # Provides the hosts the default session can connect to. Must be an array
       # of host:port pairs. (required)
       hosts:
-        - 107.170.220.160
+        - SG-TripThru-3328.servers.mongodirector.com
       options:
         # Change the default write concern. (default = { w: 1 })
         # write:
@@ -88,11 +88,11 @@ test:
 production:
   sessions:
     default:
-      database: tripthru
+      database: TripThru
       # Provides the hosts the default session can connect to. Must be an array
       # of host:port pairs. (required)
       hosts:
-        - 107.170.220.160
+        - SG-TripThru-3328.servers.mongodirector.com
       options:
         # Change the default write concern. (default = { w: 1 })
         # write:
