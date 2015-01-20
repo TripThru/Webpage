@@ -593,6 +593,10 @@
                 padding: 0;
                 margin: 32px 0 0 0;
                 font-size: 12px;
+                div {
+                  display: inline-block;
+                  font-weight: 600;
+                }
               }
 
               height: 130px;
@@ -906,7 +910,7 @@
                 }
                 height: 150px;
                 width: 140px;
-                margin: 40px 0 60px 20px;
+                margin: 40px 0 60px 27px;
 
                 svg {
                   margin: 0 auto;

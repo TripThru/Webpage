@@ -739,6 +739,7 @@ class StatisticsDashboard
 
   constructor: (@statisticsContainerId, @ratingsContainerId) ->
     @completeTripsPieChartId = 'complete-trips-pie-chart'
+    @completedTripsTitle = @completeTripsPieChartId + '-title'
     @servicePieChartId = 'service-pie-chart'
     @driversRatingChartId = 'drivers-rating-chart'
     @passengersRatingChartId = 'passengers-rating-chart'
@@ -754,7 +755,7 @@ class StatisticsDashboard
                                 <div id="' + @activeTripsCounter + '"></div>
                             </div>
                             <div  class="dashboard-statistics-pie-chart" >
-                                <div class="title">Completed</div>
+                                <div class="title"><div id="' + @completedTripsTitle + '">0</div> requests</div>
                                 <div class="pie-chart" id="' + @completeTripsPieChartId + '"></div>
                             </div>
                             <div  class="dashboard-statistics-pie-chart" >
@@ -788,7 +789,7 @@ class StatisticsDashboard
 
     totalActiveStatuses = stats.new + stats.dispatched + stats.enroute + stats.pickedup
     totalCompleteStatuses = stats.complete + stats.rejected + stats.cancelled
-    @updateCounter(12345)
+    @updateCounter(totalActiveStatuses)
     @updateCompleteStatuses(totalCompleteStatuses, stats)
     @updateServiceLevels(stats.serviceLevels)
     @updateRatings(80, 95)
@@ -842,6 +843,7 @@ class StatisticsDashboard
       return
     @lastValues.totalComplete = total
 
+    $('#' + @completedTripsTitle).fadeOut().html(total).fadeIn()
     Morris.Donut({
       element: @completeTripsPieChartId,
       data: [
