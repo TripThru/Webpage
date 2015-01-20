@@ -182,7 +182,7 @@ class TripTracker
             do (pulse = pulse, isSecondUpdateTripStatusPulse = isSecondUpdateTripStatusPulse) =>
               setTimeout(() =>
                 @animate(pulse)
-                if pulse.type == 'update-trip-status' and !isSecondUpdateTripStatusPulse
+                if pulse.type == 'driver-update' or pulse.type == 'get-trip-status' or (pulse.type == 'update-trip-status' and !isSecondUpdateTripStatusPulse)
                   @updatedTripAudio.play()
                 @pulseQueue.shift()
               , delay)
