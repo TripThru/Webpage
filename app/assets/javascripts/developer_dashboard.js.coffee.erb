@@ -620,7 +620,7 @@ class ActiveTripsChart
     ''')
 
   updateStats: (stats) =>
-    totalActiveStatuses = stats.new + stats.dispatched + stats.enroute + stats.pickedup
+    totalActiveStatuses = stats.new + stats.queued + stats.dispatched + stats.enroute + stats.pickedup
     @update(totalActiveStatuses, stats)
 
   update: (total, statuses) =>
@@ -630,7 +630,7 @@ class ActiveTripsChart
     Morris.Donut({
       element: @chartId,
       data: [
-        {label: "New", value: statuses.new}
+        {label: "New", value: statuses.new + statuses.queued}
         {label: "Dispatched", value: statuses.dispatched}
         {label: "Enroute", value: statuses.enroute}
         {label: "Picked up", value: statuses.pickedup}
@@ -787,7 +787,7 @@ class StatisticsDashboard
     if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
         partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
 
-    totalActiveStatuses = stats.new + stats.dispatched + stats.enroute + stats.pickedup
+    totalActiveStatuses = stats.new + stats.queued + stats.dispatched + stats.enroute + stats.pickedup
     totalCompleteStatuses = stats.complete + stats.rejected + stats.cancelled
     @updateCounter(totalActiveStatuses)
     @updateCompleteStatuses(totalCompleteStatuses, stats)
