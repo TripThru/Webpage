@@ -243,13 +243,17 @@ class TripTracker
       @toggleAnimation('pulse-origin-tripthru',     'quick', 'left', 'dark-blue', 1080)
       @toggleAnimation('pulse-passenger-origin',    'quick', 'left', 'dark-blue', 1260)
     else if pulse.direction == 'origin-tripthru'
+      delay = 0
       if pulse.type == 'update-trip-status'
+        delay = 380
         @toggleAnimation('pulse-passenger-origin',  'normal', 'right', color, 0)
-      @toggleAnimation('pulse-origin-tripthru',     'normal', 'right', color, 380)
+      @toggleAnimation('pulse-origin-tripthru',     'normal', 'right', color, delay)
     else if pulse.direction == 'servicing-tripthru'
+      delay = 0
       if pulse.type == 'update-trip-status'
+        delay = 380
         @toggleAnimation('pulse-servicing-driver',  'normal', 'left', color, 0)
-      @toggleAnimation('pulse-tripthru-servicing',  'normal', 'left', color, 380)
+      @toggleAnimation('pulse-tripthru-servicing',  'normal', 'left', color, delay)
     else if pulse.direction == 'tripthru-origin'
       @toggleAnimation('pulse-origin-tripthru',     'normal', 'left', color, 0)
       if pulse.type == 'update-trip-status'
