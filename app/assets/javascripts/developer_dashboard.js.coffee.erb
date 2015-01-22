@@ -42,7 +42,7 @@ class TripList
     if @currentStatus != status
       @statusChanged = true
       if $('#triplist-loading').length <= 0
-        $('#' + @containerId).prepend('<span id="triplist-loading"><%= image_tag('loading.gif') %></span>')
+        $('#' + @containerId).html('<span id="triplist-loading"><%= image_tag('loading.gif') %></span>')
     @currentStatus = status
 
   updateTrips: (tripsById) =>
