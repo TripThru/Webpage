@@ -803,7 +803,9 @@ class StatisticsDashboard
       totalCounter: -1,
       totalTrips: -1,
       totalComplete: -1,
-      serviceLevels: [-1, -1, -1, -1, -1]
+      serviceLevels: [-1, -1, -1, -1, -1],
+      durations: [],
+      distances: []
     }
 
     $('#' + @statisticsContainerId).html('
@@ -892,11 +894,13 @@ class StatisticsDashboard
         {label: "< 3 min.", value: 0}
         {label: "< 5 min.", value: 0}
         {label: "< 10 min.", value: 0}
-        {label: "> 10 min.", value: 0}
+        {label: "< 15 min.", value: 0}
+        {label: "> 15 min.", value: 0}
       ]
       colors: [
         '#24BD13'
         '#84BD13'
+        '#B7BD13'
         '#BD7313'
         '#BD2413'
       ]
@@ -905,10 +909,11 @@ class StatisticsDashboard
     @mileageChart = Morris.Donut({
       element: @mileagePieChartId,
       data: [
-        {label: "< 200 mts.", value: 0}
-        {label: "< 400 mts.", value: 0}
-        {label: "< 600 mts.", value: 0}
-        {label: "> 600 mts.", value: 0}
+        {label: "< 0.2 mi", value: 0}
+        {label: "< 0.4 mi", value: 0}
+        {label: "< 0.6 mi.", value: 0}
+        {label: "< 1 mi.", value: 0}
+        {label: "> 1 mi.", value: 0}
       ]
       colors: [
         '#24BD13'
@@ -928,6 +933,10 @@ class StatisticsDashboard
     totalCompleteStatuses = stats.complete + stats.rejected + stats.cancelled
     @updateCompleteStatuses(totalCompleteStatuses, stats)
     @updateServiceLevels(stats.serviceLevels)
+    if stats.durations?
+      @updateDurations(stats.durations)
+    if stats.distances?
+      @updateDistances(stats.distances)
     $.get '/mongo_db/trips_stats?' + partnerId, (data) =>
       statuses = {
         #queued: 0,
@@ -994,6 +1003,24 @@ class StatisticsDashboard
       {label: "Rejected", value: statuses.rejected}
       {label: "Cancelled", value: statuses.cancelled}
     ])
+
+  updateDurations: (durations) =>
+    hasChanged = false
+    data = []
+    for duration in durations
+      data.push({ label: duration.name , value: duration.value })
+
+    @lastValues.durations = durations
+    @durationChart.setData data
+
+  updateDistances: (distances) =>
+    hasChanged = false
+    data = []
+    for distance in distances
+      data.push({ label: distance.name , value: distance.value })
+
+    @lastValues.distances = distances
+    @mileageChart.setData data
 
 
 class DashboardManager
