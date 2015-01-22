@@ -726,11 +726,28 @@ class ActiveTripsChart
     @totalCounter = -1
     @chartId = 'active-trips-dashboard'
     @counterId = 'active-trips-counter'
+    @statusIndex = -1
     $('#' + @chartContainerId).html('
         <div id="' + @counterId + '"></div>
         <div id="' + @chartId + '"></div>
     ')
     @counter = new Counter($('#' + @counterId))
+    @chart = Morris.Donut({
+      element: @chartId,
+      data: [
+        {label: "New", value: 0}
+        {label: "Dispatched", value: 0}
+        {label: "Enroute", value: 0}
+        {label: "Picked up", value: 0}
+      ]
+      colors: [
+        '#2D5AD6'
+        '#24BD13'
+        '#2DCBD6'
+        '#E31010'
+      ],
+      resize: true
+    })
     @updateCounter(0)
 
   updateStats: (stats) =>
@@ -744,35 +761,42 @@ class ActiveTripsChart
     @totalCounter = total
     @counter.countUpTo(total)
 
+  updateStatus: (status) =>
+    switch status
+      when 'new'
+        @statusIndex = 0
+      when 'dispatched'
+        @statusIndex = 1
+      when 'enroute'
+        @statusIndex = 2
+      when 'pickedup'
+        @statusIndex = 3
+      else
+        @statusIndex = -1
+    @chart.select(@statusIndex)
 
   updateChart: (total, statuses) =>
     if @totalChart == total
       return
     @totalChart = total
-    Morris.Donut({
-      element: @chartId,
-      data: [
+    @chart.setData([
         {label: "New", value: statuses.new + statuses.queued}
         {label: "Dispatched", value: statuses.dispatched}
         {label: "Enroute", value: statuses.enroute}
         {label: "Picked up", value: statuses.pickedup}
-      ]
-      colors: [
-        '#2D5AD6'
-        '#24BD13'
-        '#2DCBD6'
-        '#E31010'
-      ]
-    })
+    ])
+    if @statusIndex > -1
+      @chart.select(@statusIndex)
+
 
 class StatisticsDashboard
 
   constructor: (@statisticsContainerId) ->
-    @completeTripsPieChartId = 'complete-trips-pie-chart'
+    @completeTripsPieChartId = 'statistics-complete-trips-pie-chart'
     @completedTripsTitle = @completeTripsPieChartId + '-title'
-    @servicePieChartId = 'service-pie-chart'
-    @durationChartId = 'service-pie-chart'
-    @mileageChartId = 'service-pie-chart'
+    @servicePieChartId = 'statistics-service-pie-chart'
+    @durationPieChartId = 'statistics-duration-pie-chart'
+    @mileagePieChartId = 'statistics-mileage-service-pie-chart'
     @totalTripsCounter = 'statistics-total-trip-counter'
     @totalTripsPieChartId = 'statistics-total-trip-chart'
     @lastValues = {
@@ -803,15 +827,97 @@ class StatisticsDashboard
                             </div>
                             <div  class="dashboard-statistics-pie-chart" >
                                 <div class="title">Duration</div>
-                                <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                                <div class="pie-chart" id="' + @durationPieChartId + '"></div>
                             </div>
                             <div  class="dashboard-statistics-pie-chart" >
                                 <div class="title">Mileage</div>
-                                <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                                <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
                             </div>
                         ')
 
     @counter = new Counter($('#' + @totalTripsCounter))
+    @totalTripsChart = Morris.Donut({
+      element: @totalTripsPieChartId,
+      data: [
+        #{label: "New", value: 0}
+        #{label: "Dispatched", value: 0}
+        #{label: "Enroute", value: 0}
+        #{label: "Picked up", value: 0}
+        {label: "Complete", value: 0}
+        {label: "Rejected", value: 0}
+        {label: "Cancelled", value: 0}
+      ]
+      colors: [
+        '#24BD13'
+        '#2DCBD6'
+        '#E31010'
+      ]
+      resize: true
+    })
+    @serviceLevelsChart = Morris.Donut({
+      element: @servicePieChartId,
+      data: [
+        {label: "< 3 min.", value: 0}
+        {label: "< 5 min.", value: 0}
+        {label: "< 10 min.", value: 0}
+        {label: "< 15 min.", value: 0}
+        {label: "> 15 min.", value: 0}
+      ]
+      colors: [
+        '#24BD13'
+        '#84BD13'
+        '#B7BD13'
+        '#BD7313'
+        '#BD2413'
+      ]
+      resize: true
+    })
+    @completeStatusesChart = Morris.Donut({
+      element: @completeTripsPieChartId,
+      data: [
+        {label: "Complete", value: 0}
+        {label: "Rejected", value: 0}
+        {label: "Cancelled", value: 0}
+      ]
+      colors: [
+        '#24BD13'
+        '#2DCBD6'
+        '#E31010'
+      ]
+      resize: true
+    })
+    @durationChart = Morris.Donut({
+      element: @durationPieChartId,
+      data: [
+        {label: "< 3 min.", value: 0}
+        {label: "< 5 min.", value: 0}
+        {label: "< 10 min.", value: 0}
+        {label: "> 10 min.", value: 0}
+      ]
+      colors: [
+        '#24BD13'
+        '#84BD13'
+        '#BD7313'
+        '#BD2413'
+      ]
+      resize: true
+    })
+    @mileageChart = Morris.Donut({
+      element: @mileagePieChartId,
+      data: [
+        {label: "< 200 mts.", value: 0}
+        {label: "< 400 mts.", value: 0}
+        {label: "< 600 mts.", value: 0}
+        {label: "> 600 mts.", value: 0}
+      ]
+      colors: [
+        '#24BD13'
+        '#84BD13'
+        '#BD7313'
+        '#BD2413'
+      ]
+      resize: true
+    })
     @updateCounter(0)
 
   updateStats: (stats) =>
@@ -849,24 +955,16 @@ class StatisticsDashboard
     if @lastValues.totalTrips == total
       return
     @lastValues.totalTrips = total
+    @totalTripsChart.setData([
+      #{label: "New", value: statuses.new + statuses.queued}
+      #{label: "Dispatched", value: statuses.dispatched}
+      #{label: "Enroute", value: statuses.enroute}
+      #{label: "Picked up", value: statuses.pickedup}
+      {label: "Complete", value: statuses.complete}
+      {label: "Rejected", value: statuses.rejected}
+      {label: "Cancelled", value: statuses.cancelled}
+    ])
 
-    Morris.Donut({
-      element: @totalTripsPieChartId,
-      data: [
-        #{label: "New", value: statuses.new + statuses.queued}
-        #{label: "Dispatched", value: statuses.dispatched}
-        #{label: "Enroute", value: statuses.enroute}
-        #{label: "Picked up", value: statuses.pickedup}
-        {label: "Complete", value: statuses.complete}
-        {label: "Rejected", value: statuses.rejected}
-        {label: "Cancelled", value: statuses.cancelled}
-      ]
-      colors: [
-        '#24BD13'
-        '#2DCBD6'
-        '#E31010'
-      ]
-    })
 
   updateServiceLevels: (serviceLevels) =>
     hasChanged = false
@@ -875,45 +973,28 @@ class StatisticsDashboard
         hasChanged = true
     if !hasChanged
       return
-
     @lastValues.serviceLevels = serviceLevels
-    Morris.Donut({
-      element: @servicePieChartId,
-      data: [
-        {label: "< 3 min.", value: serviceLevels[0]}
-        {label: "< 5 min.", value: serviceLevels[1]}
-        {label: "< 10 min.", value: serviceLevels[2]}
-        {label: "< 15 min.", value: serviceLevels[3]}
-        {label: "> 15 min.", value: serviceLevels[4]}
-      ]
-      colors: [
-        '#24BD13'
-        '#84BD13'
-        '#B7BD13'
-        '#BD7313'
-        '#BD2413'
-      ]
-    })
+    @serviceLevelsChart.setData([
+      {label: "< 3 min.", value: serviceLevels[0]}
+      {label: "< 5 min.", value: serviceLevels[1]}
+      {label: "< 10 min.", value: serviceLevels[2]}
+      {label: "< 15 min.", value: serviceLevels[3]}
+      {label: "> 15 min.", value: serviceLevels[4]}
+    ])
+
 
   updateCompleteStatuses: (total, statuses) =>
     if @lastValues.totalComplete == total
       return
-    @lastValues.totalComplete = total
 
+    @lastValues.totalComplete = total
     $('#' + @completedTripsTitle).fadeOut().html(total).fadeIn()
-    Morris.Donut({
-      element: @completeTripsPieChartId,
-      data: [
-        {label: "Complete", value: statuses.complete}
-        {label: "Rejected", value: statuses.rejected}
-        {label: "Cancelled", value: statuses.cancelled}
-      ]
-      colors: [
-        '#24BD13'
-        '#2DCBD6'
-        '#E31010'
-      ]
-    })
+    @completeStatusesChart.setData([
+      {label: "Complete", value: statuses.complete}
+      {label: "Rejected", value: statuses.rejected}
+      {label: "Cancelled", value: statuses.cancelled}
+    ])
+
 
 class DashboardManager
 

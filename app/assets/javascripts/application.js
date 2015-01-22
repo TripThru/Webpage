@@ -21,7 +21,7 @@
 //= require justgage
 //= require raphael.2.1.0.min
 //= require json.formatter.js
-//= require morris-0.4.1.min.js
+//= require morris.min
 //= require jquery.flexible.stars.js
 //= require swagger/underscore-min.js
 //= require swagger/backbone-min.js
