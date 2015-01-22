@@ -146,6 +146,46 @@
     margin-right: 10px;
   }
 
+  .counter {
+    font-size: 0;
+    height: 60px;
+    overflow: hidden;
+    font-family: Helvetica Neue;
+    font-weight: bold;
+    text-align: center;
+  }
+  .counter .digit {
+    display: inline-block;
+    font-size: 40px;
+    text-align: center;
+  }
+  .counter .sequence {
+    width: 0.55em;
+    -moz-transform: translate3d(0, -90%, 0);
+    -moz-transition: -moz-transform 500ms cubic-bezier(0.86, 0, 0.07, 1) /* easequint*/,
+    width 500ms ease-in-out,
+    opacity 500ms ease-in-out;
+    -webkit-transform: translate3d(0, -90%, 0);
+    -webkit-transition: -webkit-transform 500ms cubic-bezier(0.86, 0, 0.07, 1) /* easequint*/,
+    width 500ms ease-in-out,
+    opacity 500ms ease-in-out;
+    -ms-transform: translate3d(0, -90%, 0);
+    -ms-transition: -ms-transform 500ms cubic-bezier(0.86, 0, 0.07, 1) /* easequint*/,
+    width 500ms ease-in-out,
+    opacity 500ms ease-in-out;
+  }
+
+  .counter .digit:last-child .sequence{
+    -webkit-transition-delay: 100ms;
+    -moz-transition-delay: 100ms;
+    -ms-transition-delay: 100ms;
+  }
+
+  .counter .sequence.is-hidden {
+    width: 0.02em;
+    opacity: 0;
+  }
+
   @media (min-width: 992px) {
     #main-wrapper {
       float: right;
@@ -292,7 +332,16 @@
 
           #active-trips-chart {
             height: 23%;
-            margin: 18% 2% 7% 0;
+            margin: 12% 2% 8% 0;
+            .counter {
+              margin-bottom: -23px;
+              .digit {
+                font-size: 35px;
+              }
+            }
+            #active-trips-dashboard {
+              height: 90%;
+            }
           }
 
           #trips-wrapper {
@@ -582,16 +631,16 @@
       }
 
       #statistics-panel-container {
-        margin-top: -10px;
         #statistics-panel {
-          height: 460px;
+          height: 630px;
+          overflow-y: scroll;
           #statistics-gauges-container {
-            margin-top: -15px;
+            margin-top: -10px;
 
             .dashboard-statistics-pie-chart {
               .title {
                 padding: 0;
-                margin: 32px 0 0 0;
+                margin: 20px 0 -5px 0;
                 font-size: 12px;
                 div {
                   display: inline-block;
@@ -599,114 +648,41 @@
                 }
               }
 
-              height: 130px;
-              width: 120px;
+              height: 110px;
+              width: 110px;
               margin: 0 auto;
               padding: 0;
 
               svg {
                 margin: 0 auto;
                 padding: 0;
-                height: 130px;
-                width: 120px;
+                height: 110px;
+                width: 110px;
               }
 
               .chart {
-                height: 130px;
-                width: 120px;
+                height: 110px;
+                width: 110px;
               }
             }
 
-            .dashboard-statistics-counter {
-              .title {
-                padding: 0;
-                margin: 40px 0 0 0;
-                font-size: 12px;
-              }
+            .dashboard-statistics-separator {
+              font-size: 15px;
+              font-weight: 600;
+              padding-top: 10px;
+              width: 100%;
               display: inline-block;
-              margin-top: 35px;
             }
 
-            .counter {
-              font-size: 0;
-              height: 60px;
-              overflow: hidden;
-              font-family: Helvetica Neue;
-              font-weight: bold;
-              text-align: center;
-            }
-            .counter .digit {
-              display: inline-block;
-              font-size: 40px;
-              text-align: center;
-            }
-            .counter .sequence {
-              width: 0.55em;
-              -moz-transform: translate3d(0, -90%, 0);
-              -moz-transition: -moz-transform 500ms cubic-bezier(0.86, 0, 0.07, 1) /* easequint*/,
-              width 500ms ease-in-out,
-              opacity 500ms ease-in-out;
-              -webkit-transform: translate3d(0, -90%, 0);
-              -webkit-transition: -webkit-transform 500ms cubic-bezier(0.86, 0, 0.07, 1) /* easequint*/,
-              width 500ms ease-in-out,
-              opacity 500ms ease-in-out;
-              -ms-transform: translate3d(0, -90%, 0);
-              -ms-transition: -ms-transform 500ms cubic-bezier(0.86, 0, 0.07, 1) /* easequint*/,
-              width 500ms ease-in-out,
-              opacity 500ms ease-in-out;
-            }
-
-            .counter .digit:last-child .sequence{
-              -webkit-transition-delay: 100ms;
-              -moz-transition-delay: 100ms;
-              -ms-transition-delay: 100ms;
-            }
-
-            .counter .sequence.is-hidden {
-              width: 0.02em;
-              opacity: 0;
-            }
-          }
-        }
-      }
-
-      #ratings-panel-container {
-        #ratings-panel {
-          height: 137px;
-
-          #ratings-container {
-            margin-top: -10px;
-            .dashboard-statistics-rating {
-              .title {
-                padding: 0;
-                margin: 10px 0 0 0;
-                font-size: 12px;
-              }
-
-              .flexible-stars {
-
-                i {
-                  display: inline-block
+            .dashboard-statistics-counter-container {
+              margin-bottom: -20px;
+              .dashboard-statistics-counter {
+                .title {
+                  padding: 0;
+                  margin: 40px 0 0 0;
+                  font-size: 12px;
                 }
-                [class^="sprite-"] {
-                  background: url(rating-stars-big.png) no-repeat top left;
-                }
-
-                .sprite-gold-star {
-                  background-position: 0 0;
-                  width: 29px;
-                  height: 28px;
-                }
-                .sprite-half-star {
-                  background-position: 0 -78px;
-                  width: 29px;
-                  height: 28px;
-                }
-                .sprite-silver-star {
-                  background-position: 0 -156px;
-                  width: 29px;
-                  height: 28px;
-                }
+                display: inline-block;
               }
             }
           }
@@ -825,6 +801,21 @@
           height: 900px;
           #trip-list {
             height: 100%;
+
+            #active-trips-chart {
+              height: 23%;
+              margin: 13% 2% 8% 0;
+              .counter {
+                margin-bottom: 0px;
+                .digit {
+                  font-size: 45px;
+                }
+              }
+              #active-trips-dashboard {
+                height: 80%;
+              }
+            }
+
             #trips-wrapper {
               #trips {
                 .trip {
@@ -894,23 +885,22 @@
 
         #statistics-panel-container {
           #statistics-panel {
-            height: 650px;
+            height: 860px;
             #statistics-gauges-container {
               display: inline-block;
               padding-top: 0;
-              margin-top: -25px;
               margin-bottom: 10px;
               width: 200px;
 
               .dashboard-statistics-pie-chart {
                 .title {
                   padding: 0;
-                  margin: 20px 0 0 0;
+                  margin: 20px 0 -10px 0;
                   font-size: 14px;
                 }
                 height: 150px;
                 width: 140px;
-                margin: 40px 0 60px 27px;
+                margin: 15px 0 20px 27px;
 
                 svg {
                   margin: 0 auto;
@@ -924,33 +914,19 @@
                   width: 140px;
                 }
               }
-              .dashboard-statistics-counter {
-                margin: 60px 25px 35px 0;
-              }
-              .counter .digit {
-                font-size: 50px;
-              }
-            }
-          }
-        }
-
-        #ratings-panel-container {
-          #ratings-panel {
-            height: 167px;
-            margin: 10px 0 0 0;
-            #ratings-container {
-
-              #dashboard-ratings-container {
+              .dashboard-statistics-separator {
+                font-size: 18px;
+                font-weight: 600;
+                width: 100%;
                 display: inline-block;
-                margin: 0 0 0 0;
-                width: 200px;
               }
 
-              .dashboard-statistics-rating {
-                .title {
-                  padding: 0;
-                  margin: 15px 0 0 0;
-                  font-size: 14px;
+              .dashboard-statistics-counter-container {
+                .dashboard-statistics-counter {
+                  margin: 0 auto;
+                }
+                .counter .digit {
+                  font-size: 50px;
                 }
               }
             }
@@ -1050,25 +1026,27 @@
         }
 
         #statistics-panel-container {
-          width: 74.5%;
+          width: 100%;
           float: left;
           margin: 0 0 20px 0;
           height: 170px;
+          overflow-x: scroll;
           #statistics-panel {
             #statistics-gauges-container {
               display: inline-block;
               padding-top: 0;
               margin-top: -10px;
               margin-bottom: 10px;
+              width: 800px;
               .dashboard-statistics-pie-chart {
                 float: left;
                 height: 110px;
                 width: 110px;
-                margin: 0 18px 0 0;
+                margin: 20px 18px 0 0;
 
                 .title {
                   padding: 0;
-                  margin: 10px 0 -5px 0;
+                  margin: -10px 0 -5px 0;
                   font-size: 12px;
                 }
 
@@ -1085,36 +1063,17 @@
                 }
               }
 
-              .dashboard-statistics-counter {
-                float: left;
-                margin: 40px 40px 0 0;
+              .dashboard-statistics-separator {
+                display: none;
               }
-            }
-          }
-        }
 
-        #ratings-panel-container {
-          width: 24.5%;
-          float: right;
-          margin: 0 0 20px 0;
-          height: 170px;
-          #ratings-panel {
-            #ratings-container {
-              display: inline-block;
-              margin-left: 3%;
-              #dashboard-ratings-container {
-                margin: 0 0 0 0;
-                width: 160px;
-                float: left;
-              }
-              .dashboard-statistics-rating {
-                .title {
-                  padding: 0;
-                  margin: 10px 0 0 0;
-                  font-size: 12px;
+              .dashboard-statistics-counter-container {
+                .dashboard-statistics-counter {
+                  float: left;
+                  margin: 40px 40px 0 0;
                 }
-                float: left;
               }
+
             }
           }
         }
@@ -1175,7 +1134,8 @@
 
         #statistics-panel-container {;
           width: 100%;
-          height: 430px;
+          height: 1024px;
+          overflow-y: scroll;
           float: none;
           #statistics-panel {
             #statistics-gauges-container {
@@ -1186,7 +1146,7 @@
 
               .dashboard-statistics-pie-chart {
                 float: none;
-                margin: -5px 25px 0px 0px;
+                margin: 0 auto;
                 height: 130px;
                 width: 120px;
                 .title {
@@ -1208,7 +1168,7 @@
               }
               .dashboard-statistics-counter {
                 float: none;
-                margin: 10px 30px 0 0;
+                margin: 0 auto;
               }
 
             }

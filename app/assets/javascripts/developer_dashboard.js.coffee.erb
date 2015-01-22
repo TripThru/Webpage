@@ -613,52 +613,22 @@ class ActivityLog
 
     return [id, logString]
 
-
-class ActiveTripsChart
-
-  constructor: (@chartContainerId) ->
-    @total = -1
-    @chartId = 'active-trips-chart'
-    $('#' + @chartContainerId).html('''
-        <div id="' + @chartId + '"></div>
-    ''')
-
-  updateStats: (stats) =>
-    totalActiveStatuses = stats.new + stats.queued + stats.dispatched + stats.enroute + stats.pickedup
-    @update(totalActiveStatuses, stats)
-
-  update: (total, statuses) =>
-    if @total == total
-      return
-    @total = total
-    Morris.Donut({
-      element: @chartId,
-      data: [
-        {label: "New", value: statuses.new + statuses.queued}
-        {label: "Dispatched", value: statuses.dispatched}
-        {label: "Enroute", value: statuses.enroute}
-        {label: "Picked up", value: statuses.pickedup}
-      ]
-      colors: [
-        '#2D5AD6'
-        '#24BD13'
-        '#2DCBD6'
-        '#E31010'
-      ]
-    })
-
 class Counter
   sequence = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0].join('\n')
   constructor: (@el)->
     @el.addClass('counter')
     @el.html(@template)
-    @tenThousandsPlaceSequence = @el.find('.sequence').eq(0)
-    @thousandsPlaceSequence = @el.find('.sequence').eq(1)
-    @hundredsPlaceSequence = @el.find('.sequence').eq(2)
-    @tensPlaceSequence = @el.find('.sequence').eq(3)
-    @onesPlaceSequence = @el.find('.sequence').eq(4)
+    @hundredThousandsPlaceSequence = @el.find('.sequence').eq(0)
+    @tenThousandsPlaceSequence = @el.find('.sequence').eq(1)
+    @thousandsPlaceSequence = @el.find('.sequence').eq(2)
+    @hundredsPlaceSequence = @el.find('.sequence').eq(3)
+    @tensPlaceSequence = @el.find('.sequence').eq(4)
+    @onesPlaceSequence = @el.find('.sequence').eq(5)
 
   template: """
+    <div class='digit'>
+      <div class='sequence'>#{sequence}</div>
+    </div>
     <div class='digit'>
       <div class='sequence'>#{sequence}</div>
     </div>
@@ -680,6 +650,7 @@ class Counter
 
     n = '' + number
     n = n.split("").reverse().join("")
+    hundredThousandsPlace = n.substr(5, 1)
     tenThousandsPlace = n.substr(4, 1)
     thousandsPlace = n.substr(3, 1)
     hundredsPlace = n.substr(2, 1)
@@ -687,6 +658,11 @@ class Counter
     onesPlace = n.substr(0, 1)
 
     digits = n.length
+
+    @onesPlaceSequence.css
+      '-moz-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)",
+      '-webkit-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)",
+      '-ms-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)"
 
     if digits > 1
       @tensPlaceSequence.removeClass('is-hidden')
@@ -732,32 +708,91 @@ class Counter
     else
       @tenThousandsPlaceSequence.addClass('is-hidden')
 
+    if digits > 5
+      @hundredThousandsPlaceSequence.removeClass('is-hidden')
+      setTimeout =>
+        @hundredThousandsPlaceSequence.css
+          '-moz-transform': "translate3d(0, #{- (9 - hundredThousandsPlace) * 10}%, 0)",
+          '-webkit-transform': "translate3d(0, #{- (9 - hundredThousandsPlace) * 10}%, 0)",
+          '-ms-transform': "translate3d(0, #{- (9 - hundredThousandsPlace) * 10}%, 0)"
+      ,0
+    else
+      @hundredThousandsPlaceSequence.addClass('is-hidden')
 
-    @onesPlaceSequence.css
-      '-moz-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)",
-      '-webkit-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)",
-      '-ms-transform': "translate3d(0, #{- (9 - onesPlace) * 10}%, 0)"
+class ActiveTripsChart
 
+  constructor: (@chartContainerId) ->
+    @totalChart = -1
+    @totalCounter = -1
+    @chartId = 'active-trips-dashboard'
+    @counterId = 'active-trips-counter'
+    $('#' + @chartContainerId).html('
+        <div id="' + @counterId + '"></div>
+        <div id="' + @chartId + '"></div>
+    ')
+    @counter = new Counter($('#' + @counterId))
+    @updateCounter(0)
+
+  updateStats: (stats) =>
+    totalActiveStatuses = stats.new + stats.queued + stats.dispatched + stats.enroute + stats.pickedup
+    @updateCounter(totalActiveStatuses)
+    @updateChart(totalActiveStatuses, stats)
+
+  updateCounter: (total) =>
+    if @totalCounter == total
+      return
+    @totalCounter = total
+    @counter.countUpTo(total)
+
+
+  updateChart: (total, statuses) =>
+    if @totalChart == total
+      return
+    @totalChart = total
+    Morris.Donut({
+      element: @chartId,
+      data: [
+        {label: "New", value: statuses.new + statuses.queued}
+        {label: "Dispatched", value: statuses.dispatched}
+        {label: "Enroute", value: statuses.enroute}
+        {label: "Picked up", value: statuses.pickedup}
+      ]
+      colors: [
+        '#2D5AD6'
+        '#24BD13'
+        '#2DCBD6'
+        '#E31010'
+      ]
+    })
 
 class StatisticsDashboard
 
-  constructor: (@statisticsContainerId, @ratingsContainerId) ->
+  constructor: (@statisticsContainerId) ->
     @completeTripsPieChartId = 'complete-trips-pie-chart'
     @completedTripsTitle = @completeTripsPieChartId + '-title'
     @servicePieChartId = 'service-pie-chart'
-    @driversRatingChartId = 'drivers-rating-chart'
-    @passengersRatingChartId = 'passengers-rating-chart'
+    @durationChartId = 'service-pie-chart'
+    @mileageChartId = 'service-pie-chart'
     @totalTripsCounter = 'statistics-total-trip-counter'
+    @totalTripsPieChartId = 'statistics-total-trip-chart'
     @lastValues = {
-      total: -1,
+      totalCounter: -1,
+      totalTrips: -1,
       totalComplete: -1,
       serviceLevels: [-1, -1, -1, -1, -1]
     }
 
     $('#' + @statisticsContainerId).html('
-                            <div class="dashboard-statistics-counter">
-                                <div id="' + @totalTripsCounter + '"></div>
+                            <div class="dashboard-statistics-separator">Total</div>
+                            <div class="dashboard-statistics-counter-container">
+                              <div class="dashboard-statistics-counter">
+                                  <div id="' + @totalTripsCounter + '"></div>
+                              </div>
                             </div>
+                            <div  class="dashboard-statistics-pie-chart" >
+                                <div class="pie-chart" id="' + @totalTripsPieChartId + '"></div>
+                            </div>
+                            <div class="dashboard-statistics-separator">Last 5 minutes</div>
                             <div  class="dashboard-statistics-pie-chart" >
                                 <div class="title"><div id="' + @completedTripsTitle + '">0</div> requests</div>
                                 <div class="pie-chart" id="' + @completeTripsPieChartId + '"></div>
@@ -766,20 +801,13 @@ class StatisticsDashboard
                                 <div class="title">Service level</div>
                                 <div class="pie-chart" id="' + @servicePieChartId + '"></div>
                             </div>
-                        ')
-
-    $('#' + @ratingsContainerId).html('
-                            <div id="dashboard-ratings-container">
-                                <div  class="dashboard-statistics-rating" >
-                                    <div class="title">Drivers</div>
-                                    <div class="flexible-stars" data-isLocked="yes"
-                                     data-init="0"  id="' + @driversRatingChartId + '"></div>
-                                </div>
-                                <div  class="dashboard-statistics-rating" >
-                                    <div class="title">Passengers</div>
-                                    <div class="flexible-stars" data-isLocked="yes"
-                                        data-init="0"  id="' + @passengersRatingChartId + '"></div>
-                                </div>
+                            <div  class="dashboard-statistics-pie-chart" >
+                                <div class="title">Duration</div>
+                                <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                            </div>
+                            <div  class="dashboard-statistics-pie-chart" >
+                                <div class="title">Mileage</div>
+                                <div class="pie-chart" id="' + @servicePieChartId + '"></div>
                             </div>
                         ')
 
@@ -794,28 +822,51 @@ class StatisticsDashboard
     totalCompleteStatuses = stats.complete + stats.rejected + stats.cancelled
     @updateCompleteStatuses(totalCompleteStatuses, stats)
     @updateServiceLevels(stats.serviceLevels)
-    @updateRatings(80, 95)
     $.get '/mongo_db/trips_stats?' + partnerId, (data) =>
       statuses = {
-        queued: 0,
-        dispatched: 0,
-        enroute: 0,
-        pickedup: 0,
+        #queued: 0,
+        #dispatched: 0,
+        #enroute: 0,
+        #pickedup: 0,
         complete: 0,
         rejected: 0,
         cancelled: 0
       }
-      statuses['new'] = 0
+      #statuses['new'] = 0
       total = 0
       for entry in data
         statuses[entry._id.status] += entry.count
         total += entry.count
       @updateCounter(total)
+      @updateTotalTrips(total, statuses)
 
   updateCounter: (total) =>
-    if @lastValues.total != total
-      @lastValues.total = total
+    if @lastValues.totalCounter != total
+      @lastValues.totalCounter = total
       @counter.countUpTo(total)
+
+  updateTotalTrips: (total, statuses) =>
+    if @lastValues.totalTrips == total
+      return
+    @lastValues.totalTrips = total
+
+    Morris.Donut({
+      element: @totalTripsPieChartId,
+      data: [
+        #{label: "New", value: statuses.new + statuses.queued}
+        #{label: "Dispatched", value: statuses.dispatched}
+        #{label: "Enroute", value: statuses.enroute}
+        #{label: "Picked up", value: statuses.pickedup}
+        {label: "Complete", value: statuses.complete}
+        {label: "Rejected", value: statuses.rejected}
+        {label: "Cancelled", value: statuses.cancelled}
+      ]
+      colors: [
+        '#24BD13'
+        '#2DCBD6'
+        '#E31010'
+      ]
+    })
 
   updateServiceLevels: (serviceLevels) =>
     hasChanged = false
@@ -862,22 +913,6 @@ class StatisticsDashboard
         '#2DCBD6'
         '#E31010'
       ]
-    })
-
-  updateRatings: (passengerRating, driverRating) =>
-    if $('#' + @passengersRatingChartId).html() != '' #No need to keep updating static values
-      return
-
-    passengerRatingStars = passengerRating/100*5
-    $('#' + @passengersRatingChartId).html('')
-    $('#' + @passengersRatingChartId).flexibleStars({
-      init: passengerRatingStars
-    })
-
-    driverRatingStars = driverRating/100*5
-    $('#' + @driversRatingChartId).html('')
-    $('#' + @driversRatingChartId).flexibleStars({
-      init: driverRatingStars
     })
 
 class DashboardManager
@@ -1082,7 +1117,7 @@ $('.developer.dashboard').ready ->
     [
       new ActiveTripsChart('active-trips-chart')
       new TripList('trips-panel')
-      new StatisticsDashboard('statistics-gauges-container', 'ratings-container')
+      new StatisticsDashboard('statistics-gauges-container')
       new TripTracker('tracking-trip-info', 'tracking-map-container')
       new ActivityLog('activity-log')
     ]
