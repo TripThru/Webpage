@@ -432,4 +432,140 @@ class MongoDbController < ApplicationController
     end
   end
 
+  def trips_stats
+    match_origin_by = 'originatingPartnerId'
+    match_service_by = 'servicingPartnerId'
+    origin_id = params[:originatingNetworkId]
+    service_id = params[:servicingNetworkId]
+    local_id = params[:localNetworkId]
+
+    if params[:originatingFleetId] != nil and params[:originatingFleetId] != 'all'
+      match_origin_by = 'originatingFleetId'
+      origin_id = params[:originatingFleetId]
+    end
+    if params[:servicingFleetId] != nil and params[:servicingFleetId] != 'all'
+      match_service_by = 'servicingFleetId'
+      service_id = params[:servicingFleetId]
+    end
+    if params[:localFleetId] != nil and params[:localFleetId] != 'all'
+      local_id = params[:localFleetId]
+    end
+
+    project = {
+        '$project' => {
+            'id' => 1,
+            'status' => 1,
+            'servicingPartnerId' => 1,
+            'originatingPartnerId' => 1,
+            'servicingFleetId' => 1,
+            'originatingFleetId' => 1,
+            'samplingPercentage' => 1
+        }
+    }
+
+    if roleUser == 'partner'
+      if service_id == nil and origin_id == nil and local_id == nil
+        service_id = userId
+        origin_id = userId
+        local_id = userId
+      end
+      if service_id != nil
+        service_id = userId
+      end
+      if origin_id != nil
+        origin_id = userId
+      end
+    end
+
+    match = { '$match' => {} }
+    if (service_id != nil or origin_id != nil) and
+        (service_id != 'all' and origin_id != 'all')
+
+      if service_id != nil and origin_id != nil
+        if params[:localNetworkId] != nil
+          match['$match']['$or'] = [
+              {match_service_by => service_id},
+              {match_origin_by => origin_id}
+          ]
+        else
+          match['$match']['$and'] = [
+              {'$or' => [
+                  {match_service_by => service_id},
+                  {match_origin_by => origin_id}
+              ]
+              },
+              {'$or' => [
+                  {match_service_by => {'$ne' => service_id}},
+                  {match_origin_by => {'$ne' => origin_id}}
+              ]}
+          ]
+        end
+      elsif service_id != nil
+        if params[:localNetworkId] != nil
+          match['$match']['$or'] = [
+              {match_service_by => service_id},
+              {'$and' => [
+                  {match_service_by => service_id},
+                  {match_origin_by => service_id}
+              ]
+              }
+          ]
+        else
+          match['$match']['$and'] = [
+              {match_service_by => service_id},
+              match_origin_by => {'$ne' => service_id}
+          ]
+        end
+      elsif origin_id != nil
+        if params[:localNetworkId] != nil
+          match['$match']['$or'] = [
+              {match_origin_by => origin_id},
+              {'$and' => [
+                  {match_service_by => origin_id},
+                  {match_origin_by => origin_id}
+              ]}
+          ]
+        else
+          match['$match']['$and'] = [
+              {match_origin_by => origin_id},
+              {match_service_by => {'$ne' => origin_id}}
+          ]
+        end
+      end
+    else
+      if local_id == 'all' and service_id == nil and origin_id == nil
+        project['$project']['isLocal'] = { '$eq' => [ '$' + match_service_by, '$' + match_origin_by ] }
+        match['$match']['isLocal'] = true
+      else
+        if local_id != nil and local_id != 'all'
+          match['$match']['$and'] = [
+              {match_service_by => local_id},
+              {match_origin_by => local_id}
+          ]
+        end
+      end
+    end
+
+    group = {
+        '$group' => {
+            '_id' => { 'status' => '$status' },
+            'count' => { '$sum' => 1 }
+        }
+    }
+
+    parameters = []
+    parameters << project
+    if match.length > 0
+      parameters << match
+    end
+    parameters << group
+
+    res = Trip.collection.aggregate(parameters)
+    puts parameters
+    puts 'Results count: ' + res.length.to_s
+    respond_to do |format|
+      format.json { render text: res.to_json }
+    end
+  end
+
 end

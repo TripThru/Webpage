@@ -747,16 +747,16 @@ class StatisticsDashboard
     @servicePieChartId = 'service-pie-chart'
     @driversRatingChartId = 'drivers-rating-chart'
     @passengersRatingChartId = 'passengers-rating-chart'
-    @activeTripsCounter = 'statistics-active-trip-counter'
+    @totalTripsCounter = 'statistics-total-trip-counter'
     @lastValues = {
-      totalActive: -1,
+      total: -1,
       totalComplete: -1,
       serviceLevels: [-1, -1, -1, -1, -1]
     }
 
     $('#' + @statisticsContainerId).html('
                             <div class="dashboard-statistics-counter">
-                                <div id="' + @activeTripsCounter + '"></div>
+                                <div id="' + @totalTripsCounter + '"></div>
                             </div>
                             <div  class="dashboard-statistics-pie-chart" >
                                 <div class="title"><div id="' + @completedTripsTitle + '">0</div> requests</div>
@@ -783,7 +783,7 @@ class StatisticsDashboard
                             </div>
                         ')
 
-    @counter = new Counter($('#' + @activeTripsCounter))
+    @counter = new Counter($('#' + @totalTripsCounter))
     @updateCounter(0)
 
   updateStats: (stats) =>
@@ -791,28 +791,30 @@ class StatisticsDashboard
     if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
         partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
 
-    totalActiveStatuses = stats.new + stats.queued + stats.dispatched + stats.enroute + stats.pickedup
     totalCompleteStatuses = stats.complete + stats.rejected + stats.cancelled
-    @updateCounter(totalActiveStatuses)
     @updateCompleteStatuses(totalCompleteStatuses, stats)
     @updateServiceLevels(stats.serviceLevels)
     @updateRatings(80, 95)
-    ###last24Hrs = new Date()
-    last24Hrs.setDate(last24Hrs.getDate()-1)
-    $.get '/mongo_db/trips_count?startDate=' + last24Hrs + partnerId + '&interval=day&bucketSize=1&by_status=true', (data) =>
-        statuses = {
-          complete: 0,
-          rejected: 0,
-          cancelled: 0
-        }
-        for entry in data
-          statuses[entry._id.status] += entry.count
-        total = statuses.complete + statuses.rejected + statuses.cancelled
-        @updateCompleteStatuses(total, statuses)###
+    $.get '/mongo_db/trips_stats?' + partnerId, (data) =>
+      statuses = {
+        queued: 0,
+        dispatched: 0,
+        enroute: 0,
+        pickedup: 0,
+        complete: 0,
+        rejected: 0,
+        cancelled: 0
+      }
+      statuses['new'] = 0
+      total = 0
+      for entry in data
+        statuses[entry._id.status] += entry.count
+        total += entry.count
+      @updateCounter(total)
 
   updateCounter: (total) =>
-    if @totalActive != total
-      @totalActive = total
+    if @lastValues.total != total
+      @lastValues.total = total
       @counter.countUpTo(total)
 
   updateServiceLevels: (serviceLevels) =>
