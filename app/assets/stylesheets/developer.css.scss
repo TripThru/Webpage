@@ -332,9 +332,9 @@
 
           #active-trips-chart {
             height: 23%;
-            margin: 12% 2% 8% 0;
+            margin: 12% 2% 10% 0;
             .counter {
-              margin-bottom: -23px;
+              margin-bottom: -17px;
               .digit {
                 font-size: 35px;
               }
@@ -960,6 +960,13 @@
 
         #trips-list-panel {
           #trip-list {
+            #active-trips-chart {
+              margin-top: 14%;
+              margin-bottom: 9%;
+              .counter {
+                margin-bottom: -23px;
+              }
+            }
             #trips-wrapper {
               #trips {
                 .trip {
