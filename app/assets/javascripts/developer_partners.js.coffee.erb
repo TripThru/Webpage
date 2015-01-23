@@ -95,7 +95,7 @@ class Stats
             error = 0
             for entry in data
                 switch entry._id.status
-                    when 'request'
+                    when 'new'
                         request += entry.count
                     when 'complete'
                         completed += entry.count
@@ -318,7 +318,7 @@ class PartnersManager
 
     initPartners: (fleets) =>
       for fleet in fleets.fleets
-        if fleet.partner.name == "TDispatch" or (fleet.partner.id.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
+        if fleet.partner.name == "TDispatch" or (fleet.partner.id.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
           continue
         if not (fleet.partner.name of @partners)
           @partners[fleet.partner.name] =  {id: fleet.partner.id, name: fleet.partner.name, fleets: [fleet]}
