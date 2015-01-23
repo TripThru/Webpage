@@ -21,8 +21,6 @@ $('.developer.report').ready ->
                     cancelledTrips.push entry
                 when 'error'
                     errorTrips.push entry
-                else
-                    console.log 'Default'
 
         tripsCount = completeTrips.length
         tripsCount += rejectedTrips.length
