@@ -112,7 +112,7 @@ class MongoDbController < ApplicationController
       end
     end
 
-    if roleUser == 'partner'
+    if roleUser == 'partner' and params[:originatingNetworkId] != userId and params[:servicingNetworkId] != userId
       if service_id == nil and origin_id == nil and local_id == nil
         service_id = userId
         origin_id = userId
@@ -463,7 +463,7 @@ class MongoDbController < ApplicationController
         }
     }
 
-    if roleUser == 'partner'
+    if roleUser == 'partner' and params[:originatingNetworkId] != userId and params[:servicingNetworkId] != userId
       if service_id == nil and origin_id == nil and local_id == nil
         service_id = userId
         origin_id = userId
