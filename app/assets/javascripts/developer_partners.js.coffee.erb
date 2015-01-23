@@ -44,6 +44,39 @@ class Stats
                                       </div>
                                   ')
 
+        @tripsChart = Morris.Donut({
+          element: @tripsPieChartId,
+          data: [
+            {label: "Requested", value: 0}
+            {label: "Completed", value: 0}
+            {label: "Rejected", value: 0}
+            {label: "Cancelled", value: 0}
+            {label: "Error", value: 0}
+          ]
+          colors: [
+            '#2922DD'
+            '#0BA462'
+            '#DADD0F'
+            '#DD1D18'
+            '#DD1D18'
+          ]
+          resize: true
+        })
+
+        @serviceChart = Morris.Donut({
+          element: @servicePieChartId,
+          data: [
+            {label: "In service", value: 0}
+            {label: "Out service", value: 0}
+          ]
+          colors: [
+            '#0BA462'
+            '#DD1D18'
+          ]
+          formatter: (x) -> x + "%"
+          resize: true
+        })
+
         @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     updateStats: (partner) =>
@@ -81,23 +114,13 @@ class Stats
             @lastValues.cancelled = cancelled
             @lastValues.rejected = rejected
             @lastValues.error = error
-            Morris.Donut({
-                element: @tripsPieChartId,
-                data: [
-                    {label: "Requested", value: request}
-                    {label: "Completed", value: completed}
-                    {label: "Rejected", value: rejected}
-                    {label: "Cancelled", value: cancelled}
-                    {label: "Error", value: error}
-                ]
-                colors: [
-                    '#2922DD'
-                    '#0BA462'
-                    '#DADD0F'
-                    '#DD1D18'
-                    '#DD1D18'
-                ]
-            })
+            @tripsChart.setData([
+              {label: "Requested", value: request}
+              {label: "Completed", value: completed}
+              {label: "Rejected", value: rejected}
+              {label: "Cancelled", value: cancelled}
+              {label: "Error", value: error}
+            ])
 
         passengerRatingStars = passengerRating/100*5
         if passengerRatingStars != @lastValues.passengerRating
@@ -118,18 +141,10 @@ class Stats
 
             @lastValues.withinServiceGoal = withinServiceGoal
             @lastValues.lateness = lateness
-            Morris.Donut({
-                element: @servicePieChartId,
-                data: [
-                    {label: "In service", value: withinServiceGoal}
-                    {label: "Out service", value: lateness}
-                ]
-                colors: [
-                    '#0BA462'
-                    '#DD1D18'
-                ]
-                formatter: (x) -> x + "%"
-            })
+            @serviceChart.setData([
+              {label: "In service", value: withinServiceGoal}
+              {label: "Out service", value: lateness}
+            ])
 
 class CoverageMap
 
