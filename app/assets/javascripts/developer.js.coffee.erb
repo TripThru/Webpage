@@ -10,12 +10,13 @@ class window.TripThru
         @baseUrl = 'http://107.170.220.160/'
         if not @accessToken?
             console.error('Wrong parameters')
+        @accessTokenQueryParam = '?token=' + @accessToken
 
     getBaseUrl: () =>
         @baseUrl
 
     getStats: (_callback) =>
-        $.get(@baseUrl + 'stats', (data) =>
+        $.get(@baseUrl + 'stats' + @accessTokenQueryParam, (data) =>
             if data.result == 100
                 _callback(data)
             else
@@ -28,7 +29,7 @@ class window.TripThru
 
     getLog: (tripId, _callback) =>
         id = if tripId? then tripId else 'all'
-        $.get(@baseUrl + 'log/' + id, (data) =>
+        $.get(@baseUrl + 'log/' + id + @accessTokenQueryParam, (data) =>
             if data.result == 100
                 _callback(data)
             else
@@ -41,7 +42,7 @@ class window.TripThru
 
     getTrips: (status, _callback) =>
         status = if status? then status else 'all'
-        $.get(@baseUrl + 'trips/' + status, (data) =>
+        $.get(@baseUrl + 'trips/' + status + @accessTokenQueryParam, (data) =>
             if data.result == 100
                 _callback(data)
             else
@@ -53,9 +54,9 @@ class window.TripThru
         return
 
     getTripStatus: (tripId, _callback) =>
-        $.get(@baseUrl + 'tripstatus/' + tripId, (data) =>
+        $.get(@baseUrl + 'tripstatus/' + tripId + @accessTokenQueryParam, (data) =>
             if data.result == 100
-                $.get(@baseUrl + 'triproute/' + tripId, (trip) =>
+                $.get(@baseUrl + 'triproute/' + tripId + @accessTokenQueryParam, (trip) =>
                     data.historyEnrouteList = trip.historyEnrouteList
                     data.historyPickUpList = trip.historyPickUpList
                     _callback(data)
@@ -71,7 +72,7 @@ class window.TripThru
         return
 
     getPartners: (_callback) =>
-        $.get(@baseUrl + 'networks', (data) =>
+        $.get(@baseUrl + 'networks' + @accessTokenQueryParam, (data) =>
             if data.result == 100
                 _callback(data)
             else

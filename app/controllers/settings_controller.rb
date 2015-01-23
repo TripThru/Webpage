@@ -15,19 +15,11 @@ class SettingsController < ApplicationController
 
   def saveUser
     if roleUser == 'admin'
-      user = User.new(UserName: params[:user][:UserName].downcase, password_digest: BCrypt::Password.create(params[:user][:password_digest]), Email: params[:user][:Email].downcase, Role: params[:user][:Role])
-      if user.Role == 'partner'
-        user.PartnerName=params[:user][:PartnerName]
-        user.CallbackUrl=params[:user][:CallbackUrl]
-        user.TripThruAccessToken=params[:user][:TripThruAccessToken]
-        user.ClientId =params[:user][:Email].downcase
-      end
+      user = User.new(name: params[:user][:name].downcase, password_digest: BCrypt::Password.create(params[:user][:password_digest]), email: params[:user][:email].downcase, role: params[:user][:role])
+      user.id = params[:user][:name].downcase + '@tripthru.com'
       o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
       c = (0...50).map { o[rand(o.length)] }.join
-      user.RefreshToken=c
-      o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
-      c = (0...50).map { o[rand(o.length)] }.join
-      user.AccessToken=c
+      user.token = c
       user.save
       if user.valid?
         redirect_to settings_users_path
@@ -59,14 +51,11 @@ class SettingsController < ApplicationController
 
   def update
     if roleUser == 'admin'
-      userName = params[:user][:UserName]
-      user = User.where(UserName: userName).first
+      name = params[:user][:name]
+      user = User.where(name: name).first
       user.password_digest = BCrypt::Password.create(params[:user][:password_digest])
-      user.Email = params[:user][:Email]
-      user.Role = params[:user][:Role]
-      user.PartnerName = params[:user][:PartnerName]
-      user.CallbackUrl = params[:user][:CallbackUrl]
-      user.TripThruAccessToken = params[:user][:TripThruAccessToken]
+      user.email = params[:user][:email]
+      user.role = params[:user][:role]
       user.save
       redirect_to settings_users_path
     else

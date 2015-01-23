@@ -950,8 +950,9 @@ class StatisticsDashboard
       #statuses['new'] = 0
       total = 0
       for entry in data
-        statuses[entry._id.status] += entry.count
-        total += entry.count
+        if statuses.hasOwnProperty(entry._id.status)
+          statuses[entry._id.status] += entry.count
+          total += entry.count
       @updateCounter(total)
       @updateTotalTrips(total, statuses)
 

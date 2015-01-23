@@ -14,17 +14,12 @@
 ActiveRecord::Schema.define(version: 20140511085515) do
 
   create_table "users", force: true do |t|
-    t.string   "ClientId"
-    t.string   "ClientSecret"
-    t.string   "UserName"
+    t.string   "id"
+    t.string   "name"
     t.string   "password_digest"
-    t.string   "Email"
-    t.string   "AccessToken"
-    t.string   "RefreshToken"
-    t.string   "PartnerName"
-    t.string   "CallbackUrl"
-    t.string   "TripThruAccessToken"
-    t.string   "Role"
+    t.string   "email"
+    t.string   "token"
+    t.string   "role"
     t.string   "remember_token"
     t.datetime "created_at"
     t.datetime "updated_at"

@@ -14,31 +14,21 @@
               <thead>
               <tr>
                 <th class="success">Id</th>
-                <th class="success">User Name</th>
+                <th class="success">Name</th>
                 <th class="success">Email</th>
-                <th class="success">AccessToken</th>
-                <th class="success">RefreshToken</th>
-                <th class="success">PartnerName</th>
-                <th class="success">CallbackUrl</th>
-                <th class="success">TripThruAccessToken</th>
+                <th class="success">Token</th>
                 <th class="success">Role</th>
                 <th class="danger">Options</th>
-                <th class="danger"></th>
               </tr>
               </thead>
               <tbody>
               <% @users.each do |user| %>
                   <tr>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.ClientId %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.UserName %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.Email %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.AccessToken.truncate(10) %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.RefreshToken.truncate(10) %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.PartnerName %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.CallbackUrl %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.TripThruAccessToken %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.Role %></td>
-                    <td class="active" onclick="loadPage('<%= user.id %>')">Edit</td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.id %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.name %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.email %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.token.truncate(10) %></td>
+                    <td class="active" onclick="loadPage('<%= user.id %>')"><%= user.role %></td>
                     <td class="active"><%= link_to 'Delete', settings_destroy_path(@user, :id => user.id), method: :delete, data: {confirm: 'Are you sure?'} %></td>
                   </tr>
               <% end %>

@@ -11,28 +11,28 @@ module SessionsHelper
   end
   def roleUser
     if signed_in?
-     return current_user.Role
+     return current_user.role
     else
       return ''
     end
   end
   def user_Name
     if signed_in?
-      return current_user.UserName
+      return current_user.name
     else
       return ''
     end
   end
   def userAccessToken
     if signed_in?
-      return current_user.AccessToken
+      return current_user.token
     else
       return nil
     end
   end
   def userId
     if signed_in?
-      return current_user.ClientId
+      return current_user.id
     else
       return nil
     end
