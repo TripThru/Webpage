@@ -77,7 +77,10 @@ class TripList
     $('#' + trip.getContainerId()).remove()
 
   getTripTag: (trip) =>
-    farmedInLogo = '<img alt="' + trip.getOrigin() + '" src="/assets/networks/' + trip.getOrigin() + '.png"/>'
+    farmedInLogoId = trip.getOrigin()
+    if $('#user_role').val() == 'partner' and trip.getServicing()?
+      farmedInLogoId = if $('#user_id').val() == trip.getOrigin() then trip.getServicing() else trip.getOrigin()
+    farmedInLogo = '<img alt="' + farmedInLogoId + '" src="/assets/networks/' + farmedInLogoId + '.png"/>'
     '
                 <div class="well trip" id="' + trip.getContainerId() + '">
                     <div>' + farmedInLogo + '<h1>' + trip.getId() + '</h1></div>
@@ -291,7 +294,7 @@ class TripTracker
       driver = if tripDriverName? then tripDriverName + driverLocation else 'None'
       servicing = if trip.getServicing()? then trip.getServicing() else ''
       farmedInLogo = '<img alt="' + trip.getOrigin() + '" src="/assets/networks/' + trip.getOrigin() + '.png"/>'
-      farmedOutLogo = '<img alt="Netowrks" src="/assets/networks/all.png"/>'
+      farmedOutLogo = '<img alt="Networks" src="/assets/networks/all.png"/>'
       driverLogo = ''
       if trip.getServicing()?
         farmedOutLogo = '<img alt="' + trip.getServicing() + '" src="/assets/networks/' + trip.getServicing() + '.png"/>'
