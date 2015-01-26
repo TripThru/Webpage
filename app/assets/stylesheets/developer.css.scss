@@ -633,7 +633,7 @@
       #statistics-panel-container {
         #statistics-panel {
           height: 630px;
-          overflow-y: scroll;
+          overflow-y: hidden;
           #statistics-gauges-container {
             margin-top: -10px;
 
@@ -665,6 +665,12 @@
                 height: 110px;
                 width: 110px;
               }
+            }
+
+            .dashboard-statistics-subpanel {
+              overflow-y: scroll;
+              height: 450px;
+              border-top: 1px solid rgba(115, 115, 115, 0.26);
             }
 
             .dashboard-statistics-separator {
@@ -915,6 +921,13 @@
                   width: 140px;
                 }
               }
+
+
+              .dashboard-statistics-subpanel {
+                overflow-y: scroll;
+                height: 600px;
+                border-top: 1px solid rgba(115, 115, 115, 0.26);
+              }
               .dashboard-statistics-separator {
                 font-size: 18px;
                 font-weight: 600;
@@ -1038,7 +1051,7 @@
           float: left;
           margin: 0 0 20px 0;
           height: 170px;
-          overflow-x: scroll;
+          overflow-x: hidden;
           #statistics-panel {
             #statistics-gauges-container {
               display: inline-block;
@@ -1071,6 +1084,15 @@
                 }
               }
 
+              .dashboard-statistics-subpanel {
+                overflow-x: scroll;
+                overflow-y: hidden;
+                height: 125px;
+                width: 560px;
+                float: left;
+                border: none;
+              }
+
               .dashboard-statistics-separator {
                 display: none;
               }
@@ -1078,7 +1100,7 @@
               .dashboard-statistics-counter-container {
                 .dashboard-statistics-counter {
                   float: left;
-                  margin: 40px 40px 0 0;
+                  margin: 40px 20px 0 0;
                 }
               }
 
@@ -1142,9 +1164,8 @@
 
         #statistics-panel-container {;
           width: 100%;
-          height: 1024px;
-          overflow-y: scroll;
-          float: none;
+          height: 100%;
+          overflow: hidden;
           #statistics-panel {
             #statistics-gauges-container {
               display: inline-block;
@@ -1174,29 +1195,24 @@
                   width: 120px;
                 }
               }
-              .dashboard-statistics-counter {
-                float: none;
-                margin: 0 auto;
+              .dashboard-statistics-subpanel {
+                overflow-y: scroll;
+                width: 100%;
+                height: 70%;
+                border: none;
+                margin-top: 45px;
               }
-
-            }
-          }
-        }
-
-        #ratings-panel-container {
-          width: 100%;
-          float: none;
-          #ratings-panel {
-            #ratings-container {
-              .dashboard-statistics-rating {
-                .title {
+              .dashboard-statistics-counter-container {
+                margin: 0 0 50px 15%;
+                .dashboard-statistics-counter {
+                  margin: 0;
+                  display: inline-block;
+                  height: 50px;
+                  overflow: hidden;
                   padding: 0;
-                  margin: 5px 0 0 0;
-                  font-size: 12px;
                 }
-
-                float: left;
               }
+
             }
           }
         }

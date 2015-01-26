@@ -822,21 +822,23 @@ class StatisticsDashboard
                                 <div class="pie-chart" id="' + @totalTripsPieChartId + '"></div>
                             </div>
                             <!--<div class="dashboard-statistics-separator">Last 5 minutes</div>-->
-                            <div  class="dashboard-statistics-pie-chart" >
-                                <div class="title"><div id="' + @completedTripsTitle + '">0</div> requests</div>
-                                <div class="pie-chart" id="' + @completeTripsPieChartId + '"></div>
-                            </div>
-                            <div  class="dashboard-statistics-pie-chart" >
-                                <div class="title">Service level</div>
-                                <div class="pie-chart" id="' + @servicePieChartId + '"></div>
-                            </div>
-                            <div  class="dashboard-statistics-pie-chart" >
-                                <div class="title">Duration</div>
-                                <div class="pie-chart" id="' + @durationPieChartId + '"></div>
-                            </div>
-                            <div  class="dashboard-statistics-pie-chart" >
-                                <div class="title">Mileage</div>
-                                <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+                            <div class="dashboard-statistics-subpanel">
+                              <div  class="dashboard-statistics-pie-chart" >
+                                  <div class="title"><div id="' + @completedTripsTitle + '">0</div> requests</div>
+                                  <div class="pie-chart" id="' + @completeTripsPieChartId + '"></div>
+                              </div>
+                              <div  class="dashboard-statistics-pie-chart" >
+                                  <div class="title">Service level</div>
+                                  <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                              </div>
+                              <div  class="dashboard-statistics-pie-chart" >
+                                  <div class="title">Duration</div>
+                                  <div class="pie-chart" id="' + @durationPieChartId + '"></div>
+                              </div>
+                              <div  class="dashboard-statistics-pie-chart" >
+                                  <div class="title">Mileage</div>
+                                  <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+                              </div>
                             </div>
                         ')
 
@@ -901,11 +903,11 @@ class StatisticsDashboard
         {label: "> 15 min.", value: 0}
       ]
       colors: [
-        '#24BD13'
-        '#84BD13'
-        '#B7BD13'
-        '#BD7313'
-        '#BD2413'
+        '#49D3E8'
+        '#49A6E8'
+        '#4E49E8'
+        '#8949E8'
+        '#BB49E8'
       ]
       resize: true
     })
@@ -919,10 +921,11 @@ class StatisticsDashboard
         {label: "> 1 mi.", value: 0}
       ]
       colors: [
-        '#24BD13'
-        '#84BD13'
-        '#BD7313'
-        '#BD2413'
+        '#49D3E8'
+        '#49A6E8'
+        '#4E49E8'
+        '#8949E8'
+        '#BB49E8'
       ]
       resize: true
     })
