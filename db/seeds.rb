@@ -14,6 +14,7 @@ token = c
 User.create!(
     id: 'tripthru@tripthru.com',
     name: 'tripthru',
+    fullName: 'TripThru',
     password_digest: BCrypt::Password.create('optimize'),
     email: 'tripthru@tripthru.com',
     token: token,

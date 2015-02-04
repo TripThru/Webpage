@@ -15,7 +15,7 @@ class SettingsController < ApplicationController
 
   def saveUser
     if roleUser == 'admin'
-      user = User.new(name: params[:user][:name].downcase, password_digest: BCrypt::Password.create(params[:user][:password_digest]), email: params[:user][:email].downcase, role: params[:user][:role])
+      user = User.new(name: params[:user][:name].downcase, fullname: params[:user][:fullname], password_digest: BCrypt::Password.create(params[:user][:password_digest]), email: params[:user][:email].downcase, role: params[:user][:role])
       user.id = params[:user][:name].downcase + '@tripthru.com'
       o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
       c = (0...50).map { o[rand(o.length)] }.join
@@ -54,6 +54,7 @@ class SettingsController < ApplicationController
       name = params[:user][:name]
       user = User.where(name: name).first
       user.password_digest = BCrypt::Password.create(params[:user][:password_digest])
+      user.fullname = params[:user][:fullname]
       user.email = params[:user][:email]
       user.role = params[:user][:role]
       user.save

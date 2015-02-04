@@ -6,6 +6,7 @@ class User
 
   field :id, type: String
   field :name, type: String
+  field :fullname, type:String
   field :password_digest, type: String
   field :email, type: String
   field :token, type: String

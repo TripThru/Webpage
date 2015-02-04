@@ -14,6 +14,16 @@
       <% end %>
     </div>
     <br/>
+    <%= f.label :full_name %>
+    <div class="input-group col-xs-12">
+      <span class="input-group-addon glyphicon glyphicon-user"></span>
+      <% if edit %>
+        <%= f.text_field :fullname, class: 'form-control ', placeholder: 'Full name', required: true %>
+      <% else %>
+        <%= f.text_field :fullname, class: 'form-control ', placeholder: 'Full name', required: true %>
+      <% end %>
+    </div>
+    <br/>
     <%= f.label :password %>
     <div class="input-group col-xs-12">
       <span class="input-group-addon glyphicon glyphicon-asterisk"></span>
