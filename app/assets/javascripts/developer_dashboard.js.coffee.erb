@@ -517,7 +517,7 @@ class ActivityLog
       @servicingNetworkLogo = @globalNetworkLogo
 
   updateActiveTrip: (trip) =>
-    if trip.getServicing()?
+    if trip? and trip.getServicing()?
       @servicingNetworkLogo = '<img alt="Networks" src="/assets/networks/' + trip.getServicing() + '.png"/>'
 
   updateLog: (logList, currentTripId) =>
@@ -1244,7 +1244,7 @@ class DashboardManager
         try
           listener.updateActiveTrip(@activeTrip)
         catch error
-          console.error listener.toString() + ' updateLogs failed: ' + error
+          console.error listener.toString() + ' updateActiveTrip failed: ' + error
 
     @updatingActiveTrip = false
 
