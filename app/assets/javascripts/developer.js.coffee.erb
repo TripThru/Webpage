@@ -7,7 +7,7 @@ window.tripthruinterval = null
 class window.TripThru
 
     constructor: (@accessToken) ->
-        @baseUrl = 'http://107.170.220.160/'
+        @baseUrl = 'http://localhost:3300/'
         if not @accessToken?
             console.error('Wrong parameters')
         @accessTokenQueryParam = '?token=' + @accessToken

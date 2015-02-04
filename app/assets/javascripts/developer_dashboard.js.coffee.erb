@@ -325,8 +325,8 @@ class TripTracker
                 <div><span>Pickup: </span><p id="pickup-tag">' + pickupLocation + '</p></div>
                 <div><span>Dropoff: </span><p id="dropoff-tag">' + dropoffLocation + '</p></div>
                 <div>
-                  <span>Farmed-In: </span><p>' + trip.getOrigin() + ' - </p>
-                  <span>Farmed-Out: </span><p id="farmed-out-tag">' + servicing + '</p>
+                  <span>Farmed-Out: </span><p>' + trip.getOrigin() + ' - </p>
+                  <span>Farmed-In: </span><p id="farmed-out-tag">' + servicing + '</p>
                 </div>
                 <div><span>Driver: </span><p id="driver-tag">' + driver + '  </p>
                     <div class="rating-container">
@@ -499,10 +499,26 @@ class ActivityLog
     @latestAddedLogDate = null
     @tcurrentTripIdripId = null
     @lastLogId = 0
+    @originatingNetworkLogo = null
+    @servicingNetworkLogo = null
+    @globalNetworkLogo = '<img alt="Networks" src="/assets/networks/all.png"/>'
+    @outgoingLogo = '<img alt="Networks" src="/assets/outgoing.png"/>'
+    @incomingLogo = '<img alt="Networks" src="/assets/incoming.png"/>'
+    @bidirectionalLogo = '<img alt="Networks" src="/assets/bidirectional.png"/>'
+    @findLogo = '<img alt="Networks" src="/assets/find.png"/>'
 
   tripChanged: (trip) =>
     $('#' + @containerId).html('<%= image_tag('loading.gif') %>')
     @lastLogId = 0
+    @originatingNetworkLogo = '<img alt="Networks" src="/assets/networks/' + trip.getOrigin() + '.png"/>'
+    if trip.getServicing()?
+      @servicingNetworkLogo = '<img alt="Networks" src="/assets/networks/' + trip.getServicing() + '.png"/>'
+    else
+      @servicingNetworkLogo = @globalNetworkLogo
+
+  updateActiveTrip: (trip) =>
+    if trip.getServicing()?
+      @servicingNetworkLogo = '<img alt="Networks" src="/assets/networks/' + trip.getServicing() + '.png"/>'
 
   updateLog: (logList, currentTripId) =>
     if !currentTripId?
@@ -535,16 +551,42 @@ class ActivityLog
     else
       $('#' + @containerId).html('No activity logged')
 
+  getLogTagLogo: (log) =>
+    logo = ''
+    if log.type == 'quote'
+      logo = @globalNetworkLogo
+    else if log.destination == 'origin' or log.origin == 'origin'
+      logo = @originatingNetworkLogo
+    else if log.destination == 'servicing' or log.origin == 'servicing'
+      logo = @servicingNetworkLogo
+
+    return logo
+
+  getLogTagDirectionIcon: (log) =>
+    directionIcon = ''
+    if log.type == 'get-trip-status'
+      directionIcon = @bidirectionalLogo
+    else if log.type == 'quote'
+      directionIcon = @findLogo
+    else if log.origin == 'tripthru'
+      directionIcon = @outgoingLogo
+    else if log.destination == 'tripthru'
+      directionIcon = @incomingLogo
+    return directionIcon
+
   getLogTag: (id, log) =>
     id =  id + 'parent-accordion'
     request = if log.messages[0].json? then log.messages[0].json else {}
     response = if log.messages.length > 1 and log.messages[log.messages.length-1].json? then log.messages[log.messages.length-1].json else undefined
+    logo = @getLogTagLogo(log)
+    directionIcon = @getLogTagDirectionIcon(log)
     logString = '
                             <div class="accordion-group" id="' + id + '">
                                 <div class="accordion-heading">
                                     <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion">
-                                        ' + log.creation.split('.')[0] + ' | ' + log.messages[0].text +  '
+                                        ' + log.creation.split('.')[0] + directionIcon + log.messages[0].text +  '
                                     </a>
+                                    ' + logo + '
                                 </div>
                                 <div id="' + id + '-accordion" class="accordion-body collapse">
                                     <div class="accordion-inner">
@@ -813,31 +855,40 @@ class StatisticsDashboard
 
     $('#' + @statisticsContainerId).html('
                             <!--<div class="dashboard-statistics-separator">Total</div>-->
-                            <div class="dashboard-statistics-counter-container">
-                              <div class="dashboard-statistics-counter">
-                                  <div id="' + @totalTripsCounter + '"></div>
+
+                            <div class="panel panel-default" id="top">
+                              <div class="panel-body">
+                                <div class="dashboard-statistics-counter-container">
+                                  <div class="dashboard-statistics-counter">
+                                      <div id="' + @totalTripsCounter + '"></div>
+                                  </div>
+                                </div>
+                                <div  class="dashboard-statistics-pie-chart" >
+                                    <div class="pie-chart" id="' + @totalTripsPieChartId + '"></div>
+                                </div>
                               </div>
-                            </div>
-                            <div  class="dashboard-statistics-pie-chart" >
-                                <div class="pie-chart" id="' + @totalTripsPieChartId + '"></div>
                             </div>
                             <!--<div class="dashboard-statistics-separator">Last 5 minutes</div>-->
-                            <div class="dashboard-statistics-subpanel">
-                              <div  class="dashboard-statistics-pie-chart" >
-                                  <div class="title"><div id="' + @completedTripsTitle + '">0</div> requests</div>
-                                  <div class="pie-chart" id="' + @completeTripsPieChartId + '"></div>
-                              </div>
-                              <div  class="dashboard-statistics-pie-chart" >
-                                  <div class="title">Service level</div>
-                                  <div class="pie-chart" id="' + @servicePieChartId + '"></div>
-                              </div>
-                              <div  class="dashboard-statistics-pie-chart" >
-                                  <div class="title">Duration</div>
-                                  <div class="pie-chart" id="' + @durationPieChartId + '"></div>
-                              </div>
-                              <div  class="dashboard-statistics-pie-chart" >
-                                  <div class="title">Mileage</div>
-                                  <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+                            <div class="panel panel-default" id="bottom">
+                              <div class="panel-body">
+                                <div class="dashboard-statistics-subpanel">
+                                  <div  class="dashboard-statistics-pie-chart" >
+                                      <div class="title"><div id="' + @completedTripsTitle + '">0</div> requests</div>
+                                      <div class="pie-chart" id="' + @completeTripsPieChartId + '"></div>
+                                  </div>
+                                  <div  class="dashboard-statistics-pie-chart" >
+                                      <div class="title">Service level</div>
+                                      <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+                                  </div>
+                                  <div  class="dashboard-statistics-pie-chart" >
+                                      <div class="title">Duration</div>
+                                      <div class="pie-chart" id="' + @durationPieChartId + '"></div>
+                                  </div>
+                                  <div  class="dashboard-statistics-pie-chart" >
+                                      <div class="title">Mileage</div>
+                                      <div class="pie-chart" id="' + @mileagePieChartId + '"></div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                         ')
@@ -1145,6 +1196,10 @@ class DashboardManager
     trip = @tripsById[tripId]
     if not @activeTrip? or !trip? or @activeTrip.id != trip.id
       @activeTrip = trip
+      @gateway.getTripStatus(@activeTrip.getId(), (data) =>
+        @updatingActiveTrip = true
+        @updateActiveTrip(data)
+        @update())
     else
       @activeTrip = null
       @cleanMap()
@@ -1155,8 +1210,6 @@ class DashboardManager
           listener.tripChanged(@activeTrip)
         catch error
           console.error listener + ' tripChanged failed: ' + error
-
-    @update()
 
 
   updateActiveTrip: (data) =>

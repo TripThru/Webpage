@@ -101,6 +101,10 @@
     border-top: 0;
   }
 
+  .panel-title {
+    font-weight: bold;
+  }
+
   img {
     border: none;
   }
@@ -355,7 +359,7 @@
             }
 
             #trips {
-              height: 93.5%;
+              height: 93.3%;
               overflow-y: scroll;
 
               .trip {
@@ -432,7 +436,7 @@
         }
 
         #tracking-map-container {
-          height: 395px;
+          height: 403px;
           width: 98%;
           margin: 0 auto;
 
@@ -459,8 +463,8 @@
         }
 
         #tracking-trip-info {
-          min-height: 135px;
-          height: 135px;
+          min-height: 127px;
+          height: 127px;
           overflow-y: scroll;
           overflow-x: hidden;
           text-align: left;
@@ -640,7 +644,7 @@
             .dashboard-statistics-pie-chart {
               .title {
                 padding: 0;
-                margin: 20px 0 -5px 0;
+                margin: 10px 0 -5px 0;
                 font-size: 12px;
                 font-weight: 600;
                 div {
@@ -651,7 +655,7 @@
 
               height: 110px;
               width: 110px;
-              margin: 0 auto;
+              margin: 0 auto 20px;
               padding: 0;
 
               svg {
@@ -667,10 +671,21 @@
               }
             }
 
+            .panel {
+              margin: 0 0 10px 0;
+              width: 100%;
+            }
+
+            #top {
+              margin-top: 9px;
+              .dashboard-statistics-pie-chart {
+                margin-bottom: -13px;
+              }
+            }
+
             .dashboard-statistics-subpanel {
               overflow-y: scroll;
-              height: 450px;
-              border-top: 1px solid rgba(115, 115, 115, 0.26);
+              height: 403px;
             }
 
             .dashboard-statistics-separator {
@@ -682,7 +697,7 @@
             }
 
             .dashboard-statistics-counter-container {
-              margin-bottom: -20px;
+              margin: -15px 0 -20px 0;
               .dashboard-statistics-counter {
                 .title {
                   padding: 0;
@@ -733,10 +748,19 @@
           border: 1px solid #d8d8d8;
           text-align: left;
 
+          img {
+            width: 14px;
+            height: 14px;
+            margin: 5px 15px 0px 5px;
+          }
+
           a {
-            background: transparent url('arrow.png') no-repeat;
-            padding-left: 18px;
+            background: transparent url("arrow.png") no-repeat 0 3px;
+            background-size: 12px 12px;
+            padding: 0 0 0 14px;
+            margin: 0 0 0 3px;
             color: #000000;
+            font-size: 14px;
           }
         }
 
@@ -747,23 +771,28 @@
         }
       }
 
-      .json-inner-log {
-        .accordion-heading {
-          background-color: #ececec;
-          border: 1px solid #d8d8d8;
-          text-align: left;
+      .accordion-inner {
+        .accordion-group {
+          .accordion-heading {
+            background-color: #ececec;
+            border: 1px solid #d8d8d8;
+            text-align: left;
 
-          a {
-            background: transparent url('arrow.png') no-repeat;
-            padding-left: 18px;
-            color: #000000;
+            a {
+              background: transparent url("arrow.png") no-repeat 0 3px;
+              background-size: 12px 12px;
+              padding: 0 0 0 14px;
+              margin: 0 0 0 3px;
+              color: #000000;
+              font-size: 14px;
+            }
           }
-        }
 
-        .accordion-body {
-          border: 1px solid rgba(128, 128, 128, 0.28);
-          text-align: left;
-          padding: 10px;
+          .accordion-body {
+            border: 1px solid rgba(128, 128, 128, 0.28);
+            text-align: left;
+            padding: 10px;
+          }
         }
       }
 
@@ -843,7 +872,7 @@
         #tracking-panel {
           height: 860px;
           #tracking-trip-info {
-            height: 150px;
+            height: 185px;
 
             h1 {
               font-size: 20px;
@@ -886,7 +915,24 @@
             }
           }
           #tracking-map-container {
-            height: 600px;
+            height: 572px;
+          }
+        }
+
+        .accordion-group {
+          .accordion-heading {
+            img {
+              width: 16px;
+              height: 16px;
+              margin: 5px 18px 0px 7px;
+            }
+            a {
+              background: transparent url("arrow.png") no-repeat 0 5px;
+              background-size: 12px 12px;
+              padding: 0 0 0 16px;
+              margin: 0 0 0 3px;
+              font-size: 16px;
+            }
           }
         }
 
@@ -897,17 +943,17 @@
               display: inline-block;
               padding-top: 0;
               margin-bottom: 10px;
-              width: 200px;
+              width: 100%;
 
               .dashboard-statistics-pie-chart {
                 .title {
                   padding: 0;
-                  margin: 20px 0 -10px 0;
+                  margin: 28px 0 -10px 0;
                   font-size: 14px;
                 }
                 height: 150px;
                 width: 140px;
-                margin: 15px 0 20px 27px;
+                margin: 0 auto -8px;
 
                 svg {
                   margin: 0 auto;
@@ -925,8 +971,7 @@
 
               .dashboard-statistics-subpanel {
                 overflow-y: scroll;
-                height: 600px;
-                border-top: 1px solid rgba(115, 115, 115, 0.26);
+                height: 572px;
               }
               .dashboard-statistics-separator {
                 font-size: 18px;
@@ -940,8 +985,9 @@
                   margin: 0 auto;
                 }
                 .counter .digit {
-                  font-size: 50px;
+                  font-size: 45px;
                 }
+                margin: -12px 0 -6px 0;
               }
             }
           }
@@ -1221,6 +1267,10 @@
       #activity-log-panel {
 
         .accordion-heading {
+          img {
+            width: 8px;
+            height: 8px;
+          }
           a {
             font-size: 10px;
             padding-left: 10px;
