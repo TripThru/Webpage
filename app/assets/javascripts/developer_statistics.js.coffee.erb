@@ -899,11 +899,11 @@ class TimeSeries
     nId = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
     fId = if @selectedFleet != 'All' then @fleets[@selectedFleet].id else 'all'
     if @farmedInMode
-      networkId += '&servicingNetworkId=' + nId
-      fleetId += '&servicingFleetId=' + fId
-    if @farmedOutMode
       networkId += '&originatingNetworkId=' + nId
       fleetId += '&originatingFleetId=' + fId
+    if @farmedOutMode
+      networkId += '&servicingNetworkId=' + nId
+      fleetId += '&servicingFleetId=' + fId
     if @localTripsMode
       networkId += '&localNetworkId=' + nId
       fleetId += '&localFleetId=' + fId

@@ -77,9 +77,9 @@ class Money
         date = +day / 1000;
         network = ''
         if @origin == 'out'
-          network = '&originatingNetworkId=' + @selectedPartner
-        else if @origin == 'in'
           network = '&servicingNetworkId=' + @selectedPartner
+        else if @origin == 'in'
+          network = '&originatingNetworkId=' + @selectedPartner
         else
           network = '&localNetworkId=' + @selectedPartner
         $.get '/mongo_db/trips_list?startDate=' + date + network, (trips) =>
