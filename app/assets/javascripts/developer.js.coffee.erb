@@ -7,7 +7,7 @@ window.tripthruinterval = null
 class window.TripThru
 
     constructor: (@accessToken) ->
-        @baseUrl = 'http://107.170.220.160/'
+        @baseUrl = 'http://localhost:3300/'
         if not @accessToken?
             console.error('Wrong parameters')
         @accessTokenQueryParam = '?token=' + @accessToken
@@ -57,8 +57,8 @@ class window.TripThru
         $.get(@baseUrl + 'tripstatus/' + tripId + @accessTokenQueryParam, (data) =>
             if data.result == 100
                 $.get(@baseUrl + 'triproute/' + tripId + @accessTokenQueryParam, (trip) =>
-                    data.historyEnrouteList = trip.historyEnrouteList
-                    data.historyPickUpList = trip.historyPickUpList
+                    data.routeEnrouteLocation = trip.routeEnrouteLocation
+                    data.routePickupLocation = trip.routePickupLocation
                     _callback(data)
                 ).error( ->
                     _callback(null)
@@ -129,7 +129,7 @@ class window.Trip
         @passengerRating = (Math.random() * 2.5) + 2.5
         @driverRating = (Math.random() * 2.5) + 2.5
 
-    update: (@status, @servicing, @driverName, @driverLocation, @driverInitialLocation, @historyEnrouteList, @historyPickUpList) =>
+    update: (@status, @servicing, @driverName, @driverLocation, @driverInitialLocation, @routeEnrouteLocation, @routePickupLocation) =>
 
     getContainerId: () =>
         @containerId
@@ -163,10 +163,10 @@ class window.Trip
         @dropoffLocation
     getDriverInitialLocation: () =>
         @driverInitialLocation
-    getHistoryEnrouteList: () =>
-        @historyEnrouteList
-    getHistoryPickUpList: () =>
-        @historyPickUpList
+    getRouteEnrouteLocation: () =>
+        @routeEnrouteLocation
+    getRoutePickupLocation: () =>
+        @routePickupLocation
     getLatenessMilliseconds: () =>
         @latenessMilliseconds
 

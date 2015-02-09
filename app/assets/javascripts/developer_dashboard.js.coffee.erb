@@ -1086,7 +1086,7 @@ class DashboardManager
   constructor: (@gateway, @statusSelectorContainerId, @listeners) ->
     @tripsById = {}
     @activeTrip = null
-    @selectedStatus = 'All'
+    @selectedStatus = $('#' + @statusSelectorContainerId + ' option:selected').val()
     @updatingStats = false
     @updatingTrips = false
     @updatingActiveTrip = false
@@ -1223,8 +1223,8 @@ class DashboardManager
       else
         driverLocation = @activeTrip.getDriverLocation()
 
-      if !@activeTrip? or (data.historyEnrouteList and !@activeTrip.getDriverInitialLocation()?)
-        driverInitialLocation = new Location(data.historyEnrouteList.lat, data.historyEnrouteList.lng, null)
+      if !@activeTrip? or (data.routeEnrouteLocation and !@activeTrip.getDriverInitialLocation()?)
+        driverInitialLocation = new Location(data.routeEnrouteLocation.lat, data.routeEnrouteLocation.lng, null)
       else
         driverInitialLocation = @activeTrip.getDriverInitialLocation()
 
@@ -1235,8 +1235,8 @@ class DashboardManager
           if data.driver? then data.driver.id else ''
           driverLocation
           driverInitialLocation
-          data.historyEnrouteList
-          data.historyPickUpList
+          data.routeEnrouteLocation
+          data.routePickupLocation
         )
       @activeTripCompleted = data.status == 'complete' or data.status == 'cancelled'
     for listener in @listeners
