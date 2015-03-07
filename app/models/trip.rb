@@ -1,23 +1,8 @@
-class Trip
-  include Mongoid::Document
-
-  field :id, type:String
-  field :loc, type:Locpoint
-  field :lastStatusChange, type: String
-  field :originatingPartner, type: Identity
-  field :servicingPartner, type: Identity
-  field :originatingPartnerId, type: String
-  field :servicingPartnerId, type: String
-  field :passenger, type: Identity
-  field :pickupLocation, type: Location
-  field :dropoffLocation, type: Location
-  field :pickupTime, type: DateTime
-  field :occupiedTime, type: String
-  field :enrouteTime, type: String
-  field :idleTime, type: String
-  field :enrouteDistance, type: String
-  field :lastUpdate, type: DateTime
-  field :serviceGoalMet, type: Boolean
-  field :lateness, type: String
-
+class Trip < ActiveRecord::Base
+  belongs_to :user, foreign_key: 'user_id', primary_key: 'id'
+  belongs_to :user, foreign_key: 'servicing_network_id', primary_key: 'id'
+  belongs_to :product, foreign_key: 'product_id', primary_key: 'id'
+  belongs_to :product, foreign_key: 'servicing_product_id', primary_key: 'id'
+  has_many :trip_locations, foreign_key: 'trip_id', primary_key: 'id'
+  has_one :trip_payment, foreign_key: 'trip_id', primary_key: 'id'
 end

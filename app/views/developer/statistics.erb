@@ -1,5 +1,5 @@
 <div id="statistics">
-  <% if roleUser == 'partner' %>
+  <% if roleUser == 'network' %>
       <% valueClass = 'hidden' %>
   <% else %>
       <% valueClass = '' %>
@@ -78,7 +78,7 @@
             <h3 class="panel-title">Ratings</h3>
           </div>
           <div class="panel-body">
-            <input type="submit" class="filter-button" id="ratings-passengers-filter-button" value="Passenger"/>
+            <input type="submit" class="filter-button" id="ratings-customers-filter-button" value="Customer"/>
             <input type="submit" class="filter-button" id="ratings-drivers-filter-button" value="Driver"/>
           </div>
         </div>
@@ -157,7 +157,7 @@
                   </div>
                   <div class="panel-body">
                       <select id="networks-select" multiple="multiple">
-                        <% if roleUser != 'partner' %>
+                        <% if roleUser != 'network' %>
                             <option value="All" selected="selected">All</option>
                         <% end %>
 
@@ -165,13 +165,13 @@
                   </div>
                 </div>
             </div>
-          <div id="fleet-select-container">
+          <div id="product-select-container">
             <div class="panel panel-default filter-button-group">
               <div class="panel-heading text-center ">
-                <h3 class="panel-title">Fleet</h3>
+                <h3 class="panel-title">Product</h3>
               </div>
               <div class="panel-body">
-                <select id="fleets-select" multiple="multiple">
+                <select id="products-select" multiple="multiple">
                   <option value="All" selected="selected">All</option>
                 </select>
               </div>

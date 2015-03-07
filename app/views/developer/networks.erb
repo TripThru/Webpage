@@ -1,4 +1,4 @@
-<div id="partners" class="col-md-12 col-sm-12 col-xs-12">
+<div id="networks" class="col-md-12 col-sm-12 col-xs-12">
   <div class="container">
     <div class="col-md-2 col-md-push-10 col-sm-12 col-xs-12">
       <div id="ratings-panel-container">
@@ -28,9 +28,9 @@
               <div class="panel-heading text-center ">
                 <h3 class="panel-title">Networks</h3>
               </div>
-              <div class="panel-body" id="partner-select-container">
-                <select id="partner-select" multiple='multiple'>
-                  <option value="All">All</option>
+              <div class="panel-body" id="network-select-container">
+                <select id="network-select" multiple='multiple'>
+                  <option value="All" selected="selected">All</option>
                 </select>
               </div>
             </div>
@@ -40,11 +40,11 @@
             <div class="panel-heading text-center ">
               <h3 class="panel-title">Network information</h3>
             </div>
-            <div class="panel-body" id="partner-info-panel">
+            <div class="panel-body" id="network-info-panel">
               <div class="col-md-12">
                 <div class="panel panel-default">
                   <div class="panel-body">
-                    <div id="partner-info">
+                    <div id="network-info">
                         <h1>Select a network<span> <%= image_tag('loading.gif', height: 16, width: 16, :id => 'loadingImage')  %></span></h1>
                     </div>
                   </div>
@@ -53,8 +53,8 @@
               <div class="col-md-12" id="map-column">
                 <div class="panel panel-default">
                   <div class="panel-body">
-                    <div id="partner-coverage-map-container">
-                      <div id="partner-coverage-map" class="tracking-map"></div>
+                    <div id="network-coverage-map-container">
+                      <div id="network-coverage-map" class="tracking-map"></div>
                     </div>
                   </div>
                 </div>

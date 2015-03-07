@@ -1,17 +1,9 @@
-class User
-  include Mongoid::Document
-  include Mongoid::Timestamps
-  include Mongoid::Attributes::Dynamic
+class User < ActiveRecord::Base
   include ActiveModel::SecurePassword
-
-  field :id, type: String
-  field :name, type: String
-  field :fullname, type:String
-  field :password_digest, type: String
-  field :email, type: String
-  field :token, type: String
-  field :role, type: String
-  field :remember_token, type: String
+  has_many :products, foreign_key: 'user_id', primary_key: 'id'
+  has_many :trips, foreign_key: 'user_id', primary_key: 'id'
+  has_many :trips, foreign_key: 'servicing_network_id', primary_key: 'id'
+  has_many :user_transactions, foreign_key: 'user_id', primary_key: 'id'
 
   validates(:name, :presence => true)
   has_secure_password

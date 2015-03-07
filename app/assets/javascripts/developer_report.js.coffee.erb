@@ -1,20 +1,22 @@
 $('.developer.report').ready ->
     clearInterval(window.tripthruinterval)
+    gateway = new TripThru($('#access_token').val())
+    query = {}
     lastHour = new Date();
     lastHour.setMinutes(lastHour.getMinutes()-60);
-    date = +lastHour / 1000;
-    partnerId = ''
+    query.startDate = lastHour
     if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
-        partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
-    $.get '/mongo_db/trips_list?startDate=' + date + partnerId, (data) =>
-        completeTrips = []
+      query.servicingNetworkId = $('#getUserId').html()
+      query.originatingNetworkId = $('#getUserId').html()
+    gateway.getTrips query, (data) =>
+        completedTrips = []
         rejectedTrips = []
         cancelledTrips = []
         errorTrips = []
         data.forEach (entry) ->
             switch entry.status
-                when 'complete'
-                    completeTrips.push entry
+                when 'completed'
+                    completedTrips.push entry
                 when 'rejected'
                     rejectedTrips.push entry
                 when 'cancelled'
@@ -22,7 +24,7 @@ $('.developer.report').ready ->
                 when 'error'
                     errorTrips.push entry
 
-        tripsCount = completeTrips.length
+        tripsCount = completedTrips.length
         tripsCount += rejectedTrips.length
         tripsCount += cancelledTrips.length
         tripsCount += errorTrips.length
@@ -30,13 +32,13 @@ $('.developer.report').ready ->
 
         $('#listTripsComplete').html('<%= image_tag('loadingSmall.gif') %>')
 
-        titleComplete = '<span class="label label-success pull-center"> Completes  </span><span class="badge pull-right" >' + completeTrips.length + '</span>'
+        titleComplete = '<span class="label label-success pull-center"> Completes  </span><span class="badge pull-right" >' + completedTrips.length + '</span>'
         $('#titleComplete').html titleComplete
         stringReport = '
                 <div class="panel-group" id="accordion">
                     '
-        completeTrips.forEach (trip) ->
-            res = trip.id.replace("@", "-")
+        completedTrips.forEach (trip) ->
+            res = trip.trip_id.replace("@", "-")
             res = res.replace("@", "-")
             res = res.replace(".", "-")
             stringReport+='
@@ -44,15 +46,15 @@ $('.developer.report').ready ->
                              <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
                                <div class="panel-heading">
                                 <h4 class="panel-title">
-                                     ' + trip.id + '
+                                     ' + trip.trip_id + '
                                  </h4>
                                 </div>
                               </a>
                                  <div id="'+ res + '" class="panel-collapse collapse">
                                   <div class="panel-body">
-                                    <span class="text-muted">Last Update:</span> ' + trip.lastUpdate + '<br />
-                                    <span class="text-muted">Servicing Partner:</span> ' + trip.servicingPartnerId + '<br />
-                                    <span class="text-muted">Passenger Name:</span> ' + trip.passenger.name + '
+                                    <span class="text-muted">Last Update:</span> ' + trip.last_update + '<br />
+                                    <span class="text-muted">Servicing Network:</span> ' + trip.servicing_network_client_id+ '<br />
+                                    <span class="text-muted">Customer Name:</span> ' + trip.customer_name + '
                                   </div>
                               </div>
                             </div>
@@ -73,7 +75,7 @@ $('.developer.report').ready ->
                             <div class="panel-group" id="accordion">
                                 '
             rejectedTrips.forEach (trip) ->
-                res = trip.id.replace("@", "-")
+                res = trip.trip_id.replace("@", "-")
                 res = res.replace("@", "-")
                 res = res.replace(".", "-")
                 stringReport+='
@@ -81,14 +83,14 @@ $('.developer.report').ready ->
                                  <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
                                   <div class="panel-heading">
                                     <h4 class="panel-title">
-                                            ' + trip.id + '
+                                            ' + trip.trip_id + '
                                     </h4>
                                     </div>
                                         </a>
                                       <div id="'+ res + '" class="panel-collapse collapse">
                                       <div class="panel-body">
-                                        <span class="text-muted">Last Update:</span> ' + trip.lastUpdate + '<br />
-                                        <span class="text-muted">Passenger Name:</span> ' + trip.passenger.name + '
+                                        <span class="text-muted">Last Update:</span> ' + trip.last_update + '<br />
+                                        <span class="text-muted">Customer Name:</span> ' + trip.customer_name + '
                                      </div>
                                   </div>
                                 </div>
@@ -110,7 +112,7 @@ $('.developer.report').ready ->
                             <div class="panel-group" id="accordion">
                                 '
             cancelledTrips.forEach (trip) ->
-                res = trip.id.replace("@", "-")
+                res = trip.trip_id.replace("@", "-")
                 res = res.replace("@", "-")
                 res = res.replace(".", "-")
                 stringReport+='
@@ -118,14 +120,14 @@ $('.developer.report').ready ->
                                  <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
                                   <div class="panel-heading">
                                     <h4 class="panel-title">
-                                            ' + trip.id + '
+                                            ' + trip.trip_id + '
                                     </h4>
                                     </div>
                                         </a>
                                       <div id="'+ res + '" class="panel-collapse collapse">
                                       <div class="panel-body">
-                                        <span class="text-muted">Last Update:</span> ' + trip.lastUpdate + '<br />
-                                        <span class="text-muted">Passenger Name:</span> ' + trip.passenger.name + '
+                                        <span class="text-muted">Last Update:</span> ' + trip.last_update + '<br />
+                                        <span class="text-muted">Customer Name:</span> ' + trip.customer_name + '
                                     </div>
                                   </div>
                                 </div>
@@ -148,7 +150,7 @@ $('.developer.report').ready ->
                                         <div class="panel-group" id="accordion">
                                             '
             errorTrips.forEach (trip) ->
-                res = trip.id.replace("@", "-")
+                res = trip.trip_id.replace("@", "-")
                 res = res.replace("@", "-")
                 res = res.replace(".", "-")
                 stringReport+='
@@ -156,14 +158,14 @@ $('.developer.report').ready ->
                                  <a href="#' + res + '" data-toggle="collapse" class="collapsed" >
                                   <div class="panel-heading">
                                     <h4 class="panel-title">
-                                            ' + trip.id + '
+                                            ' + trip.trip_id + '
                                     </h4>
                                     </div>
                                         </a>
                                       <div id="'+ res + '" class="panel-collapse collapse">
                                       <div class="panel-body">
-                                        <span class="text-muted">Last Update:</span> ' + trip.lastUpdate + '<br />
-                                        <span class="text-muted">Passenger Name:</span> ' + trip.passenger.name + '
+                                        <span class="text-muted">Last Update:</span> ' + trip.last_update + '<br />
+                                        <span class="text-muted">Customer Name:</span> ' + trip.customer_name + '
                                     </div>
                                   </div>
                                 </div>

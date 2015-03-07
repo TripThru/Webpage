@@ -14,11 +14,8 @@ gem 'unicorn'
 gem 'jquery-turbolinks'
 gem 'highcharts-rails', '~> 4.0.1'
 gem 'bcrypt-ruby', '3.1.5', :require => 'bcrypt'
-gem 'mongo'
-gem 'bson_ext'
-gem 'mongoid', '~> 4.0.0.rc2', github: 'mongoid/mongoid'
-gem 'momentjs-rails', '~> 2.5.0'
-gem 'bootstrap3-datetimepicker-rails', '~> 3.0.0'
+gem 'momentjs-rails'
+gem 'mysql2'
 
 group :development do 
 	gem 'rspec-rails', '2.13.1'

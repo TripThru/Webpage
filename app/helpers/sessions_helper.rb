@@ -3,7 +3,6 @@ module SessionsHelper
     remember_token = User.new_remember_token
     cookies.permanent[:remember_token] = remember_token
     user.update_attribute(:remember_token, User.digest(remember_token))
-    Mongoid::Sessions.default.use 'per_req_db'
     self.current_user = user
   end
   def signed_in?
@@ -33,6 +32,13 @@ module SessionsHelper
   def userId
     if signed_in?
       return current_user.id
+    else
+      return nil
+    end
+  end
+  def userClientId
+    if signed_in?
+      return current_user.client_id
     else
       return nil
     end

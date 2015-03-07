@@ -49,15 +49,15 @@
                     </a>
                   </li>
                   <li>
-                    <a class="list-group-item" id="partners-button" href="<%= developer_networks_path %>">
+                    <a class="list-group-item" id="networks-button" href="<%= developer_networks_path %>">
                       <i class="icon-home icon-1x"></i>
                       <div class="image-wrapper">
-                        <%= image_tag('partners.png', alt: 'Partners') %>
+                        <%= image_tag('networks.png', alt: 'Networks') %>
                       </div>
                     </a>
                   </li>
                   <li>
-                    <a class="list-group-item" id="partners-button" href="<%= developer_money_path %>">
+                    <a class="list-group-item" id="networks-button" href="<%= developer_money_path %>">
                       <i class="icon-home icon-1x"></i>
                       <div class="image-wrapper">
                         <%= image_tag('money.png', alt: 'Money') %>
@@ -104,6 +104,7 @@
             <input type="hidden" id="access_token" value="<%= userAccessToken %>"/>
             <input type="hidden" id="user_role" value="<%= roleUser %>"/>
             <input type="hidden" id="user_id" value="<%= userId %>"/>
+            <input type="hidden" id="user_client_id" value="<%= userClientId %>"/>
         </div>
     </div>
 </body>

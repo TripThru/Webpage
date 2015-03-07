@@ -36,10 +36,14 @@ Rails.application.routes.draw do
   delete '/signout', to: 'sessions#destroy'
   resources :settings
 
-  resources :mongo_db, only: []
-  get 'mongo_db/trips_count'
-  get 'mongo_db/trips_list'
-  get 'mongo_db/trips_stats'
+  resources :tripthru, only: []
+  get '/trips_count', to: 'tripthru#trips_count'
+  get '/trips_list',  to: 'tripthru#trips_list'
+  get '/trips_invoice', to: 'tripthru#trips_invoice'
+  get '/invoice_summary', to: 'tripthru#invoice_summary'
+  get '/user_balance', to: 'tripthru#user_balance'
+  get '/trip_info', to: 'tripthru#trip_info'
+  get '/networks', to: 'tripthru#networks'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

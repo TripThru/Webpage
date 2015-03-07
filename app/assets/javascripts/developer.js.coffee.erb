@@ -3,97 +3,181 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 window.tripthruinterval = null
+window.timezone = jstz.determine().name()
 
 class window.TripThru
 
-    constructor: (@accessToken) ->
-        @baseUrl = 'http://localhost:3300/'
-        if not @accessToken?
-            console.error('Wrong parameters')
-        @accessTokenQueryParam = '?token=' + @accessToken
+  constructor: (@accessToken) ->
+    @apiUrl = 'http://107.170.220.160/'
+    @dbUrl = '/';
+    if not @accessToken?
+      console.error('Wrong parameters')
+    @accessTokenQueryParam = '?token=' + @accessToken
 
-    getBaseUrl: () =>
-        @baseUrl
+  getBaseUrl: () =>
+    @apiUrl
 
-    getStats: (_callback) =>
-        $.get(@baseUrl + 'stats' + @accessTokenQueryParam, (data) =>
-            if data.result == 100
-                _callback(data)
-            else
-                _callback(null)
+  getStats: (_callback) =>
+    $.get(@apiUrl + 'stats' + @accessTokenQueryParam, (data) =>
+      if data.result_code == 200
+        _callback(data)
+      else
+        _callback(null)
 
+    ).error( ->
+      _callback(null)
+    )
+
+  getLog: (tripId, _callback) =>
+    id = if tripId? then tripId else 'all'
+    $.get(@apiUrl + 'log/' + id + @accessTokenQueryParam, (data) =>
+      if data.result_code == 200
+        _callback(data)
+      else
+        _callback(null)
+
+    ).error( ->
+      _callback(null)
+    )
+
+  getActiveTrips: (status, _callback) =>
+    status = if status? then status else 'all'
+    $.get(@apiUrl + 'trips/' + status + @accessTokenQueryParam, (data) =>
+      if data.result_code == 200
+        _callback(data)
+      else
+        _callback(null)
+
+    ).error( ->
+      _callback(null)
+    )
+
+  getTripStatus: (tripId, _callback) =>
+    $.get(@apiUrl + 'tripstatus/' + tripId + @accessTokenQueryParam, (data) =>
+      if data.result_code == 200
+        $.get(@dbUrl + 'trip_info?trip_id=' + tripId, (tripInfo) =>
+          if tripInfo and tripInfo.location_updates and tripInfo.location_updates.length > 0 and data.driver
+            data.driver.initialLocation = tripInfo.location_updates[0]
+            data.routeEnrouteLocation = tripInfo.location_updates[0]
+          _callback(data)
         ).error( ->
-            _callback(null)
+          _callback(null)
         )
-        return
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
+    )
 
-    getLog: (tripId, _callback) =>
-        id = if tripId? then tripId else 'all'
-        $.get(@baseUrl + 'log/' + id + @accessTokenQueryParam, (data) =>
-            if data.result == 100
-                _callback(data)
-            else
-                _callback(null)
+  getHistoricStats: (filter, _callback) =>
+    @getTripCount(filter, _callback)
 
-        ).error( ->
-            _callback(null)
-        )
-        return
+  getTripCount: (filter, _callback) =>
+    $.get(@dbUrl + 'trips_count?' + @filterToQuery(filter), (data) =>
+      _callback(data)
+    ).error( ->
+      _callback(null)
+    )
 
-    getTrips: (status, _callback) =>
-        status = if status? then status else 'all'
-        $.get(@baseUrl + 'trips/' + status + @accessTokenQueryParam, (data) =>
-            if data.result == 100
-                _callback(data)
-            else
-                _callback(null)
+  getTrips: (filter, _callback) =>
+    $.get(@dbUrl + 'trips_list?' + @filterToQuery(filter), (data) =>
+      _callback(data)
+    ).error( ->
+      _callback(null)
+    )
 
-        ).error( ->
-            _callback(null)
-        )
-        return
+  getTrip: (id, _callback) =>
+    $.get(@dbUrl + 'trip_info?id=' + id, (data) =>
+      _callback(data)
+    ).error( ->
+      _callback(null)
+    )
 
-    getTripStatus: (tripId, _callback) =>
-        $.get(@baseUrl + 'tripstatus/' + tripId + @accessTokenQueryParam, (data) =>
-            if data.result == 100
-                $.get(@baseUrl + 'triproute/' + tripId + @accessTokenQueryParam, (trip) =>
-                    data.routeEnrouteLocation = trip.routeEnrouteLocation
-                    data.routePickupLocation = trip.routePickupLocation
-                    _callback(data)
-                ).error( ->
-                    _callback(null)
-                )
-            else
-                _callback(null)
+  getInvoice: (filter, _callback) =>
+    $.get(@dbUrl + 'trips_invoice?' + @filterToQuery(filter), (data) =>
+      if data? and data.length > 0
+        _callback(data)
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
+    )
 
-        ).error( ->
-            _callback(null)
-        )
-        return
+  getInvoiceSummary: (filter, _callback) =>
+    $.get(@dbUrl + 'invoice_summary?' + @filterToQuery(filter), (data) =>
+      if data?
+        _callback(data)
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
+    )
 
-    getPartners: (_callback) =>
-        $.get(@baseUrl + 'networks' + @accessTokenQueryParam, (data) =>
-            if data.result == 100
-                _callback(data)
-            else
-                _callback(null)
+  getUserBalance: (filter, _callback) =>
+    $.get(@dbUrl + 'user_balance?' + @filterToQuery(filter) , (data) =>
+      if data?
+        _callback(data)
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
+    )
 
-        ).error( ->
-            _callback(null)
-        )
-        return
+  filterToQuery: (filter) =>
+    query = ''
+    query += 'by_status=' + if !filter.byStatus? or filter.byStatus then 'true' else 'false'
+    query += '&by_creation_time=' + if filter.byCreationTime then 'true' else 'false'
+    if filter.byPickupLocation?
+      query += '&by_pickup_location=' + filter.byPickupLocation
+    if filter.originatingNetworkId
+      query += '&originating_network_id=' + filter.originatingNetworkId
+    if filter.servicingNetworkId
+      query += '&servicing_network_id=' + filter.servicingNetworkId
+    if filter.localNetworkId
+      query += '&local_network_id=' + filter.localNetworkId
+    if filter.originatingProductId
+      query += '&originating_product_id=' + filter.originatingProductId
+    if filter.servicingProductId
+      query += '&servicing_product_id=' + filter.servicingProductId
+    if filter.localProductId
+      query += '&local_product_id=' + filter.localProductId
+    if filter.center?
+      query += '&center_radius=' + filter.center.radius +
+               '&center_lat=' + filter.center.lat +
+               '&center_lng=' + filter.center.lng
+    if filter.interval
+      query += '&interval=' + filter.interval
+      query += '&bucket_size=' + filter.bucketSize
+    if filter.startDate
+      query += '&start_date=' + moment(filter.startDate).format('YYYY-MM-DD HH:ss:mm').toString()
+    if filter.endDate
+      query += '&end_date=' + moment(filter.endDate).format('YYYY-MM-DD HH:ss:mm').toString()
+    if filter.statusType
+      query += '&status_type=' + filter.statusType
+    else if filter.status
+      query += '&status=' + filter.status
+    if filter.limit
+      query += '&limit=' + filter.limit
+    query += '&tz=' + window.timezone
+
+    return query
+
+  getNetworks: (_callback) =>
+    $.get(@dbUrl + 'networks', (data) =>
+      _callback(data)
+    ).error( ->
+      _callback(null)
+    )
+    return
 
 class window.Location
     addressById = {}
 
-    constructor: (@lat, @lng, @address, @loadAddress = true) ->
+    constructor: (@lat, @lng) ->
         @id = '<' + @lat + ',' + @lng + '>'
         @gettingAddress = false
-        if loadAddress
-            if @id of addressById
-                @address = addressById[@id]
-            else
-                @setAddress()
+        if @id of addressById
+            @address = addressById[@id]
 
     getAddress: () =>
         if @id of addressById
@@ -112,10 +196,6 @@ class window.Location
                     if data.results? and data.results.length > 0
                         if @id not of addressById
                             addressById[@id] = data.results[0].formatted_address
-                    else
-                        setTimeout(() =>
-                            @setAddress()
-                        ,1000)
                     @gettingAddress = false
                 error: () =>
                     @gettingAddress = false
@@ -123,10 +203,10 @@ class window.Location
 
 class window.Trip
 
-    constructor: (@id, @passengerName, @pickupTime, @pickupLocation, @origin, @servicing, @status, @ETA,
+    constructor: (@id, @customerName, @pickupTime, @pickupLocation, @origin, @servicing, @status, @ETA,
                   @fare, @driverName, @driverLocation, @dropoffLocation, @driverInitialLocation, @latenessMilliseconds) ->
-        @containerId = id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
-        @passengerRating = (Math.random() * 2.5) + 2.5
+        @containerId = @id.replace(new RegExp('@', 'g'), '-').replace('.', '-')
+        @customerRating = (Math.random() * 2.5) + 2.5
         @driverRating = (Math.random() * 2.5) + 2.5
 
     update: (@status, @servicing, @driverName, @driverLocation, @driverInitialLocation, @routeEnrouteLocation, @routePickupLocation) =>
@@ -135,10 +215,10 @@ class window.Trip
         @containerId
     getId: () =>
         @id
-    getPassengerName: () =>
-        @passengerName
-    getPassengerRating: () =>
-        @passengerRating
+    getCustomerName: () =>
+        @customerName
+    getCustomerRating: () =>
+        @customerRating
     getPickupTime: () =>
         @pickupTime
     getPickupLocation: () =>

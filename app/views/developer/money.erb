@@ -1,92 +1,122 @@
 <div id="money">
-  <div class="panel panel-default" id="farmed-panel">
-    <div class="panel-heading text-center ">
-      <h3 class="panel-title">Origin</h3>
-    </div>
-    <div class="panel-body">
-      <div id="farmed-intervals-container">
-        <input type="submit" id="farmedout-button" value="Farmed-Out"/>
-        <input type="submit" id="farmedin-button" value="Farmed-In"/>
-        <input type="submit" id="local-button" value="Local"/>
-      </div>
-    </div>
-  </div>
   <div class="container">
-    <% if roleUser == 'partner' %>
-        <% valueClass = 'hidden' %>
-    <% else %>
-        <% valueClass = '' %>
-    <% end %>
-      <div <%= valueClass %> id="partner-select-container" class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
-        <div class="panel panel-default filter-button-group ">
+    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+      <li class="active"><a href="#invoice-summary" data-toggle="tab">Invoices summary</a></li>
+      <li><a href="#invoice-detail" data-toggle="tab">Invoice detail</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="invoice-summary">
+        <table class="table table-bordered table-striped table-hover" id="invoice-summary-table">
+          <thead>
+            <tr>
+              <th width="20%">Date</th>
+              <th width="11.6%">Type</th>
+              <th width="11.6%">Amount</th>
+              <th width="11.6%">Farmed-In</th>
+              <th width="11.6%">Farmed-Out</th>
+              <th width="11.6%">TripThru transaction fee</th>
+              <th width="11.6%">Available balance</th>
+              <th width="10%">Details</th>
+            </tr>
+          </thead>
+          <tbody>
 
-          <h3>
-            <div class="panel-body"> Network</div>
-          </h3>
-          <div class="panel-footer panel-footer-trips">
-            <select id="partners-select" multiple="multiple" >
-
-            </select>
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
-    <% if roleUser == 'partner' %>
-        <% valueClass = 'col-xs-12 col-sm-9 col-md-9 col-lg-9"' %>
-    <% else %>
-        <% valueClass = 'col-xs-12 col-sm-6 col-md-6 col-lg-6' %>
-    <% end %>
-      <div id="farmed-in-container"  class="<%= valueClass %>" >
-          <div class="panel panel-default">
-            <h3>
-                <div id="farmedInTitle" class="panel-body">
-                  Farmed in <span class="badge pull-right" id="farmed-in-total"></span>
+      <div class="tab-pane" id="invoice-detail">
+        <div id="trips-main-panel" class="col-md-12 col-sm-12 col-xs-12">
+          <div class="row">
+            <div class="col-md-2 col-md-push-10 col-sm-12 col-xs-12">
+              <div id="statistics-panel-container">
+                <div class="panel panel-default">
+                  <div class="panel-heading text-center ">
+                    <h3 class="panel-title">Statistics</h3>
+                  </div>
+                  <div class="panel-body" id="statistics-panel">
+                    <div id="statistics-gauges-container"></div>
+                  </div>
                 </div>
-            </h3>
-            <div id="farmedInDiv" class="panel-footer panel-footer-trips">
-
-            </div>
-          </div>
-      </div>
-
-      <div id="farmed-out-container" class="<%= valueClass %>">
-          <div class="panel panel-default">
-            <h3>
-                <div id="farmedOutTitle" class="panel-body">
-                  Farmed out <span class="badge pull-right" id="farmed-out-total" ></span>
-                </div>
-            </h3>
-            <div id="farmedOutDiv" class="panel-footer panel-footer-trips">
-
-            </div>
-          </div>
-      </div>
-
-      <div id="local-container" class="<%= valueClass %>">
-        <div class="panel panel-default">
-          <h3>
-            <div id="localTitle" class="panel-body">
-              Local <span class="badge pull-right" id="local-total" ></span>
-            </div>
-          </h3>
-          <div id="localDiv" class="panel-footer panel-footer-trips">
-  
-          </div>
-        </div>
-      </div>
-
-      <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3" id="balance-container">
-          <div class="panel panel-default">
-            <h3>
-              <div id="balanceTitle" class="panel-body">
-                <div class="pull-left">Total</div> <span class="badge pull-right" id="balance-due" ></span>
               </div>
-            </h3>
-            <div id="balanceDiv" class="panel-footer">
-
             </div>
-
+            <div class="col-md-10 col-md-pull-2 col-sm-12 hidden-xs">
+              <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="panel panel-default">
+                  <div class="panel-heading text-center ">
+                    <h3 class="panel-title">Trips</h3>
+                  </div>
+                  <div class="panel-body" id="trips-list-panel">
+                    <div id="trip-list">
+                      <div id="filters-wrapper">
+                        <div class="panel panel-default">
+                          <div class="panel-heading text-center ">
+                            <h3 class="panel-title">Range</h3>
+                          </div>
+                          <div class="panel-body">
+                            <div id="time-range-container">
+                              <input type='text' class="form-control" id="start-date" name="start"/>
+                              <input type='text' class="form-control" id="start-time" name="start-time"/>
+                              <input type='text' class="form-control" id="end-time" name="end-time"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="panel panel-default">
+                          <div class="panel-heading text-center ">
+                            <h3 class="panel-title">Origin</h3>
+                          </div>
+                          <div class="panel-body">
+                            <div id="farmed-selector-container">
+                              <input type="submit" id="farmedout-button" class="active" value="Out"/>
+                              <input type="submit" id="farmedin-button" class="active" value="In"/>
+                            </div>
+                            <select id='network-selector' class="selectpicker">
+                              <option value="All" selected="selected">All</option>
+                            </select>
+                          </div>
+                        </div>
+                        <input type="text" id="text-filter" placeholder="trip id, driver name, customer name" />
+                      </div>
+                      <div id="trips-wrapper">
+                        <div class="panel panel-default" id="trips">
+                          <div class="panel-body" id="trips-panel">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-8 col-sm-8 col-xs-12">
+                <div class="panel panel-default">
+                  <div class="panel-heading text-center ">
+                    <h3 class="panel-title">Trip detail</h3>
+                  </div>
+                  <div class="panel-body" id="tracking-panel">
+                    <div class="col-md-12">
+                      <div class="panel panel-default">
+                        <div class="panel-body">
+                          <div id="tracking-trip-info">
+                            <h1>Select a trip<span> <%= image_tag('loading.gif', height: 16, width: 16, :id => 'loadingImage')  %></span></h1>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="panel panel-default">
+                        <div class="panel-body">
+                          <div id="tracking-map-container">
+                            <div id="map-canvas" class="tracking-map"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <%= image_tag('loading.gif',:class => 'imageGif', :id => 'imageLoad')  %>
+        </div>
       </div>
+    </div>
   </div>
 </div>

@@ -18,9 +18,9 @@
     <div class="input-group col-xs-12">
       <span class="input-group-addon glyphicon glyphicon-user"></span>
       <% if edit %>
-        <%= f.text_field :fullname, class: 'form-control ', placeholder: 'Full name', required: true %>
+        <%= f.text_field :full_name, class: 'form-control ', placeholder: 'Full name', required: true %>
       <% else %>
-        <%= f.text_field :fullname, class: 'form-control ', placeholder: 'Full name', required: true %>
+        <%= f.text_field :full_name, class: 'form-control ', placeholder: 'Full name', required: true %>
       <% end %>
     </div>
     <br/>
@@ -46,7 +46,7 @@
     <%= f.label :role %>
     <div class="input-group col-xs-12">
       <span class="input-group-addon glyphicon glyphicon-tags"></span>
-      <%= f.select :role, options_for_select([%w(Partner partner), %w(Demo demo), %w(Admin admin)], :selected => (user.role.nil? ? 'partner' : user.role)), class: 'form-control ', required: true %>
+      <%= f.select :role, options_for_select([%w(Network network), %w(Demo demo), %w(Admin admin)], :selected => (user.role.nil? ? 'network' : user.role)), class: 'form-control ', required: true %>
     </div>
     <br/>
     <% if edit %>

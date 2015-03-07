@@ -2,13 +2,13 @@
 
 class Stats
 
-    constructor: (@statisticsContainerId, @ratingsContainerId) ->
-        @tripsPieChartId = 'partner-trips-pie-chart'
-        @servicePieChartId = 'partner-service-pie-chart'
-        @driversRatingChartId = 'partner-drivers-rating-chart'
-        @passengersRatingChartId = 'partner-passengers-rating-chart'
+    constructor: (@statisticsContainerId, @ratingsContainerId, @gateway) ->
+        @tripsPieChartId = 'network-trips-pie-chart'
+        @servicePieChartId = 'network-service-pie-chart'
+        @driversRatingChartId = 'network-drivers-rating-chart'
+        @customersRatingChartId = 'network-customers-rating-chart'
         @lastValues =
-            passengerRating: -1
+            customerRating: -1
             driverRating: -1
             request: -1
             cancelled: -1
@@ -37,9 +37,9 @@ class Stats
                                                data-init="0"  id="' + @driversRatingChartId + '"></div>
                                           </div>
                                           <div  class="dashboard-statistics-rating" >
-                                              <div class="title">Passengers</div>
+                                              <div class="title">Customers</div>
                                               <div class="flexible-stars" data-isLocked="yes"
-                                                  data-init="0"  id="' + @passengersRatingChartId + '"></div>
+                                                  data-init="0"  id="' + @customersRatingChartId + '"></div>
                                           </div>
                                       </div>
                                   ')
@@ -79,22 +79,26 @@ class Stats
 
         @update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-    updateStats: (partner) =>
+    updateStats: (network) =>
+      if network?
+        query = {}
         lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate()-7);
-        partnerId = ''
-        if partner
-          partnerId = '&servicingNetworkId=' + partner.id + '&originatingNetworkId=' + partner.id
+        query.startDate = lastWeek
+        query.interval = 'week'
+        query.bucketSize = 1
+        query.byStatus = true
         if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
-          partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
-        $.get '/mongo_db/trips_count?startDate=' + lastWeek + partnerId + '&interval=week&bucketSize=1&by_status=true', (data) =>
-            request = 0
+          query.servicingNetworkId = $('#getUserId').html()
+          query.originatingNetworkId = $('#getUserId').html()
+        @gateway.getTripCount query, (data) =>
+            request = data
             completed = 0
             rejected = 0
             cancelled = 0
             error = 0
             for entry in data
-                switch entry._id.status
+                switch entry.status
                     when 'new'
                         request += entry.count
                     when 'complete'
@@ -105,9 +109,9 @@ class Stats
                         rejected += entry.count
                     when 'error'
                         error += entry.count
-            @update(80, 90, request, cancelled, completed, rejected, error, 15, 95)
+            @update(0, 0, request, cancelled, completed, rejected, error, 15, 95)
 
-    update: (passengerRating, driverRating, request, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
+    update: (customerRating, driverRating, request, cancelled, completed, rejected, error, lateness, withinServiceGoal) =>
         if @lastValues.request != request or @lastValues.completed != completed or @lastValues.cancelled != cancelled or @lastValues.rejected != rejected or @lastValues.error != error
             @lastValues.request = request
             @lastValues.completed = completed
@@ -122,11 +126,11 @@ class Stats
               {label: "Error", value: error}
             ])
 
-        passengerRatingStars = passengerRating/100*5
-        if passengerRatingStars != @lastValues.passengerRating
-            $('#' + @passengersRatingChartId).html('')
-            $('#' + @passengersRatingChartId).flexibleStars({
-                init: passengerRatingStars
+        customerRatingStars = customerRating/100*5
+        if customerRatingStars != @lastValues.customerRating
+            $('#' + @customersRatingChartId).html('')
+            $('#' + @customersRatingChartId).flexibleStars({
+                init: customerRatingStars
             })
 
         driverRatingStars = driverRating/100*5
@@ -148,7 +152,7 @@ class Stats
 
 class CoverageMap
 
-  constructor: (@containerId, @partner) ->
+  constructor: (@containerId, @network) ->
     @mapCanvas = null
     @markers = []
     $('#' + @containerId).html('<%= image_tag('loading.gif', height: 128, width: 128) %>')
@@ -156,14 +160,15 @@ class CoverageMap
 
 
   init: () =>
-    if @partner?
+    if @network?
       $('#' + @containerId).html('')
       @loadMap()
       @updateCoverage()
 
-  updatePartner: (partner) =>
-    @partner = partner
-    @updateCoverage()
+  updateNetwork: (network) =>
+    @network = network
+    if network?
+      @updateCoverage()
 
   loadMap: () =>
       mapOptions =
@@ -186,17 +191,15 @@ class CoverageMap
     citymap = {}
     count = 0
     locations = []
-    for fleet in @partner.fleets
-      if fleet.name == "TripThru San Francisco" or (fleet.partner.id.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
-        continue
+    for product in @network.products
       driver++
-      citymap[fleet.name]=
-        center: new google.maps.LatLng(fleet.coverage.center.lat, fleet.coverage.center.lng)
-        population: fleet.coverage.radius
+      citymap[product.name]=
+        center: new google.maps.LatLng(product.coverage_lat, product.coverage_lng)
+        population: product.coverage_radius
         drivers: driversTotal[driver]
       if count < driversTotal[driver]
         count = driversTotal[driver]
-      locations.push fleet.coverage.center
+      locations.push({ lat: product.coverage_lat, lng: product.coverage_lng })
 
     steps = (colors.length / count)
     cityCircle = undefined
@@ -251,31 +254,31 @@ class CoverageMap
     lng = maxlng - ((maxlng - minlng)/2)
     {lat: lat, lng: lng, maxlat: maxlat, maxlng: maxlng, minlat: minlat, minlng: minlng}
 
-class PartnerOptions
+class NetworkOptions
 
     constructor: (@containerId) ->
-        $('#partner-options-partnership').click =>
+        $('#network-options-networkship').click =>
 
-        $('#partner-options-rules').click =>
+        $('#network-options-rules').click =>
 
-        $('#partner-options-rate').click =>
+        $('#network-options-rate').click =>
 
-    updatePartner: (partner) =>
-        if partner? and partner.name
+    updateNetwork: (network) =>
+        if network? and network.full_name
             $('#' + @containerId).html('
-                <div class="col-md-5 col-md-push-1 col-sm-5" id="partner-info-main">
-                  <h1>' + partner.name + '</h1>
+                <div class="col-md-5 col-md-push-1 col-sm-5" id="network-info-main">
+                  <h1>' + network.full_name + '</h1>
                   <div class="row">
-                     <input type="submit" id="partnership-button" value="Request partnership"/>
+                     <input type="submit" id="networkship-button" value="Request networkship"/>
                   </div>
                   <div class="row">
                      <input type="submit" id="negotiate-button" value="Negotiate rules"/>
                   </div>
                 </div>
-                <div class="col-md-6 col-sm-7" id="partner-info-rating">
+                <div class="col-md-6 col-sm-7" id="network-info-rating">
                   <div class="panel panel-default">
                       <div class="panel-body">
-                        <div id="partner-rating">
+                        <div id="network-rating">
                             <div class="row pull-left"><div id="rate-me" data-isLocked="no" data-init="0" class="flexible-stars"></div></div>
                             <div class="row"><textarea id="review-text" type="textarea">Write a review</textarea></div>
                             <div class="row"><div class="pull-right"><input type="submit" value="Submit" id="submit-rating"/></div></div>
@@ -293,74 +296,66 @@ class PartnerOptions
             $('#' + @containerId).html('<h1>Select a network</h1>')
 
 
-class PartnersManager
+class NetworksManager
 
-    constructor: (@gateway, @coverageMapId, @partnerStatsId, @partnerRatingsId, @partnerOptionsId, @selectorId) ->
+    constructor: (@gateway, @coverageMapId, @networkStatsId, @networkRatingsId, @networkOptionsId, @selectorId) ->
         @coverageMap = null
         @stats = null
-        @partnerOptions = null
-        @partners = {}
-        @allFleets = { fleets: [] }
-        @selectedPartner = null
+        @networkOptions = null
+        @networks = {}
+        @allProducts = { products: [] }
+        @selectedNetwork = null
 
         $('#' + @selectorId).change =>
             selected = $('#' + @selectorId + ' option:selected').val()
-            partner = @allFleets
+            network = @allProducts
             if selected != 'All'
-              partner = @partners[selected]
-            @selectedPartner = partner
-            @updatePartner(partner)
+              network = @networks[selected]
+            @selectedNetwork = network
+            @updateNetwork(network)
+        @stats = new Stats(@networkStatsId, @networkRatingsId, @gateway)
+        @networkOptions = new NetworkOptions(@networkOptionsId)
+        @gateway.getNetworks(@initNetworks)
 
-
-        @stats = new Stats(@partnerStatsId, @partnerRatingsId)
-        @partnerOptions = new PartnerOptions(@partnerOptionsId)
-        @gateway.getPartners(@initPartners)
-
-    initPartners: (fleets) =>
-      for fleet in fleets.fleets
-        if fleet.partner.name == "TDispatch" or (fleet.partner.id.toLowerCase() == $('#getUserId').html() and $('#getUserRole').html() == 'partner')
-          continue
-        if not (fleet.partner.name of @partners)
-          @partners[fleet.partner.name] =  {id: fleet.partner.id, name: fleet.partner.name, fleets: [fleet]}
-          if $('#getUserRole').html() is 'partner'
-            $('#' + @selectorId).append('<option value="' + fleet.partner.name + '" selected="selected" >' + fleet.partner.name + '</option>')
-            @selectedNetwork = fleet.partner.name
-          else
-            $('#' + @selectorId).append('<option value="' + fleet.partner.name + '">' + fleet.partner.name + '</option>')
-        else
-          @partners[fleet.partner.name].fleets.push fleet
-        @allFleets.fleets.push fleet
-      @coverageMap = new CoverageMap(@coverageMapId, @allFleets)
+    initNetworks: (networks) =>
+      for network in networks
+        @networks[network.client_id] = network
+        id = parseInt($('#getUserId').html())
+        if $('#getUserRole').html() isnt 'network' or id != network.id
+          $('#' + @selectorId).append('<option value="' + network.client_id + '">' + network.full_name + '</option>')
+        if network.products
+          @allProducts.products = @allProducts.products.concat(network.products)
+      @coverageMap = new CoverageMap(@coverageMapId, @allProducts)
+      @updateNetwork(@selectedNetwork)
 
     update: () =>
         if @stats?
             #@gateway.getStats(@updateStats)
             @updateStats(null)
 
+    updateNetwork: (network) =>
+        @coverageMap.updateNetwork(network)
+        @networkOptions.updateNetwork(network)
+        @stats.updateStats(network)
 
-    updatePartner: (partner) =>
-        @coverageMap.updatePartner(partner)
-        @partnerOptions.updatePartner(partner)
-        @stats.updateStats(partner)
-
-    updateStats: (partner) =>
-        @stats.updateStats(partner)
+    updateStats: (network) =>
+        @stats.updateStats(network)
 
 
 $('.developer.networks').ready ->
 
-    partnersManager = new PartnersManager(
+    networksManager = new NetworksManager(
         new TripThru($('#access_token').val())
-        'partner-coverage-map'
+        'network-coverage-map'
         'statistics-gauges-container'
         'ratings-container'
-        'partner-info'
-        'partner-select'
+        'network-info'
+        'network-select'
     )
     clearInterval(window.tripthruinterval)
 
     update = ->
-        partnersManager.update()
+        networksManager.update()
 
     update()
     window.tripthruinterval = setInterval ->

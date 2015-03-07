@@ -4,7 +4,7 @@ class TripList
 
   constructor: (@containerId) ->
     @tripsInListById = {}
-    @currentStatus = null
+    @currentNetwork = null
     @statusChanged = false
     $('#trips').scroll @loadAddressIfVisible
     $('#main').scroll @loadAddressIfVisible
@@ -39,11 +39,11 @@ class TripList
         $("#" + trip.getContainerId()).addClass("active")
 
   updateStatus: (status) =>
-    if @currentStatus != status
+    if @currentNetwork != status
       @statusChanged = true
       if $('#triplist-loading').length <= 0
         $('#' + @containerId).html('<span id="triplist-loading"><%= image_tag('loading.gif') %></span>')
-    @currentStatus = status
+    @currentNetwork = status
 
   updateTrips: (tripsById) =>
     if @statusChanged
@@ -78,13 +78,13 @@ class TripList
 
   getTripTag: (trip) =>
     farmedInLogoId = trip.getOrigin()
-    if $('#user_role').val() == 'partner' and trip.getServicing()?
-      farmedInLogoId = if $('#user_id').val() == trip.getOrigin() then trip.getServicing() else trip.getOrigin()
+    if $('#user_role').val() == 'network' and trip.getServicing()?
+      farmedInLogoId = if $('#user_client_id').val() == trip.getOrigin() then trip.getServicing() else trip.getOrigin()
     farmedInLogo = '<img alt="' + farmedInLogoId + '" src="/assets/networks/' + farmedInLogoId + '.png"/>'
     '
                 <div class="well trip" id="' + trip.getContainerId() + '">
                     <div>' + farmedInLogo + '<h1>' + trip.getId() + '</h1></div>
-                    <p><span>Passenger:</span> <i>' + trip.getPassengerName() + '</i></p>
+                    <p><span>Customer:</span> <i>' + trip.getCustomerName() + '</i></p>
                     <p><span>Time:</span> <i>' + trip.getPickupTime().split('.')[0] + '</i></p>
                     <p><span>Pickup:</span> <i class="triplist-trip-pickup">loading...</i></p>
                 </div>
@@ -99,7 +99,7 @@ class TripTracker
         @userChangedZoom = true
 
   constructor: (@tripInfoContainerId, @mapContainer) ->
-    @passengerMarker = null
+    @customerMarker = null
     @destinationMarker = null
     @driverMarker = null
     @initialMarker = null
@@ -139,7 +139,7 @@ class TripTracker
     @setTripInfoBool = false
     @tripId = null
     @trip = null
-    @passengerRatingChartId = 'passenger-rating'
+    @customerRatingChartId = 'customer-rating'
     @driverRatingChartId = 'driver-rating'
     @latestAddedLogDate = null
     @tcurrentTripIdripId = null
@@ -168,7 +168,7 @@ class TripTracker
     , 500)
 
   cleanMap: () =>
-    @passengerMarker.setMap null  if @passengerMarker?
+    @customerMarker.setMap null  if @customerMarker?
     @driverMarker.setMap null  if @driverMarker?
     @destinationMarker.setMap null  if @destinationMarker?
     @initialMarker.setMap null  if @initialMarker?
@@ -237,19 +237,19 @@ class TripTracker
   animate: (pulse) =>
     color = if pulse.status? then pulse.status else 'dark-blue'
     if pulse.type == 'driver-update'
-      @toggleAnimation('pulse-passenger-origin',    'quick', 'right', 'dark-blue', 0)
+      @toggleAnimation('pulse-customer-origin',    'quick', 'right', 'dark-blue', 0)
       @toggleAnimation('pulse-origin-tripthru',     'quick', 'right', 'dark-blue', 180)
       @toggleAnimation('pulse-tripthru-servicing',  'quick', 'right', 'dark-blue', 360)
       @toggleAnimation('pulse-servicing-driver',    'quick', 'right', 'dark-blue', 540)
       @toggleAnimation('pulse-servicing-driver',    'quick', 'left', 'dark-blue', 720)
       @toggleAnimation('pulse-tripthru-servicing',  'quick', 'left', 'dark-blue', 900)
       @toggleAnimation('pulse-origin-tripthru',     'quick', 'left', 'dark-blue', 1080)
-      @toggleAnimation('pulse-passenger-origin',    'quick', 'left', 'dark-blue', 1260)
+      @toggleAnimation('pulse-customer-origin',    'quick', 'left', 'dark-blue', 1260)
     else if pulse.direction == 'origin-tripthru'
       delay = 0
       if pulse.type == 'update-trip-status'
         delay = 380
-        @toggleAnimation('pulse-passenger-origin',  'normal', 'right', color, 0)
+        @toggleAnimation('pulse-customer-origin',  'normal', 'right', color, 0)
       @toggleAnimation('pulse-origin-tripthru',     'normal', 'right', color, delay)
     else if pulse.direction == 'servicing-tripthru'
       delay = 0
@@ -260,7 +260,7 @@ class TripTracker
     else if pulse.direction == 'tripthru-origin'
       @toggleAnimation('pulse-origin-tripthru',     'normal', 'left', color, 0)
       if pulse.type == 'update-trip-status'
-        @toggleAnimation('pulse-passenger-origin',  'normal', 'left', color, 380)
+        @toggleAnimation('pulse-customer-origin',  'normal', 'left', color, 380)
     else if pulse.direction == 'tripthru-servicing'
       @toggleAnimation('pulse-tripthru-servicing',  'normal', 'right', color, 0)
       if pulse.type == 'update-trip-status'
@@ -304,8 +304,8 @@ class TripTracker
         $('#' + @tripInfoContainerId).html(
             '<div>
                 <div id="icons">
-                  <div class="icon"><img alt="Passenger" src="/assets/passenger.png"/></div>
-                  <div class="pulse-line" id="pulse-passenger-origin"></div>
+                  <div class="icon"><img alt="Customer" src="/assets/customer.png"/></div>
+                  <div class="pulse-line" id="pulse-customer-origin"></div>
                   <div class="icon">' + farmedInLogo + '</div>
                   <div class="pulse-line" id="pulse-origin-tripthru"></div>
                   <div id="tripthru"><img alt="TripThru" src="/assets/tripthrulogo.png"/></div>
@@ -315,10 +315,10 @@ class TripTracker
                 </div>
                 <div><span>Id: </span><p id="trip-id-tag">' + trip.getId() + '</p></div>
                 <div><span>Status: </span><p id="status-tag">' + trip.getStatus() + '</p></div>
-                <div><span>Passenger: </span><p>' + trip.getPassengerName() + '  </p>
+                <div><span>Customer: </span><p>' + trip.getCustomerName() + '  </p>
                    <div class="rating-container">
                         <div class="flexible-stars" data-isLocked="yes"
-                                data-init="0" id="' + @passengerRatingChartId + '"></div>
+                                data-init="0" id="' + @customerRatingChartId + '"></div>
                    </div>
                 </div>
                 <div><span>Time: </span><p>' + trip.getPickupTime().split('.')[0] + '</p></div>
@@ -338,9 +338,9 @@ class TripTracker
             '
         )
 
-        $('#' + @passengerRatingChartId).html('')
-        $('#' + @passengerRatingChartId).flexibleStars({
-          init: trip.getPassengerRating()
+        $('#' + @customerRatingChartId).html('')
+        $('#' + @customerRatingChartId).flexibleStars({
+          init: trip.getCustomerRating()
         })
 
         if trip.getDriverName()?
@@ -365,7 +365,7 @@ class TripTracker
     return  if @setTripInfoBool is true or !trip? or !trip.driverLocation?
     @setTripInfoBool = true
     if not trip? or @tripId isnt trip.getId()
-      @passengerMarker.setMap null  if @passengerMarker?
+      @customerMarker.setMap null  if @customerMarker?
       @driverMarker.setMap null  if @driverMarker?
       @destinationMarker.setMap null  if @destinationMarker?
       @initialMarker.setMap null  if @initialMarker?
@@ -385,7 +385,7 @@ class TripTracker
       dropoffLocation = trip.dropoffLocation
       driverInitialLocation = trip.driverInitialLocation
       if pickupLocation or driverLocation
-        passengerLocation = null
+        customerLocation = null
         driverCurrentLocation = null
         destinationLocation = null
         initialLocation = null
@@ -395,10 +395,10 @@ class TripTracker
             @destinationMarker.setMap @map
             @destinationMarker.setPosition destinationLocation
         if pickupLocation
-          passengerLocation = new google.maps.LatLng(pickupLocation.lat, pickupLocation.lng)
-          if @passengerMarker?
-            @passengerMarker.setMap @map
-            @passengerMarker.setPosition passengerLocation
+          customerLocation = new google.maps.LatLng(pickupLocation.lat, pickupLocation.lng)
+          if @customerMarker?
+            @customerMarker.setMap @map
+            @customerMarker.setPosition customerLocation
         if driverLocation
           driverCurrentLocation = new google.maps.LatLng(driverLocation.lat, driverLocation.lng)
           if @driverMarker?
@@ -411,16 +411,16 @@ class TripTracker
             @initialMarker.setPosition driverInitialLocation
         unless @map?
           @mapOptions =
-            center: (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+            center: (if driverCurrentLocation? then driverCurrentLocation else customerLocation)
             zoom: @defaultTrackingZoom
             mapTypeControl: false
             mapTypeId: google.maps.MapTypeId.ROADMAP
 
           @map = new google.maps.Map(document.getElementById("map-canvas"), @mapOptions)
           @setZoomEvent()
-        if passengerLocation? and not @passengerMarker?
-          @passengerMarker = new google.maps.Marker(
-            position: passengerLocation
+        if customerLocation? and not @customerMarker?
+          @customerMarker = new google.maps.Marker(
+            position: customerLocation
             map: @map
             icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
             title: "Pickup"
@@ -449,25 +449,25 @@ class TripTracker
         if driverLocation? and pickupLocation? and dropoffLocation?
           routes = []
           switch trip.status
-            when "enroute"
+            when "en_route"
               routes = [
                 origin: initialLocation
                 destination: driverCurrentLocation
               ]
-            when "pickedup"
+            when "picked_up"
               routes = [
                 origin: initialLocation
-                destination: passengerLocation
+                destination: customerLocation
               ,
-                origin: passengerLocation
+                origin: customerLocation
                 destination: driverCurrentLocation
               ]
-            when "complete"
+            when "completed"
               routes = [
                 origin: initialLocation
-                destination: passengerLocation
+                destination: customerLocation
               ,
-                origin: passengerLocation
+                origin: customerLocation
                 destination: destinationLocation
               ]
           boleanFirst = true
@@ -488,7 +488,7 @@ class TripTracker
               @directionsService.route request, (result, status) =>
                   @directionsDisplay2.setDirections result  if status is google.maps.DirectionsStatus.OK and @directionsDisplay2?
         if @tripChange or !@userChangedZoom
-          @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else passengerLocation)
+          @map.setCenter (if driverCurrentLocation? then driverCurrentLocation else customerLocation)
           @map.setZoom @defaultTrackingZoom
     @setTripInfoBool = false
 
@@ -781,7 +781,7 @@ class ActiveTripsChart
       element: @chartId,
       data: [
         {label: "New", value: 0}
-        {label: "Dispatched", value: 0}
+        {label: "Accepted", value: 0}
         {label: "Enroute", value: 0}
         {label: "Picked up", value: 0}
       ]
@@ -796,7 +796,7 @@ class ActiveTripsChart
     @updateCounter(0)
 
   updateStats: (stats) =>
-    totalActiveStatuses = stats.new + stats.queued + stats.dispatched + stats.enroute + stats.pickedup
+    totalActiveStatuses = stats.new + stats.queued + stats.accepted + stats.en_route + stats.picked_up
     @updateCounter(totalActiveStatuses)
     @updateChart(totalActiveStatuses, stats)
 
@@ -810,11 +810,11 @@ class ActiveTripsChart
     switch status
       when 'new'
         @statusIndex = 0
-      when 'dispatched'
+      when 'accepted'
         @statusIndex = 1
-      when 'enroute'
+      when 'en_route'
         @statusIndex = 2
-      when 'pickedup'
+      when 'picked_up'
         @statusIndex = 3
       else
         @statusIndex = -1
@@ -826,9 +826,9 @@ class ActiveTripsChart
     @totalChart = total
     @chart.setData([
         {label: "New", value: statuses.new + statuses.queued}
-        {label: "Dispatched", value: statuses.dispatched}
-        {label: "Enroute", value: statuses.enroute}
-        {label: "Picked up", value: statuses.pickedup}
+        {label: "Accepted", value: statuses.accepted}
+        {label: "Enroute", value: statuses.en_route}
+        {label: "Picked up", value: statuses.picked_up}
     ])
     if @statusIndex > -1
       @chart.select(@statusIndex)
@@ -837,12 +837,12 @@ class ActiveTripsChart
 class StatisticsDashboard
 
   constructor: (@statisticsContainerId) ->
-    @completeTripsPieChartId = 'statistics-complete-trips-pie-chart'
-    @completedTripsTitle = @completeTripsPieChartId + '-title'
+    @completedTripsPieChartId = 'statistics-completed-trips-pie-chart'
+    @completeddTripsTitle = @completedTripsPieChartId + '-title'
     @servicePieChartId = 'statistics-service-pie-chart'
     @durationPieChartId = 'statistics-duration-pie-chart'
     @mileagePieChartId = 'statistics-mileage-service-pie-chart'
-    @totalTripsCounter = 'statistics-total-trip-counter'
+    @totalCounter = 'statistics-total-trip-counter'
     @totalTripsPieChartId = 'statistics-total-trip-chart'
     @lastValues = {
       totalCounter: -1,
@@ -860,7 +860,7 @@ class StatisticsDashboard
                               <div class="panel-body">
                                 <div class="dashboard-statistics-counter-container">
                                   <div class="dashboard-statistics-counter">
-                                      <div id="' + @totalTripsCounter + '"></div>
+                                      <div id="' + @totalCounter + '"></div>
                                   </div>
                                 </div>
                                 <div  class="dashboard-statistics-pie-chart" >
@@ -873,8 +873,8 @@ class StatisticsDashboard
                               <div class="panel-body">
                                 <div class="dashboard-statistics-subpanel">
                                   <div  class="dashboard-statistics-pie-chart" >
-                                      <div class="title"><div id="' + @completedTripsTitle + '">0</div> requests</div>
-                                      <div class="pie-chart" id="' + @completeTripsPieChartId + '"></div>
+                                      <div class="title"><div id="' + @completeddTripsTitle + '">0</div> requests</div>
+                                      <div class="pie-chart" id="' + @completedTripsPieChartId + '"></div>
                                   </div>
                                   <div  class="dashboard-statistics-pie-chart" >
                                       <div class="title">Service level</div>
@@ -893,14 +893,10 @@ class StatisticsDashboard
                             </div>
                         ')
 
-    @counter = new Counter($('#' + @totalTripsCounter))
+    @counter = new Counter($('#' + @totalCounter))
     @totalTripsChart = Morris.Donut({
       element: @totalTripsPieChartId,
       data: [
-        #{label: "New", value: 0}
-        #{label: "Dispatched", value: 0}
-        #{label: "Enroute", value: 0}
-        #{label: "Picked up", value: 0}
         {label: "Complete", value: 0}
         {label: "Rejected", value: 0}
         {label: "Cancelled", value: 0}
@@ -930,8 +926,8 @@ class StatisticsDashboard
       ]
       resize: true
     })
-    @completeStatusesChart = Morris.Donut({
-      element: @completeTripsPieChartId,
+    @completedStatusesChart = Morris.Donut({
+      element: @completedTripsPieChartId,
       data: [
         {label: "Complete", value: 0}
         {label: "Rejected", value: 0}
@@ -982,36 +978,31 @@ class StatisticsDashboard
     })
     @updateCounter(0)
 
-  updateStats: (stats) =>
-    partnerId = ''
-    if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
-        partnerId = '&servicingNetworkId=' + $('#getUserId').html() + '&originatingNetworkId=' + $('#getUserId').html()
+  updateHistoricStats: (stats) =>
+    statuses = {
+      completed: 0,
+      rejected: 0,
+      cancelled: 0
+    }
+    for stat in stats
+      if stat.status == 'completed'
+        statuses.completed += stat.count
+      else if stat.status == 'rejected'
+        statuses.rejected += stat.count
+      else if stat.status == 'cancelled'
+        statuses.cancelled += stats.count
+    total = statuses.completed + statuses.rejected + statuses.cancelled
+    @updateCounter(total)
+    @updateTotalTrips(total, statuses)
 
-    totalCompleteStatuses = stats.complete + stats.rejected + stats.cancelled
-    @updateCompleteStatuses(totalCompleteStatuses, stats)
+  updateStats: (stats) =>
+    totalCompleteStatuses = stats.completed + stats.rejected + stats.cancelled
+    @updateCompleteTrips(totalCompleteStatuses, stats)
     @updateServiceLevels(stats.serviceLevels)
     if stats.durations?
       @updateDurations(stats.durations)
     if stats.distances?
       @updateDistances(stats.distances)
-    $.get '/mongo_db/trips_stats?' + partnerId, (data) =>
-      statuses = {
-        #queued: 0,
-        #dispatched: 0,
-        #enroute: 0,
-        #pickedup: 0,
-        complete: 0,
-        rejected: 0,
-        cancelled: 0
-      }
-      #statuses['new'] = 0
-      total = 0
-      for entry in data
-        if statuses.hasOwnProperty(entry._id.status)
-          statuses[entry._id.status] += entry.count
-          total += entry.count
-      @updateCounter(total)
-      @updateTotalTrips(total, statuses)
 
   updateCounter: (total) =>
     if @lastValues.totalCounter != total
@@ -1023,15 +1014,10 @@ class StatisticsDashboard
       return
     @lastValues.totalTrips = total
     @totalTripsChart.setData([
-      #{label: "New", value: statuses.new + statuses.queued}
-      #{label: "Dispatched", value: statuses.dispatched}
-      #{label: "Enroute", value: statuses.enroute}
-      #{label: "Picked up", value: statuses.pickedup}
-      {label: "Complete", value: statuses.complete}
+      {label: "Complete", value: statuses.completed}
       {label: "Rejected", value: statuses.rejected}
       {label: "Cancelled", value: statuses.cancelled}
     ])
-
 
   updateServiceLevels: (serviceLevels) =>
     hasChanged = false
@@ -1049,15 +1035,14 @@ class StatisticsDashboard
       {label: "> 15 min.", value: serviceLevels[4]}
     ])
 
-
-  updateCompleteStatuses: (total, statuses) =>
+  updateCompleteTrips: (total, statuses) =>
     if @lastValues.totalComplete == total
       return
 
     @lastValues.totalComplete = total
-    $('#' + @completedTripsTitle).fadeOut().html(total).fadeIn()
-    @completeStatusesChart.setData([
-      {label: "Complete", value: statuses.complete}
+    $('#' + @completeddTripsTitle).fadeOut().html(total).fadeIn()
+    @completedStatusesChart.setData([
+      {label: "Complete", value: statuses.completed}
       {label: "Rejected", value: statuses.rejected}
       {label: "Cancelled", value: statuses.cancelled}
     ])
@@ -1088,10 +1073,15 @@ class DashboardManager
     @activeTrip = null
     @selectedStatus = $('#' + @statusSelectorContainerId + ' option:selected').val()
     @updatingStats = false
+    @updatingHistoricStats = false
     @updatingTrips = false
     @updatingActiveTrip = false
     @updatingLogs = false
     @activeTripCompleted = false
+    @queryFilter = {}
+    if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
+      @queryFilter.servicingNetworkId = $('#getUserId').html()
+      @queryFilter.originatingNetworkId = $('#getUserId').html()
 
     $('#' + @statusSelectorContainerId).change =>
       @selectedStatus = $('#' + @statusSelectorContainerId + ' option:selected').val()
@@ -1103,10 +1093,14 @@ class DashboardManager
       @updatingStats = true
       @gateway.getStats(@updateStats)
 
+    if not  @updatingHistoricStats
+      @updatingHistoricStats = true
+      @gateway.getHistoricStats(@queryFilter, @updateHistoricStats)
+
     if not @updatingTrips
       @updatingTrips = true
       status = if @selectedStatus != 'All' then @selectedStatus else null
-      @gateway.getTrips(status, @updateTrips)
+      @gateway.getActiveTrips(status, @updateTrips)
 
     if not @updatingActiveTrip and not @activeTripCompleted
       @updatingActiveTrip = true
@@ -1131,6 +1125,16 @@ class DashboardManager
           catch error
             console.error listener + ' updateStats failed: ' + error
     @updatingStats = false
+
+  updateHistoricStats: (data) =>
+    if data?
+      for listener in @listeners
+        if typeof listener.updateHistoricStats is 'function'
+          try
+            listener.updateHistoricStats(data)
+          catch error
+            console.error listener + ' updateHistoricStats failed: ' + error
+    @updatingHistoricStats = false
 
   cleanMap: () =>
     for listener in @listeners
@@ -1167,23 +1171,23 @@ class DashboardManager
     driverLocation = null
     driverInitialLocation = null
     if newTrip.driver?
-      driverId = newTrip.driver.id
+      driverId = newTrip.driver.name
       driverLocation = new Location(newTrip.driver.location.lat, newTrip.driver.location.lng)
       if newTrip.driver.initialLocation?
-        driverInitialLocation =  new Location(newTrip.driver.initialLocation.lat, newTrip.driver.initialLocation.lng, null)
+        driverInitialLocation =  new Location(newTrip.driver.initialLocation.lat, newTrip.driver.initialLocation.lng)
     trip = new Trip(
       newTrip.id
-      newTrip.passenger.name
+      newTrip.customer.name
       newTrip.pickupTime
-      new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng, null)
-      if newTrip.originatingPartner then newTrip.originatingPartner.id else null
-      if newTrip.servicingPartner then newTrip.servicingPartner.id else null
+      new Location(newTrip.pickupLocation.lat, newTrip.pickupLocation.lng)
+      if newTrip.originatingNetwork then newTrip.originatingNetwork.id else null
+      if newTrip.servicingNetwork then newTrip.servicingNetwork.id else null
       newTrip.status
       newTrip.eta
       newTrip.price
       driverId
       driverLocation
-      new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng, null)
+      new Location(newTrip.dropoffLocation.lat, newTrip.dropoffLocation.lng)
       driverInitialLocation
     )
     @tripsById[trip.getId()] = trip
@@ -1219,26 +1223,26 @@ class DashboardManager
           @activeTrip.getDriverLocation()? and
           data.driver.location.lat != @activeTrip.getDriverLocation().lat and
           data.driver.location.lng != @activeTrip.getDriverLocation().lng)
-        driverLocation = new Location(data.driver.location.lat, data.driver.location.lng, null)
+        driverLocation = new Location(data.driver.location.lat, data.driver.location.lng)
       else
         driverLocation = @activeTrip.getDriverLocation()
 
       if !@activeTrip? or (data.routeEnrouteLocation and !@activeTrip.getDriverInitialLocation()?)
-        driverInitialLocation = new Location(data.routeEnrouteLocation.lat, data.routeEnrouteLocation.lng, null)
+        driverInitialLocation = new Location(data.routeEnrouteLocation.lat, data.routeEnrouteLocation.lng)
       else
         driverInitialLocation = @activeTrip.getDriverInitialLocation()
 
       if @activeTrip != null
         @activeTrip.update(
           if data.status? then data.status else @activeTrip.getStatus()
-          if data.servicingPartner? then data.servicingPartner.id else @activeTrip.getServicing()
-          if data.driver? then data.driver.id else ''
+          if data.servicingNetwork? then data.servicingNetwork.id else @activeTrip.getServicing()
+          if data.driver? then data.driver.name else ''
           driverLocation
           driverInitialLocation
           data.routeEnrouteLocation
           data.routePickupLocation
         )
-      @activeTripCompleted = data.status == 'complete' or data.status == 'cancelled'
+      @activeTripCompleted = data.status == 'completed' or data.status == 'cancelled'
     for listener in @listeners
       if typeof listener.updateActiveTrip is 'function'
         try

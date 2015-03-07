@@ -10,7 +10,7 @@ class UpdateRequest
                 @togglesUpdated  =   false
                 @dateUpdated =       false
                 @timeModeUpdated =   false
-                @fleetUpdated =      false
+                @productUpdated =      false
                 @selectedStatsUpdated = false
                 @zoomUpdated =       false
                 @clearZoomUpdated =  false) ->
@@ -31,8 +31,8 @@ class UpdateRequest
     @dateUpdated
   isTimeModeUpdate: () =>
     @timeModeUpdated
-  isFleetUpdate: () =>
-    @fleetUpdated
+  isProductUpdate: () =>
+    @productUpdated
   isSelectedStatsUpdate: () =>
     @selectedStatsUpdated
   isZoomUpdate: () =>
@@ -45,7 +45,7 @@ class UpdateRequest
     @isToggleUpdate()       == update.isToggleUpdate() and
     @isDateUpdate()         == update.isDateUpdate() and
     @isTimeModeUpdate()     == update.isTimeModeUpdate() and
-    @isFleetUpdate()        == update.isFleetUpdate() and
+    @isProductUpdate()        == update.isProductUpdate() and
     @isSelectedStatsUpdate() == update.isSelectedStatsUpdate() and
     @isZoomUpdate()         == update.isZoomUpdate() and
     @isClearZoomUpdate()    == update.isClearZoomUpdate()
@@ -54,7 +54,7 @@ class UpdateRequest
 class TimeSeries
 
   constructor: (@gateway, @historicChartContainerId, @forecastChartContainerId, @mapContainer) ->
-    @gateway.getPartners(@loadSelectorFilters)
+    @gateway.getNetworks(@loadSelectorFilters)
     @data = null
 
     @historicChart = null
@@ -68,7 +68,7 @@ class TimeSeries
         radius: null
     }
     @networks = {}
-    @fleets = {}
+    @products = {}
     @drivers = {}
     @tripsById = {}
     @stats = []
@@ -76,7 +76,7 @@ class TimeSeries
     @pendingUpdateRequests = []
     @selectedStat = 'tripsCompleted'
     @selectedNetwork = 'All'
-    @selectedFleet = 'All'
+    @selectedProduct = 'All'
     @selectedDriver = 'All'
     @chartType = 'series'
     @realtimeMode = true
@@ -105,15 +105,13 @@ class TimeSeries
     @startDate.setDate(@startDate.getDate()-7)
     @endDate = new Date()
     $('#start-date').datetimepicker(
-      showToday: true
       format: "YYYY/MM/DD HH:mm"
     )
     $('#end-date').datetimepicker(
-      showToday: true
       format: "YYYY/MM/DD HH:mm"
     )
-    $('#start-date').data('DateTimePicker').setDate(@startDate)
-    $('#end-date').data('DateTimePicker').setDate(@endDate)
+    $('#start-date').data('DateTimePicker').date(@startDate)
+    $('#end-date').data('DateTimePicker').date(@endDate)
 
     $('#trips-requested-filter-button').addClass('active')
     $('#trips-completed-filter-button').addClass('active')
@@ -232,35 +230,37 @@ class TimeSeries
 
     $('#start-date').on 'dp.change', (e) =>
         @startDate = e.date
+        $('#end-date').data('DateTimePicker').minDate(e.date)
         updateRequest = @createUpdateRequest({dateUpdate: true})
         @update(updateRequest)
 
     $('#end-date').on 'dp.change', (e) =>
         @endDate = e.date
+        $('#start-date').data('DateTimePicker').maxDate(e.date)
         updateRequest = @createUpdateRequest({dateUpdate: true})
         @update(updateRequest)
 
     $('#networks-select').change =>
       @selectedNetwork = $('#networks-select option:selected').val()
-      @selectedFleet = 'All'
-      $('#fleets-select').html '<option value="All" selected="selected">All</option>'
+      @selectedProduct = 'All'
+      $('#products-select').html '<option value="All" selected="selected">All</option>'
       if @selectedNetwork == 'All'
-        for id, fleet of @fleets
-          $('#fleets-select').append('<option value="' + fleet.name + '">' + fleet.name + '</option>')
+        for id, product of @products
+          $('#products-select').append('<option value="' + product.name + '">' + product.name + '</option>')
       else
-        for fleet in @networks[@selectedNetwork].fleets
-          $('#fleets-select').append('<option value="' + fleet + '">' + fleet + '</option>')
-      updateRequest = @createUpdateRequest({togglesUpdate: true, fleetUpdate: true})
+        for product in @networks[@selectedNetwork].products
+          $('#products-select').append('<option value="' + product.name + '">' + product.name + '</option>')
+      updateRequest = @createUpdateRequest({togglesUpdate: true, productUpdate: true})
       @update(updateRequest)
 
-    $('#fleets-select').change =>
-      @selectedFleet = $('#fleets-select option:selected').val()
-      updateRequest = @createUpdateRequest({togglesUpdate: true, fleetUpdate: true})
+    $('#products-select').change =>
+      @selectedProduct = $('#products-select option:selected').val()
+      updateRequest = @createUpdateRequest({togglesUpdate: true, productUpdate: true})
       @update(updateRequest)
 
     $('#drivers-select').change =>
       @selectedDriver = $('#drivers-select option:selected').val()
-      updateRequest = @createUpdateRequest({togglesUpdate: true, fleetUpdate: true})
+      updateRequest = @createUpdateRequest({togglesUpdate: true, productUpdate: true})
       @update(updateRequest)
 
     $('#chart-type-toggle-container>#toggle-button').click =>
@@ -332,13 +332,13 @@ class TimeSeries
     togglesUpdated  =   type.togglesUpdate? and type.togglesUpdate
     dateUpdated =       type.dateUpdate? and type.dateUpdate
     timeModeUpdated =   type.timeModeUpdate? and type.timeModeUpdate
-    fleetUpdated =      type.fleetUpdate? and type.fleetUpdate
+    productUpdated =      type.productUpdate? and type.productUpdate
     selectedStatsUpdated = type.selectedStatsUpdate? and type.selectedStatsUpdate
     zoomUpdated =       type.zoomUpdate? and type.zoomUpdate
     clearZoomUpdated =  type.clearZoomUpdate? and type.clearZoomUpdate
 
     @pendingUpdateRequests = @getPendingRequestsNotObsolete()
-    newUpdate = new UpdateRequest(chartTypeUpdated, dataModeUpdated, togglesUpdated, dateUpdated, timeModeUpdated, fleetUpdated, selectedStatsUpdated, zoomUpdated, clearZoomUpdated)
+    newUpdate = new UpdateRequest(chartTypeUpdated, dataModeUpdated, togglesUpdated, dateUpdated, timeModeUpdated, productUpdated, selectedStatsUpdated, zoomUpdated, clearZoomUpdated)
     for update in @pendingUpdateRequests
       if update.equals(newUpdate)
         update.makeObsolete()
@@ -449,8 +449,8 @@ class TimeSeries
             updateRequest = @createUpdateRequest({togglesUpdate: true, selectedStatsUpdate: true})
             @update(updateRequest)
 
-          $('#ratings-passengers-filter-button').off('click').on 'click', =>
-            $('#ratings-passengers-filter-button').toggleClass('active')
+          $('#ratings-customers-filter-button').off('click').on 'click', =>
+            $('#ratings-customers-filter-button').toggleClass('active')
             @ratingPassengers.show = not @ratingPassengers.show
             updateRequest = @createUpdateRequest({togglesUpdate: true, selectedStatsUpdate: true})
             @update(updateRequest)
@@ -555,10 +555,10 @@ class TimeSeries
               updateRequest = @createUpdateRequest({togglesUpdate: true, selectedStatsUpdate: true})
               @update(updateRequest)
 
-          $('#ratings-passengers-filter-button').off('click').on 'click', =>
+          $('#ratings-customers-filter-button').off('click').on 'click', =>
             if @selectedStat.name != @ratingPassengers.name
               $('.filter-button').removeClass('active')
-              $('#ratings-passengers-filter-button').addClass('active')
+              $('#ratings-customers-filter-button').addClass('active')
               @selectedStat = @ratingPassengers
               updateRequest = @createUpdateRequest({togglesUpdate: true, selectedStatsUpdate: true})
               @update(updateRequest)
@@ -617,199 +617,34 @@ class TimeSeries
         updateRequest.makeObsolete()
       
   updateSeriesRealTime: (updateRequest) =>
-    [query, dates, intervals] = @getTripsCountRealTimeQuery()
-    if query != @latestCountQuery
-      $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
-        $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
+    [query, dates] = @getTripsCountRealTimeQuery()
+    query.byStatus = true
+    if !@queriesAreEqual(query, @latestCountQuery)
+      @gateway.getTripCount query, (countByStatus) =>
+        query.byStatus = false
+        query.byCreationTime = true
+        @gateway.getTripCount query, (totalCount) =>
+          query.byStatus = true
+          query.byCreationTime = false
           @latestCountQuery = query
-          @setStats @mongoDbTripCountToStats(countByStatus, totalCount, dates, intervals), updateRequest
+          @setStats @countQueryResultToStats(countByStatus, totalCount, dates), updateRequest
     else
       @setStats @stats, updateRequest
-
-  getTripsCountRealTimeQuery: () =>
-      startDate = new Date()
-      intervalCount = 0
-      bucketSize = 1
-      intervalName = ''
-      if @realtimeModeInterval.seconds
-        startDate.setMinutes(startDate.getMinutes()-10)
-        intervalCount = 41
-        bucketSize = 15
-        intervalName = 'second'
-      else if @realtimeModeInterval.minutes
-        startDate.setHours(startDate.getHours()-10)
-        intervalCount = 41
-        bucketSize = 15
-        intervalName = 'minute'
-      else if @realtimeModeInterval.hours
-        startDate.setDate(startDate.getDate()-2)
-        intervalCount = 49
-        intervalName = 'hour'
-      else if @realtimeModeInterval.days
-        startDate.setMonth(startDate.getMonth()-1)
-        intervalCount = 33
-        intervalName = 'day'
-      else if @realtimeModeInterval.weeks
-        startDate.setMonth(startDate.getMonth()-3)
-        intervalCount = 14
-        intervalName = 'week'
-      date = +(new Date(startDate)) / 1000;
-
-      [dates, intervalIds] = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
-
-      query = 'startDate=' + date + '&interval=' + intervalName + '&bucketSize=' + bucketSize + @getCommonQuery()
-
-      return [query, dates, intervalIds]
 
   updateSeriesTimeRange: (updateRequest) =>
-    [query, dates, intervals] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
-    if query != @latestCountQuery or updateRequest.isDataModeUpdate()
-      $.get '/mongo_db/trips_count?' + query + '&by_status=true', (countByStatus) =>
-        $.get '/mongo_db/trips_count?' + query + '&by_status=false&by_creation_time=true', (totalCount) =>
+    [query, dates] = @getTripsCountTimeRangeQuery(new Date(@startDate), new Date(@endDate))
+    query.byStatus = true
+    if !@queriesAreEqual(query, @latestCountQuery) or updateRequest.isDataModeUpdate()
+      @gateway.getTripCount query, (countByStatus) =>
+        query.byStatus = false
+        query.byCreationTime = true
+        @gateway.getTripCount query, (totalCount) =>
+          query.byStatus = true
+          query.byCreationTime = false
           @latestCountQuery = query
-          @setStats @mongoDbTripCountToStats(countByStatus, totalCount, dates, intervals), updateRequest
+          @setStats @countQueryResultToStats(countByStatus, totalCount, dates), updateRequest
     else
       @setStats @stats, updateRequest
-
-  getTripsCountTimeRangeQuery: (startDate, endDate) =>
-    startMoment = moment(startDate)
-    endMoment = moment(endDate)
-    days = endMoment.diff(startMoment, 'days')
-    intervalCount = 0
-    bucketSize = 1
-    intervalName = ''
-
-    if days < 1
-      hours = endMoment.diff(startMoment, 'hours')
-      if hours < 1
-        minutes = endMoment.diff(startMoment, 'minutes')
-        if minutes <= 15
-          bucketSize = 15
-          intervalCount = minutes * 60 / bucketSize
-          intervalName = 'second'
-        else
-          intervalCount = minutes
-          intervalName = 'minute'
-      else if hours < 12
-        bucketSize = 5
-        intervalCount = hours * 60 / bucketSize
-        intervalName = 'minute'
-      else
-        intervalCount = hours
-        intervalName = 'hour'
-    else if days >= 1 and days < 3
-      intervalCount = days * 24
-      intervalName = 'hour'
-    else if days >= 3 and days < 7
-      bucketSize = 8
-      intervalCount = days * 24 / bucketSize
-      intervalName = 'hour'
-    else if days < 61
-      intervalCount = days
-      intervalName = 'day'
-    else
-      intervalCount = (days / 7).toFixed(0)
-      intervalName = 'week'
-
-    [dates, intervalIds] = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
-
-    startDate.setDate(startDate.getDate() - 1)
-    endDate.setDate(endDate.getDate() + 1)
-    query = 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&interval=' + intervalName + '&bucketSize=' + bucketSize + @getCommonQuery()
-
-    return [query, dates, intervalIds]
-
-  getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>
-      dates = []
-      intervalIds = []
-      for i in [0..intervalCount]
-          interval = 0
-          switch intervalName
-              when 'second'
-                  interval = startDate.getUTCHours()*3600 + startDate.getUTCMinutes()*60 + startDate.getUTCSeconds()
-                  dates.push startDate.getTime()
-                  intervalIds.push (interval/bucketSize).toFixed(0)
-                  startDate.setSeconds(startDate.getSeconds() + bucketSize)
-              when 'minute'
-                  interval = startDate.getUTCHours()*60 + startDate.getUTCMinutes()
-                  dates.push startDate.getTime()
-                  intervalIds.push (interval/bucketSize).toFixed(0)
-                  startDate.setMinutes(startDate.getMinutes() + bucketSize)
-              when 'hour'
-                  interval = startDate.getDayOfYear() * 24 + startDate.getUTCHours()
-                  dates.push startDate.getTime()
-                  intervalIds.push (interval/bucketSize).toFixed(0)
-                  startDate.setHours(startDate.getHours() + bucketSize)
-              when 'day'
-                  interval = startDate.getDayOfYear()
-                  dates.push startDate.getTime()
-                  intervalIds.push (interval/bucketSize).toFixed(0)
-                  startDate.setDate(startDate.getDate() + bucketSize)
-              when 'week'
-                  interval = startDate.getWeek()
-                  dates.push startDate.getTime()
-                  intervalIds.push (interval/bucketSize).toFixed(0)
-                  startDate.setDate(startDate.getDate() + 7)
-      return [dates, intervalIds]
-
-  mongoDbTripCountToStats: (countByStatus, totalCount, dates, intervals) =>
-
-    for stat in @stats
-      stat.data = []
-
-    @YAxisMax = 0
-    i = 0
-    for interval in intervals
-        date = dates[i]
-        id = interval
-        countComplete = 0
-        countCancelled = 0
-        countRejected = 0
-        countError = 0
-        latenessAverage = 0
-
-        latenessAverages = countByStatus.filter((v) ->
-                    (v._id.status == 'complete' or
-                    v._id.status == 'cancelled' or
-                    v._id.status == 'rejected' or
-                    v._id.status == 'error') and
-                    v._id.interval == parseInt(id))
-        latenessAverage = 0
-        for val in latenessAverages
-          latenessAverage += val.lateness
-        if latenessAverages.length > 0
-          latenessAverage /= latenessAverages.length
-          latenessAverage /= 60000
-
-        count = countByStatus.filter((v) -> v._id.status == 'complete' and v._id.interval == parseInt(id))
-        countComplete = if count.length == 0 then 0 else count[0].count
-        count = countByStatus.filter((v) -> v._id.status == 'cancelled' and v._id.interval == parseInt(id))
-        countCancelled = if count.length == 0 then 0 else count[0].count
-        count = countByStatus.filter((v) -> v._id.status == 'rejected' and v._id.interval == parseInt(id))
-        countRejected = if count.length == 0 then 0 else count[0].count
-        count = countByStatus.filter((v) -> v._id.status == 'error' and v._id.interval == parseInt(id))
-        countError = if count.length == 0 then 0 else count[0].count
-        count = totalCount.filter((v) -> v._id.interval == parseInt(id))
-        countRequested = if count.length == 0 then 0 else count[0].count
-        total = countComplete + countCancelled + countRejected + countError
-
-        if @percentageMode
-            countRequested = if countRequested > 0 then 100 else 0
-            countComplete = if countComplete > 0 then countComplete * 100 / total else 0
-            countCancelled = if countCancelled > 0 then countCancelled * 100 / total else 0
-            countRejected = if countRejected > 0 then countRejected * 100 / total else 0
-            countError = if countError > 0 then countError * 100 / total else 0
-
-
-        @tripsRequested.data.push [date, countRequested]
-        @tripsCompleted.data.push [date, countComplete]
-        @tripsRejected.data.push [date, countRejected]
-        @tripsCancelled.data.push [date, countCancelled]
-        @tripsError.data.push [date, countError]
-        @serviceLateness.data.push [date, latenessAverage]
-
-        i++
-    @stats
 
   setStats: (stats, updateRequest) =>
     if @chartType == 'series'
@@ -864,52 +699,6 @@ class TimeSeries
       @hideLoadingIndicator()
       updateRequest.makeObsolete()
 
-  getTripsListRealTimeQuery: () =>
-    startDate = new Date()
-    if @realtimeModeInterval.seconds
-      startDate.setMinutes(startDate.getMinutes()-10)
-    else if @realtimeModeInterval.minutes
-      startDate.setHours(startDate.getHours()-10)
-    else if @realtimeModeInterval.hours
-      startDate.setDate(startDate.getDate()-2)
-    else if @realtimeModeInterval.days
-      startDate.setMonth(startDate.getMonth()-1)
-    else if @realtimeModeInterval.weeks
-      startDate.setMonth(startDate.getMonth()-3)
-    date = +(new Date(startDate)) / 1000
-
-    group_by = if @selectedStat.isPickupStat then 'pickup' else 'dropoff'
-
-    return 'startDate=' + date + '&group_by=' + group_by + @getCommonQuery()
-
-  getTripsListTimeRangeQuery: (startDate, endDate) =>
-    group_by = if @selectedStat.isPickupStat then 'pickup' else 'dropoff'
-    return 'startDate=' + (+startDate/1000) + '&endDate=' + (+endDate/1000) + '&group_by=' + group_by + @getCommonQuery()
-
-  getCommonQuery: () =>
-    selectedGeographicZone = ''
-    if window.selectedGeographicZone?
-      lat = window.selectedGeographicZone.getCenter().lat()
-      lng = window.selectedGeographicZone.getCenter().lng()
-      radius = window.selectedGeographicZone.getRadius() / 1609.344
-      selectedGeographicZone = '&centerLat=' + lat + '&centerLng=' + lng + '&centerRadius=' + radius
-
-    networkId = ''
-    fleetId = ''
-    nId = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
-    fId = if @selectedFleet != 'All' then @fleets[@selectedFleet].id else 'all'
-    if @farmedInMode
-      networkId += '&originatingNetworkId=' + nId
-      fleetId += '&originatingFleetId=' + fId
-    if @farmedOutMode
-      networkId += '&servicingNetworkId=' + nId
-      fleetId += '&servicingFleetId=' + fId
-    if @localTripsMode
-      networkId += '&localNetworkId=' + nId
-      fleetId += '&localFleetId=' + fId
-
-    return selectedGeographicZone + networkId + fleetId
-
   updateHeatMapRealTime: (updateRequest) =>
     @loadHeatMapTrips(updateRequest, @getTripsListRealTimeQuery())
 
@@ -918,7 +707,7 @@ class TimeSeries
 
   loadHeatMapTrips: (updateRequest, query) =>
     isPickupStat = @selectedStat.isPickupStat
-    if query == @latestListQuery or
+    if @queriesAreEqual(query, @latestListQuery) or
         updateRequest.isSelectedStatsUpdate() and
         ((isPickupStat and @pickupTripsLoaded) or (not isPickupStat and @dropoffTripsLoaded))
       @drawHeatMap(updateRequest)
@@ -928,20 +717,20 @@ class TimeSeries
       if not updateRequest.isSelectedStatsUpdate()
         @pickupTripsLoaded = false
         @dropoffTripsLoaded = false
-      $.get '/mongo_db/trips_list?' + query , (trips) =>
+      @gateway.getTrips query , (trips) =>
         tripsIds = []
         for newTrip in trips
-          newTripId = '<' + isPickupStat + ',' + newTrip._id.status + ',' + newTrip._id.location.lat + ',' + newTrip._id.location.lng + '>'
+          newTripId = '<' + isPickupStat + ',' + newTrip.status + ',' + newTrip.location_id + '>'
           tripsIds.push newTripId
           if newTripId not of @tripsById or
-              (isPickupStat and !@tripsById[newTripId].pickupLocation?) or
-              (not isPickupStat and !@tripsById[newTripId].dropoffLocation)
+              (isPickupStat and !@tripsById[newTripId].pickup_location_lat?) or
+              (not isPickupStat and !@tripsById[newTripId].dropoff_location_lat?)
 
             @tripsById[newTripId] = {
-                                      location: newTrip._id.location
-                                      status: newTrip._id.status
+                                      location: { lat: newTrip.location_lat, lng: newTrip.location_lng }
+                                      status: newTrip.status
                                       count: newTrip.count
-                                      lateness: newTrip.lateness
+                                      lateness: newTrip.lateness_average/1000
                                       isPickupLocation: isPickupStat
                                     }
         for id, trip of @tripsById
@@ -991,23 +780,291 @@ class TimeSeries
       @heatmap.setMap window.map
 
   setMapZoom: (trips, updateRequest) =>
-    if window.map? and (updateRequest.isFleetUpdate() or updateRequest.isClearZoomUpdate())
+    if window.map? and (updateRequest.isProductUpdate() or updateRequest.isClearZoomUpdate())
       if trips.length > 0
         geoCenter = @getCentrePointFromListOfCoordinates(trips)
         bounds = new google.maps.LatLngBounds()
         bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
         bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
         window.map.fitBounds(bounds)
-      else if @selectedFleet != 'All'
-        partnerPosition = new google.maps.LatLng(@fleets[@selectedFleet].coverage.center.lat, @fleets[@selectedFleet].coverage.center.lng)
-        if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(partnerPosition)
+      else if @selectedProduct != 'All'
+        networkPosition = new google.maps.LatLng(@products[@selectedProduct].coverage_lat, @products[@selectedProduct].coverage_lng)
+        if window.selectedGeographicZone? and !window.selectedGeographicZone.isHere(networkPosition)
           window.selectedGeographicZone.setMap null
           window.selectedGeographicZone = null
-        window.map.panTo partnerPosition
+        window.map.panTo networkPosition
         window.map.setZoom 8
       else
         window.map.panTo new google.maps.LatLng(37.09024, -95.712891)
         window.map.setZoom 4
+
+  getTripsCountRealTimeQuery: () =>
+    startDate = new Date()
+    intervalCount = 0
+    bucketSize = 1
+    intervalName = ''
+    if @realtimeModeInterval.seconds
+      startDate.setMinutes(startDate.getMinutes()-10)
+      intervalCount = 41
+      bucketSize = 15
+      intervalName = 'second'
+    else if @realtimeModeInterval.minutes
+      startDate.setHours(startDate.getHours()-10)
+      intervalCount = 41
+      bucketSize = 15
+      intervalName = 'minute'
+    else if @realtimeModeInterval.hours
+      startDate.setDate(startDate.getDate()-2)
+      intervalCount = 49
+      intervalName = 'hour'
+    else if @realtimeModeInterval.days
+      startDate.setMonth(startDate.getMonth()-1)
+      intervalCount = 33
+      intervalName = 'day'
+    else if @realtimeModeInterval.weeks
+      startDate.setMonth(startDate.getMonth()-3)
+      intervalCount = 14
+      intervalName = 'week'
+    date = new Date(startDate);
+
+    dates = @getDatesByInterval(startDate, intervalName, intervalCount, bucketSize)
+    query = @getQuery(date)
+    query.interval = intervalName
+    query.bucketSize = bucketSize
+    return [query, dates]
+
+  getTripsCountTimeRangeQuery: (startDate, endDate) =>
+    startMoment = moment(startDate)
+    endMoment = moment(endDate)
+    days = endMoment.diff(startMoment, 'days')
+    intervalCount = 0
+    bucketSize = 1
+    intervalName = ''
+
+    if days < 1
+      hours = endMoment.diff(startMoment, 'hours')
+      if hours < 1
+        minutes = endMoment.diff(startMoment, 'minutes')
+        if minutes <= 15
+          bucketSize = 15
+          intervalCount = minutes * 60 / bucketSize
+          intervalName = 'second'
+        else
+          intervalCount = minutes
+          intervalName = 'minute'
+      else if hours < 12
+        bucketSize = 5
+        intervalCount = hours * 60 / bucketSize
+        intervalName = 'minute'
+      else
+        intervalCount = hours
+        intervalName = 'hour'
+    else if days >= 1 and days < 3
+      intervalCount = days * 24
+      intervalName = 'hour'
+    else if days >= 3 and days < 7
+      bucketSize = 8
+      intervalCount = days * 24 / bucketSize
+      intervalName = 'hour'
+    else if days < 61
+      intervalCount = days
+      intervalName = 'day'
+    else
+      intervalCount = (days / 7).toFixed(0)
+      intervalName = 'week'
+
+    dates = @getDatesByInterval(new Date(startDate), intervalName, intervalCount, bucketSize)
+    startDate.setDate(startDate.getDate() - 1)
+    endDate.setDate(endDate.getDate() + 1)
+    query = @getQuery(startDate, endDate)
+    query.interval = intervalName
+    query.bucketSize = bucketSize
+    return [query, dates]
+
+  getDatesByInterval: (startDate, intervalName, intervalCount, bucketSize) =>
+    dates = []
+    date = moment(startDate)
+    switch intervalName
+      when 'second'
+        date.startOf('minute')
+      when 'minute'
+        date.startOf('minute')
+      when 'hour'
+        date.startOf('hour')
+      when 'day'
+        date.startOf('day')
+      when 'week'
+        date.startOf('isoWeek')
+    for i in [0..intervalCount]
+      dates.push new Date(date.toDate())
+      switch intervalName
+        when 'second'
+          date.add(bucketSize, 'second')
+        when 'minute'
+          date.add(bucketSize, 'minute')
+        when 'hour'
+          date.add(bucketSize, 'hour')
+        when 'day'
+          date.add(bucketSize, 'day')
+        when 'week'
+          date.add(7, 'day')
+    return dates
+
+  getTripsListRealTimeQuery: () =>
+    startDate = new Date()
+    if @realtimeModeInterval.seconds
+      startDate.setMinutes(startDate.getMinutes()-10)
+    else if @realtimeModeInterval.minutes
+      startDate.setHours(startDate.getHours()-10)
+    else if @realtimeModeInterval.hours
+      startDate.setDate(startDate.getDate()-2)
+    else if @realtimeModeInterval.days
+      startDate.setMonth(startDate.getMonth()-1)
+    else if @realtimeModeInterval.weeks
+      startDate.setMonth(startDate.getMonth()-3)
+    date = new Date(startDate)
+
+    query = @getQuery(date, null)
+    query.byPickupLocation = @selectedStat.isPickupStat
+    return query
+
+  getTripsListTimeRangeQuery: (startDate, endDate) =>
+    query = @getQuery(startDate, endDate)
+    query.byPickupLocation = @selectedStat.isPickupStat
+    return query
+
+  getQuery: (startDate, endDate) =>
+    query = {}
+    if window.selectedGeographicZone?
+      query.center = {}
+      query.center.lat = window.selectedGeographicZone.getCenter().lat()
+      query.center.lng = window.selectedGeographicZone.getCenter().lng()
+      query.center.radius = window.selectedGeographicZone.getRadius() / 1609.344
+
+    nId = if @selectedNetwork != 'All' then @networks[@selectedNetwork].id else 'all'
+    fId = if @selectedProduct != 'All' then @products[@selectedProduct].id else 'all'
+    if @farmedInMode
+      query.originatingNetworkId = nId
+      query.originatingProductId = fId
+    if @farmedOutMode
+      query.servicingNetworkId = nId
+      query.servicingProductId = fId
+    if @localTripsMode
+      query.localNetworkId = nId
+      query.localProductId = fId
+    if startDate
+      query.startDate = startDate
+    if endDate
+      query.endDate = endDate
+    query.byStatus = false
+    query.byCreationTime = false
+
+    return query
+
+  queriesAreEqual: (query1, query2) =>
+    equal = true
+    if query1.byStatus != query2.byStatus
+      equal = false
+    if query1.byCreationTime != query2.byCreationTime
+      equal = false
+    if query1.byPickupLocation != query2.byPickupLocation
+      equal = false
+    if query1.originatingNetworkId != query2.originatingNetworkId
+      equal = false
+    if query1.servicingNetworkId != query2.servicingNetworkId
+      equal = false
+    if query2.localNetworkId != query2.localNetworkId
+      equal = false
+    if query1.originatingProductId != query2.originatingProductId
+      equal = false
+    if query1.servicingProductId != query2.servicingProductId
+      equal = false
+    if query2.localProductId != query2.localProductId
+      equal = false
+    if query1.center? and query2.center?
+      if query1.center.radius != query2.center.radius
+        equal = false
+      if query1.center.lat != query2.center.lat
+        equal = false
+      if query1.center.lng != query2.center.lng
+        equal = false
+    else if query1.center? or query2.center?
+      equal = false
+    if query1.interval != query2.interval
+      equal = false
+    if query1.bucketSize != query2.bucketSize
+      equal = false
+    if query1.startDate != query2.startDate
+      equal = false
+    if query1.endDate != query2.endDate
+      equal = false
+    return equal
+
+  countQueryResultToStats: (countByStatus, totalCount, dates) =>
+    for stat in @stats
+      stat.data = []
+    @YAxisMax = 0
+    countIndex = 0
+    totalsIndex = 0
+    nextCountDate = null
+    nextTotalDate = null
+    if countIndex < countByStatus.length
+      nextCountDate = moment(countByStatus[countIndex].interval, 'YYYY-MM-DD HH:mm:ss Z').utc()
+    if totalsIndex < totalCount.length
+      nextTotalDate = moment(totalCount[totalsIndex].interval, 'YYYY-MM-DD HH:mm:ss Z').utc()
+
+    for date in dates
+      date = moment(date).utc()
+      countRequested = 0
+      countComplete = 0
+      countCancelled = 0
+      countRejected = 0
+      countError = 0
+      latenessAverage = 0
+      latenessAverages = []
+
+      if nextCountDate? and date.isSame(nextCountDate)
+        while countIndex < countByStatus.length and date.isSame(nextCountDate)
+          count = countByStatus[countIndex]
+          switch count.status
+            when 'complete'
+              countComplete += count.count
+              latenessAverages.push(count.lateness_average || 0)
+            when 'rejected'
+              countRejected += count.count
+            when 'cancelled'
+              countCancelled += count.count
+            when 'error'
+              countError += count.count
+          if ++countIndex < countByStatus.length
+            nextCountDate = moment(countByStatus[countIndex].interval, 'YYYY-MM-DD HH:mm:ss Z').utc()
+
+      if nextTotalDate? and totalsIndex < totalCount.length and date.isSame(nextTotalDate)
+        countRequested = totalCount[totalsIndex].count
+        if ++totalsIndex < totalCount.length
+          nextTotalDate = moment(totalCount[totalsIndex].interval, 'YYYY-MM-DD HH:mm:ss Z').utc()
+
+      for avg in latenessAverages
+        latenessAverage += avg
+      if latenessAverage > 0
+        latenessAverage = (latenessAverage / latenessAverages.length)/1000/60
+      total = countComplete + countCancelled + countRejected + countError
+
+      if @percentageMode
+        countRequested = if countRequested > 0 then 100 else 0
+        countComplete = if countComplete > 0 then countComplete * 100 / total else 0
+        countCancelled = if countCancelled > 0 then countCancelled * 100 / total else 0
+        countRejected = if countRejected > 0 then countRejected * 100 / total else 0
+        countError = if countError > 0 then countError * 100 / total else 0
+
+      dateIndex = date.toDate().getTime()
+      @tripsRequested.data.push [dateIndex, countRequested]
+      @tripsCompleted.data.push [dateIndex, countComplete]
+      @tripsRejected.data.push [dateIndex, countRejected]
+      @tripsCancelled.data.push [dateIndex, countCancelled]
+      @tripsError.data.push [dateIndex, countError]
+      @serviceLateness.data.push [dateIndex, latenessAverage]
+    @stats
 
   loadMap: () =>
       mapOptions =
@@ -1053,21 +1110,17 @@ class TimeSeries
          updateRequest = window.timeSeries.createUpdateRequest({togglesUpdate: true, zoomUpdate: true})
          window.timeSeries.update(updateRequest)
 
-  loadSelectorFilters: (fleets) =>
-      for fleet in fleets.fleets
-          if fleet.partner.name == "TDispatch" or (fleet.partner.id.toLowerCase() != $('#getUserId').html() and $('#getUserRole').html() == 'partner')
-              continue
-          if not (fleet.partner.name of @networks)
-              @networks[fleet.partner.name] =  {id: fleet.partner.id, fleets: [fleet.name]}
-              if $('#getUserRole').html() is 'partner'
-                $('#networks-select').append('<option value="' + fleet.partner.name + '" selected="selected" >' + fleet.partner.name + '</option>')
-                @selectedNetwork = fleet.partner.name
-              else
-                $('#networks-select').append('<option value="' + fleet.partner.name + '">' + fleet.partner.name + '</option>')
-          else
-            @networks[fleet.partner.name].fleets.push fleet.name
-          @fleets[fleet.name] = fleet
-          $('#fleets-select').append('<option value="' + fleet.name + '">' + fleet.name + '</option>')
+  loadSelectorFilters: (networks) =>
+    for network in networks
+      @networks[network.client_id] = network
+      if $('#getUserRole').html() is 'network'
+        @selectedNetwork = network.client_id
+      else
+        $('#networks-select').append('<option value="' + network.client_id + '">' + network.full_name + '</option>')
+      for product in network.products
+        product.client_id = network.client_id
+        @products[product.name] = product
+        $('#products-select').append('<option value="' + product.name + '">' + product.name + '</option>')
 
   HomeControl: (controlDiv, map) =>
         controlDiv.style.padding = "5px"

@@ -12,14 +12,17 @@ o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
 c = (0...50).map { o[rand(o.length)] }.join
 token = c
 User.create!(
-    id: 'tripthru@tripthru.com',
+    client_id: 'tripthru@tripthru.com',
     name: 'tripthru',
-    fullName: 'TripThru',
+    full_name: 'TripThru',
     password_digest: BCrypt::Password.create('optimize'),
     email: 'tripthru@tripthru.com',
     token: token,
     role: 'admin',
     remember_token: '',
     created_at: Date.today,
-    updated_at: Date.today
+    updated_at: Date.today,
+    endpoint_type: '',
+    callback_url: '',
+    callback_token: ''
 )
