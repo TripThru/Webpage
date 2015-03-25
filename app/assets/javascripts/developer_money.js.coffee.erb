@@ -948,7 +948,6 @@ class InvoiceDisplay
   prepareTableData: (userBalanceByMonth, farmedOutInvoicesByDay, farmedInInvoicesByDay) =>
     invoicesByMonth = {}
     totalBalanceStartOfMonth = 10000
-    userBalanceByMonth[1] = {date_id: '2015-03-01'}
     for balance in userBalanceByMonth
       balanceDate = moment(balance.date_id).startOf('day')
       dateIndex = balanceDate.format('YYYY-MM-DD')

@@ -2,19 +2,74 @@ class TripthruController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def networks
-    users = User.select('id, client_id, full_name').where(:role => 'network')
+    users = User.where(:role => 'network')
     response = []
     users.each do |user|
       u = {}
       u[:id] = user[:id]
       u[:client_id] = user[:client_id]
       u[:full_name] = user[:full_name]
+      u[:must_accept_prescheduled] = user[:must_accept_prescheduled]
+      u[:must_accept_ondemand] = user[:must_accept_ondemand]
+      u[:must_accept_cash_payment] = user[:must_accept_cash_payment]
+      u[:must_accept_account_payment] = user[:must_accept_account_payment]
+      u[:must_accept_creditcard_payment] = user[:must_accept_creditcard_payment]
+      u[:min_rating] = user[:min_rating]
+      u[:routing_strategy] = user[:routing_strategy]
       u[:products] = Product.where(:user_id => user[:id])
       response << u
     end
 
     respond_to do |format|
       format.json { render text: response.to_json }
+    end
+  end
+
+  def get_partnerships
+    response = {
+        :network_partnerships => NetworkPartnerships.where(user_id: userId),
+        :product_partnerships => ProductPartnerships.where(user_id: userId)
+    }
+    respond_to do |format|
+      format.json { render text: response.to_json }
+    end
+  end
+
+  def update_partnership_rules
+    user = User.find_by(id: userId)
+    user.update(
+        must_accept_prescheduled: params[:must_accept_prescheduled],
+        must_accept_ondemand: params[:must_accept_ondemand],
+        must_accept_cash_payment: params[:must_accept_cash_payment],
+        must_accept_account_payment: params[:must_accept_account_payment],
+        must_accept_creditcard_payment: params[:must_accept_creditcard_payment],
+        min_rating: params[:min_rating],
+        routing_strategy: params[:routing_strategy]
+    )
+    NetworkPartnerships.where(user_id: userId).delete_all
+    ProductPartnerships.where(user_id: userId).delete_all
+    if params[:partner_network_ids] != nil and params[:partner_network_ids].size > 0
+      network_partnerships = []
+      params[:partner_network_ids].each { |id| network_partnerships << NetworkPartnerships.create(user_id: userId, network_id: id) }
+    end
+    if params[:partner_product_ids] != nil and params[:partner_product_ids].size > 0
+      product_partnerships = []
+      params[:partner_product_ids].each { |id| product_partnerships << ProductPartnerships.create(user_id: userId, product_id: id) }
+    end
+    respond_to do |format|
+      format.json { render text: '{"result_code": 200}' }
+    end
+  end
+
+  def get_partner_details
+    query = get_query_from_params(params)
+    res = Trip.select('service_level, count(*) as count')
+              .where('service_level >= 0')
+              .where(servicing_network_id: params[:servicing_network_id])
+              .where("created_at BETWEEN '#{query[:start_date]}' AND '#{query[:end_date]}'")
+              .group(:service_level)
+    respond_to do |format|
+      format.json { render text: res.to_json }
     end
   end
 
@@ -259,7 +314,8 @@ class TripthruController < ApplicationController
     if params[:local_product_id] != nil and params[:local_product_id] != 'all'
       query[:local_id] = Integer(params[:local_product_id])
     end
-    if roleUser == 'network'
+    '''
+    if roleUser == network
       if query[:service_id] == nil and query[:origin_id] == nil and query[:local_id] == nil
         query[:service_id] = userId
         query[:origin_id] = userId
@@ -275,6 +331,7 @@ class TripthruController < ApplicationController
         query[:service_id] = userId
       end
     end
+    '''
     if params[:start_date] != nil
       query[:start_date] = params[:start_date]
     end

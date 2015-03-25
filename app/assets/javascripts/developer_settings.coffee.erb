@@ -1,0 +1,415 @@
+class StatisticsDashboard
+
+  constructor: (@statisticsContainerId) ->
+    @servicePieChartId = 'network-service-pie-chart'
+    @driversRatingChartId = 'network-drivers-rating-chart'
+    @customersRatingChartId = 'network-customers-rating-chart'
+    @lastValues = {
+      serviceLevels: [-1, -1, -1, -1, -1]
+      customerRating: -1
+      driverRating: -1
+    }
+
+  init: () =>
+    $('#' + @statisticsContainerId).html('
+      <div id="dashboard-ratings-container">
+          <div  class="dashboard-statistics-rating" >
+              <div class="title">Drivers</div>
+              <div class="flexible-stars" data-isLocked="yes"
+               data-init="0"  id="' + @driversRatingChartId + '"></div>
+          </div>
+          <div  class="dashboard-statistics-rating" >
+              <div class="title">Customers</div>
+              <div class="flexible-stars" data-isLocked="yes"
+                  data-init="0"  id="' + @customersRatingChartId + '"></div>
+          </div>
+      </div>
+      <div  class="dashboard-statistics-pie-chart" >
+          <div class="title">Service level</div>
+          <div class="pie-chart" id="' + @servicePieChartId + '"></div>
+      </div>
+    ')
+
+    @serviceLevelsChart = Morris.Donut({
+      element: @servicePieChartId,
+      data: [
+        {label: "< 3 min.", value: 0}
+        {label: "< 5 min.", value: 0}
+        {label: "< 10 min.", value: 0}
+        {label: "< 15 min.", value: 0}
+        {label: "> 15 min.", value: 0}
+      ]
+      colors: ['#008000', '#6a7900', '#a46a00', '#d05300', '#ff0000']
+      resize: true
+    })
+
+  updateStats: (stats) =>
+    if stats?
+      @init()
+      serviceLevels = [0, 0, 0, 0, 0]
+      for stat in stats
+        serviceLevels[stat.service_level] = stat.count
+      @updateServiceLevels(serviceLevels)
+      @updateRatings(95, 80)
+
+  updateServiceLevels: (serviceLevels) =>
+    hasChanged = false
+    for i in [0..@lastValues.serviceLevels.length]
+      if @lastValues.serviceLevels[i] != serviceLevels[i]
+        hasChanged = true
+    if !hasChanged
+      return
+    @lastValues.serviceLevels = serviceLevels
+    @serviceLevelsChart.setData([
+      {label: "< 3 min.", value: serviceLevels[0]}
+      {label: "< 5 min.", value: serviceLevels[1]}
+      {label: "< 10 min.", value: serviceLevels[2]}
+      {label: "< 15 min.", value: serviceLevels[3]}
+      {label: "> 15 min.", value: serviceLevels[4]}
+    ])
+
+  updateRatings: (driversRating, customersRating) =>
+    driverRatingStars = driversRating/100*5
+    if driverRatingStars != @lastValues.driverRating
+      $('#' + @driversRatingChartId).html('')
+      $('#' + @driversRatingChartId).flexibleStars({
+        init: driverRatingStars
+      })
+    customerRatingStars = customersRating/100*5
+    if customerRatingStars != @lastValues.customerRating
+      $('#' + @customersRatingChartId).html('')
+      $('#' + @customersRatingChartId).flexibleStars({
+        init: customerRatingStars
+      })
+
+
+class CoverageMap
+
+  constructor: (@containerId) ->
+    @mapCanvas = null
+    @markers = []
+    @network = null
+
+  updateNetwork: (network) =>
+    @network = network
+    if !@mapCanvas?
+      @loadMap()
+    if network?
+      @updateCoverage()
+
+  loadMap: () =>
+    mapOptions =
+      zoom: 4
+      center: new google.maps.LatLng(37.09024, -95.712891)
+      mapTypeId: google.maps.MapTypeId.TERRAIN
+    @mapCanvas = new google.maps.Map(document.getElementById(@containerId), mapOptions)
+
+  clearMap: () =>
+    for marker in @markers
+      marker.setMap(null)
+    @markers = []
+
+  updateCoverage: () =>
+    @clearMap()
+    colors = [ "#006600", "#0D6B00", "#1A7000", "#267500", "#337A00", "#408000", "#4C8500", "#598A00", "#668F00", "#739400", "#809900", "#8C9E00", "#99A300", "#A6A800", "#B2AD00", "#BFB200", "#CCB800", "#D9BD00", "#E6C200", "#F2C700", "#FFCC00", "#FCC200", "#FAB800", "#F7AD00", "#F5A300", "#F29900", "#F08F00", "#ED8500", "#EB7A00", "#E87000", "#E66600", "#E35C00", "#E05200", "#DE4700", "#DB3D00", "#D93300", "#D62900", "#D41F00", "#D11400", "#CF0A00", "#CC0000" ]
+    driversTotal = [89,5,37,90,35,18,51,47,31,19,74,10,92,65,65,20,32]
+    driver = 0
+
+    citymap = {}
+    count = 0
+    locations = []
+    for product in @network.products
+      driver++
+      citymap[product.name]=
+        center: new google.maps.LatLng(product.coverage_lat, product.coverage_lng)
+        population: product.coverage_radius
+        drivers: driversTotal[driver]
+      if count < driversTotal[driver]
+        count = driversTotal[driver]
+      locations.push({ lat: product.coverage_lat, lng: product.coverage_lng })
+
+    steps = (colors.length / count)
+    cityCircle = undefined
+    for city of citymap
+      temporalVar = (steps * citymap[city].drivers)
+      colorNumber = Math.floor(temporalVar)
+      populationOptions =
+        strokeColor: if colorNumber > (colors.length - 1) then colors[colors.length - 1] else colors[colorNumber]
+        strokeOpacity: 0.8
+        strokeWeight: 2
+        fillColor: if colorNumber > (colors.length - 1) then colors[colors.length - 1] else colors[colorNumber]
+        fillOpacity: 0.35
+        map: @mapCanvas
+        center: citymap[city].center
+        radius: citymap[city].population * 1000
+      marker = new google.maps.Marker({
+        position: citymap[city].center
+        map: @mapCanvas
+        title: city
+      })
+      cityCircle = new google.maps.Circle(populationOptions)
+      @markers.push marker
+      @markers.push cityCircle
+    @setMapZoom(locations)
+
+  setMapZoom: (locations) =>
+    if locations.length == 1
+      @mapCanvas.panTo new google.maps.LatLng(locations[0].lat, locations[0].lng)
+      @mapCanvas.setZoom 4
+    else if locations.length > 0
+      geoCenter = @getCentrePointFromListOfCoordinates(locations)
+      bounds = new google.maps.LatLngBounds()
+      bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+      bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+      @mapCanvas.fitBounds(bounds)
+    else
+      @mapCanvas.panTo new google.maps.LatLng(37.09024, -95.712891)
+      @mapCanvas.setZoom 4
+
+  getCentrePointFromListOfCoordinates: (list) =>
+    minlat = null
+    minlng = null
+    maxlat = null
+    maxlng = null
+    for point in list
+      minlat = if !minlat? or point.lat < minlat then point.lat else minlat
+      maxlat = if !maxlat? or point.lat > maxlat then point.lat else maxlat
+      minlng = if !minlng? or point.lng < minlng then point.lng else minlng
+      maxlng = if !maxlng? or point.lng > maxlng then point.lng else maxlng
+
+    lat = maxlat - ((maxlat - minlat)/2)
+    lng = maxlng - ((maxlng - minlng)/2)
+    {lat: lat, lng: lng, maxlat: maxlat, maxlng: maxlng, minlat: minlat, minlng: minlng}
+
+class NetworkSettings
+
+  constructor: (@gateway, @listeners) ->
+    @gateway.getNetworks(@init)
+    @networksByClientId = {}
+    @userNetwork = null
+    @userProductsByName = {}
+    @selectedUserProduct = null
+    @selectedNetwork = null
+    @selectedNetworkProduct = null
+    @map = null
+    @markers = []
+    $('#product-selector').change =>
+      @selectedUserProduct = @userProductsByName[$('#product-selector option:selected').val()]
+      @updateProductRules(@selectedUserProduct)
+    $('#partner-settings-product-selector').change =>
+      productName = $('#partner-settings-product-selector option:selected').val()
+      for product in @selectedNetwork.products
+        if product.name == productName
+          @selectedNetworkProduct = product
+          @updatePartnershipProductRules(product)
+    $('#global-prescheduled').change =>
+      @userNetwork.must_accept_prescheduled = $('#global-prescheduled').is(":checked")
+      @updatePartnershipsStatuses()
+    $('#global-ondemand').change =>
+      @userNetwork.must_accept_ondemand = $('#global-ondemand').is(":checked")
+      @updatePartnershipsStatuses()
+    $('#global-cash').change =>
+      @userNetwork.must_accept_cash_payment = $('#global-cash').is(":checked")
+      @updatePartnershipsStatuses()
+    $('#global-account').change =>
+      @userNetwork.must_accept_account_payment = $('#global-account').is(":checked")
+      @updatePartnershipsStatuses()
+    $('#global-creditcard').change =>
+      @userNetwork.must_accept_creditcard_payment = $('#global-creditcard').is(":checked")
+      @updatePartnershipsStatuses()
+    $('#global-min-rating').bind('inputSuccess.flexibleStars', (e, value) =>
+      @userNetwork.min_rating = value
+    )
+    $('#global-routing-strategy').change =>
+      @userNetwork.routing_strategy = $('#global-routing-strategy option:selected').val()
+    $('#submit-partnership-rules').click =>
+      @savePartnershipRules(() =>
+
+      )
+
+  init: (networks) =>
+    @gateway.getPartnerships((partnerships) =>
+      networkPartnershipsById = {}
+      productPartnershipsById = {}
+      for np in partnerships.network_partnerships
+        networkPartnershipsById[np.network_id] = np
+      for pp in partnerships.product_partnerships
+        productPartnershipsById[pp.product_id] = pp
+      networksList = document.createElement('div')
+      networksList.className = 'list-group'
+      for network in networks
+        if $('#user_client_id').val() != network.client_id
+          @networksByClientId[network.client_id] = network
+          checked = if networkPartnershipsById.hasOwnProperty(network.id) then 'checked' else ''
+          networksList.innerHTML += '<a href="#" id="' + network.id + '" class="list-group-item" data-toggle="collapse" data-target="#' + network.id + '-products">
+                                       <span data-container="body" data-toggle="partner-popover" data-content="Matches your rules" class="partner-status ok"></span>
+                                       <span data-container="body" class="glyphicon glyphicon-eye-open view-partner" data-toggle="modal" data-target="#partner-settings"></span>
+                                       <div id="select-all"><span data-container="body" data-toggle="partner-popover" data-content="Select all products" class="glyphicon glyphicon-check select-all-partner-products grey" data-toggle="modal" data-target="#partner-settings"></span></div>
+                                       <input type="checkbox" ' + checked + ' >' + network.full_name + '
+                                    </a>'
+          networkProducts = document.createElement('div')
+          networkProducts.className = 'collapse'
+          networkProducts.setAttribute('id', network.id + '-products')
+          for product in network.products
+            checked = if productPartnershipsById.hasOwnProperty(product.id) then 'checked' else ''
+            networkProducts.innerHTML += '<a id="' + network.id + '-' + product.id + '" class="list-group-item small">
+                                             <input type="checkbox" ' + checked + ' >' + product.name + '
+                                          </a>'
+          networksList.appendChild(networkProducts)
+          do(network) =>
+            $('body').on('click', '#' + network.id + ' input[type="checkbox"]', (e) =>
+              e.stopPropagation()
+            )
+            $('body').on('click', '#' + network.id + ' #select-all', (e) =>
+              e.stopPropagation()
+              checkAll = $('#' + network.id + ' #select-all .glyphicon').hasClass('grey')
+              for product in network.products
+                $('#' + network.id + '-' + product.id + ' input[type="checkbox"]').prop('checked', checkAll)
+              $('#' + network.id + ' #select-all .glyphicon').toggleClass('grey')
+            )
+
+        else
+          @userNetwork = network
+          for product in network.products
+            @userProductsByName[product.name] = product
+            $('#product-selector').append('<option value="' + product.name + '" selected="selected">' + product.name + '</option>')
+          @selectedUserProduct = network.products[0]
+          @updateProductRules(@selectedUserProduct)
+          $('#global-prescheduled').prop('checked', network.must_accept_prescheduled)
+          $('#global-ondemand').prop('checked', network.must_accept_ondemand)
+          $('#global-cash').prop('checked', network.must_accept_cash_payment)
+          $('#global-account').prop('checked', network.must_accept_account_payment)
+          $('#global-creditcard').prop('checked', network.must_accept_creditcard_payment)
+          $('#global-min-rating').flexibleStars({
+            init: network.min_rating
+          })
+          $('#global-min-rating').addClass('flexible-stars')
+
+
+      $('#networks-panel').html(networksList)
+      @updatePartnershipsStatuses()
+      for id, network of @networksByClientId
+        do (network) =>
+          $('body').on('click', '#' + network.id, () =>
+            $('#partner-settings-stats-panel').html('<%= image_tag('loading.gif', height: 48, width: 48) %>')
+            $('body').off('shown.bs.modal', '#partner-settings').on('shown.bs.modal', '#partner-settings', () =>
+                @selectedNetwork = network
+                @selectedNetworkProduct = network.products[0]
+                @loadPartner(network)
+            )
+          )
+    )
+
+  savePartnershipRules: (callback) =>
+    updateRequest = {
+      must_accept_prescheduled: @userNetwork.must_accept_prescheduled
+      must_accept_ondemand: @userNetwork.must_accept_ondemand
+      must_accept_cash_payment: @userNetwork.must_accept_cash_payment
+      must_accept_account_payment: @userNetwork.must_accept_account_payment
+      must_accept_creditcard_payment: @userNetwork.must_accept_creditcard_payment
+      min_rating: @userNetwork.min_rating
+      routing_strategy: @userNetwork.routing_strategy
+      partner_network_ids: []
+      partner_product_ids: []
+    }
+    for id, network of @networksByClientId
+      if $('#' + network.id + ' input[type="checkbox"]').is(":checked")
+        updateRequest.partner_network_ids.push(network.id)
+      for product in network.products
+        if $('#' + network.id + '-' + product.id + ' input[type="checkbox"]').is(":checked")
+          updateRequest.partner_product_ids.push(product.id)
+    @gateway.updatePartnershipRules(updateRequest, callback)
+
+  getPopover: (network, type) =>
+    rulesMatch = true
+    for product in network.products
+      if @userNetwork.must_accept_prescheduled and not product.accepts_prescheduled
+        rulesMatch = false
+      if @userNetwork.must_accept_ondemand and not product.accepts_ondemand
+        rulesMatch = false
+      if @userNetwork.must_accept_cash_payment and not product.accepts_cash_payment
+        rulesMatch = false
+      if @userNetwork.must_accept_account_payment and not product.accepts_account_payment
+        rulesMatch = false
+      if @userNetwork.must_accept_creditcard_payment and not product.accepts_creditcard_payment
+        rulesMatch = false
+      if not rulesMatch
+        break
+    if rulesMatch
+      tag = "You're partnered with this network"
+      tagClass = type + '-status ok'
+    else
+      tag = "One or more products of this network don't match your rules"
+      tagClass = type + '-status warning'
+    return '<span data-container="body" data-toggle="' + type + '-popover" data-content="' + tag + '" class="' + tagClass + '"></span>'
+
+  updatePartnershipsStatuses: () =>
+    for id, network of @networksByClientId
+      $('#' + network.id + ' .partner-status').replaceWith(@getPopover(network, 'partner'))
+    $('[data-toggle="partner-popover"]').popover({
+      trigger: 'hover',
+      'placement': 'top'
+    })
+
+  updateProductRules: (product) =>
+    $('#product-prescheduled').prop('checked', product.accepts_prescheduled)
+    $('#product-ondemand').prop('checked', product.accepts_ondemand)
+    $('#product-cash').prop('checked', product.accepts_cash_payment)
+    $('#product-account').prop('checked', product.accepts_account_payment)
+    $('#product-creditcard').prop('checked', product.accepts_creditcard_payment)
+        
+  loadPartner: (network) =>
+    $('#partner-settings-title').html(network.full_name + ' partnership details ' + @getPopover(network, 'partner-settings'))
+    $('[data-toggle="partner-settings-popover"]').popover({
+      trigger: 'hover',
+      'placement': 'top'
+    });
+    for product in network.products
+      $('#partner-settings-product-selector').append('<option value="' + product.name + '" selected="selected">' + product.name + '</option>')
+
+    @updatePartnershipProductRules(network.products[0])
+    @updateNetwork(network)
+    @updateStats(network)
+
+  updatePartnershipProductRules: (product) =>
+    $('#partner-settings-prescheduled').prop('checked', product.accepts_prescheduled)
+    $('#partner-settings-ondemand').prop('checked', product.accepts_ondemand)
+    $('#partner-settings-cash').prop('checked', product.accepts_cash_payment)
+    $('#partner-settings-account').prop('checked', product.accepts_account_payment)
+    $('#partner-settings-creditcard').prop('checked', product.accepts_creditcard_payment)
+
+  updateNetwork: (network) =>
+    for listener in @listeners
+      if typeof listener.updateNetwork is 'function'
+        try
+          listener.updateNetwork(network)
+        catch error
+          console.error listener.toString() + ' update network failed: ' + error
+
+  updateStats: (network) =>
+    query = {
+      startDate: moment().subtract(1, 'day').startOf('day'),
+      endDate: moment(),
+      servicingNetworkId: network.id
+    }
+    @gateway.getPartnerDetails(query, (invoice) =>
+      for listener in @listeners
+        if typeof listener.updateStats is 'function'
+          try
+            listener.updateStats(invoice)
+          catch error
+            console.error listener + ' updateInvoiceStats failed: ' + error
+    )
+
+
+
+$('.developer.settings').ready ->
+  clearInterval(window.tripthruinterval)
+
+  networkSettings = new NetworkSettings(
+    new TripThru($('#access_token').val()),
+    [
+      new CoverageMap('partner-settings-map-canvas')
+      new StatisticsDashboard('partner-settings-stats-panel')
+    ]
+  )

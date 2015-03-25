@@ -1,3 +1,223 @@
-<div class="page-header">
-   <h3>Settings</h3>
+<div id="settings">
+  <div class="page-header">
+     <h3>Settings</h3>
+  </div>
+  <div class="container">
+    <div class="col-md-3">
+      <div class="panel panel-default settings-panel">
+        <div class="panel-heading">My settings</div>
+        <div class="panel-body">
+          <form>
+            <select id='product-selector' class="selectpicker">
+
+            </select>
+            <div class="checkbox">
+              <label>
+                <input id="product-prescheduled" type="checkbox"> Accept prescheduled trips
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input id="product-ondemand" type="checkbox"> Accept on-demand trips
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input id="product-cash" type="checkbox"> Accept cash payments
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input id="product-account" type="checkbox"> Accept account payments
+              </label>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input id="product-creditcard" type="checkbox"> Accept creditcard payments
+              </label>
+            </div>
+          </form>
+          <div class="text-right submit-settings">
+            <button type="submit" class="btn btn-default" data-toggle="modal" data-target="#confirm-product-settings">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="panel panel-default settings-panel">
+        <div class="panel-heading">Partnership rules</div>
+        <div class="panel-body" id="partnership-rules-panel">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="panel panel-default">
+                <div class="panel-heading">Global</div>
+                <div class="panel-body" id="global-rules-panel">
+                  <form>
+                    <div class="checkbox">
+                      <label>
+                        <input id="global-prescheduled" type="checkbox"> Must accept prescheduled trips
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input id="global-ondemand" type="checkbox"> Must accept on-demand trips
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input id="global-cash" type="checkbox"> Must accept cash payments
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input id="global-account" type="checkbox"> Must accept account payments
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input id="global-creditcard" type="checkbox"> Must accept creditcard payments
+                      </label>
+                    </div>
+                    <div>
+                      <span class="rule-label">Min. rating</span> <div id="global-min-rating" data-doRate="#global-min-rating-input"></div>
+                    </div>
+                    <div>
+                      <span class="rule-label">Routing strategy</span> <select id='global-routing-strategy' class="selectpicker">
+                        <option value="price" selected="selected">Price</option>
+                        <option value="eta">ETA</option>
+                        <option value="rating">Rating</option>
+                      </select>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="panel panel-default">
+                <div class="panel-heading">Networks</div>
+                <div class="panel-body" id="networks-panel">
+                  <%= image_tag('loading.gif', height: 48, width: 48) %>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="text-right submit-settings">
+              <button type="submit" class="btn btn-default" data-toggle="modal" data-target="#confirm-partnership-rules">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="partner-settings" tabindex="-1" role="dialog" aria-labelledby="partner-settings" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="partner-settings-title"></h4>
+          </div>
+          <div class="modal-body" id="partner-settings-content">
+            <div class="col-md-3">
+              <div class="panel panel-default">
+                <div class="panel-heading">Rules</div>
+                <div class="panel-body" id="partner-settings-rules-panel">
+                  <form>
+                    <select id='partner-settings-product-selector' class="selectpicker">
+
+                    </select>
+                    <div class="checkbox">
+                      <label>
+                        <input disabled readonly id="partner-settings-prescheduled" type="checkbox"> Accepts prescheduled trips
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input disabled readonly id="partner-settings-ondemand" type="checkbox"> Accepts on-demand trips
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input disabled readonly id="partner-settings-cash" type="checkbox"> Accepts cash payments
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input disabled readonly id="partner-settings-account" type="checkbox"> Accepts account payments
+                      </label>
+                    </div>
+                    <div class="checkbox">
+                      <label>
+                        <input disabled readonly id="partner-settings-creditcard" type="checkbox"> Accepts creditcard payments
+                      </label>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="panel panel-default" id="map-panel">
+                <div class="panel-heading">Coverage</div>
+                <div class="panel-body" id="map-panel-body">
+                  <div id="partner-settings-map-canvas"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="panel panel-default">
+                <div class="panel-heading">Stats</div>
+                <div class="panel-body" id="partner-settings-stats-panel">
+                  <%= image_tag('loading.gif', height: 48, width: 48) %>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade confirmation-dialog" id="confirm-partnership-rules" tabindex="-1" role="dialog" aria-labelledby="confirm-partnership-rules-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="confirm-partnership-rules-label">Confirm changes</h4>
+          </div>
+
+          <div class="modal-body">
+            <p>You are about to modify your partnership rules.</p>
+            <p>Do you want to proceed?</p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success" id="submit-partnership-rules" data-dismiss="modal">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade confirmation-dialog" id="confirm-product-settings" tabindex="-1" role="dialog" aria-labelledby="confirm-product-settings-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="confirm-product-settings-label">Confirm changes</h4>
+          </div>
+
+          <div class="modal-body">
+            <p>You are about to modify your product's settings.</p>
+            <p>Do you want to proceed?</p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success" id="submit-product-settings" data-dismiss="modal">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="global-min-rating-input"/>
+  </div>
 </div>

@@ -44,6 +44,9 @@ Rails.application.routes.draw do
   get '/user_balance', to: 'tripthru#user_balance'
   get '/trip_info', to: 'tripthru#trip_info'
   get '/networks', to: 'tripthru#networks'
+  post '/partnership_rules', to:'tripthru#update_partnership_rules'
+  get '/partnerships', to: 'tripthru#get_partnerships'
+  get '/partner_details', to: 'tripthru#get_partner_details'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

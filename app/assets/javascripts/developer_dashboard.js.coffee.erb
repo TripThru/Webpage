@@ -1239,8 +1239,8 @@ class DashboardManager
           if data.driver? then data.driver.name else ''
           driverLocation
           driverInitialLocation
-          data.routeEnrouteLocation
-          data.routePickupLocation
+          if data.routeEnrouteLocation then data.routeEnrouteLocation else (driverInitialLocation || driverLocation)
+          data.pickupLocation
         )
       @activeTripCompleted = data.status == 'completed' or data.status == 'cancelled'
     for listener in @listeners

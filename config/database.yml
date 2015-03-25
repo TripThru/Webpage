@@ -5,6 +5,8 @@ default: &default
   database: tripthru
   pool: 5
   timeout: 5000
+  username: vagrant
+  password: vagrant
 #
 development:
   <<: *default

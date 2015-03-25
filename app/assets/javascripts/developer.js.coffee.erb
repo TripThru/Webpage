@@ -123,6 +123,21 @@ class window.TripThru
       _callback(null)
     )
 
+  getPartnerDetails: (filter, _callback) =>
+    $.get(@dbUrl + 'partner_details?' + @filterToQuery(filter), (data) =>
+      _callback(data)
+    )
+
+  getPartnerships: (_callback) =>
+    $.get(@dbUrl + 'partnerships', (data) =>
+      _callback(data)
+    )
+
+  updatePartnershipRules: (request, _callback) =>
+    $.post(@dbUrl + 'partnership_rules', request, (data) =>
+      _callback(data)
+    )
+
   filterToQuery: (filter) =>
     query = ''
     query += 'by_status=' + if !filter.byStatus? or filter.byStatus then 'true' else 'false'

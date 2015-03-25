@@ -75,6 +75,13 @@ ActiveRecord::Schema.define(version: 20140511085515) do
     t.string   "endpoint_type"
     t.string   "callback_url"
     t.string   "callback_token"
+    t.boolean  "must_accept_prescheduled"
+    t.boolean  "must_accept_ondemand"
+    t.boolean  "must_accept_cash_payments"
+    t.boolean  "must_accept_account_payments"
+    t.boolean  "must_accept_creditcard_payments"
+    t.integer  "min_rating"
+    t.string   "routing_strategy"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -108,6 +115,16 @@ ActiveRecord::Schema.define(version: 20140511085515) do
     t.boolean   "confirmed"
     t.datetime  "requested_at"
     t.datetime  "confirmed_at"
+  end
+
+  create table "network_partnerships", force: true do |t|
+    t.integer   "user_id"
+    t.integer   "network_id"
+  end
+
+  create_table "product_partnerships", force: true do |t|
+    t.integer   "user_id"
+    t.integer   "product_id"
   end
 
 end

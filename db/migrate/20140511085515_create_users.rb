@@ -12,6 +12,11 @@ class CreateUsers < ActiveRecord::Migration
       t.string :endpoint_type
       t.string :callback_url
       t.string :callback_token
+      t.boolean :must_accept_prescheduled
+      t.boolean :must_accept_ondemand
+      t.boolean :must_accept_cash_payments
+      t.boolean :must_accept_account_payments
+      t.boolean :must_accept_creditcard_payments
       t.timestamps
     end
 
