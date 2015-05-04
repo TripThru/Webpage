@@ -3,6 +3,7 @@
 # You can use CoffeeScript in this file: http://coffeescript.org/
 
 $('.static_pages.home').ready ->
+    reset()
     $('.flicker-home').height($(window).height()*0.9);
     $('.flicker-home').flicker({
         auto_flick_delay: 8

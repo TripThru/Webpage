@@ -343,7 +343,7 @@ class NetworksManager
 
 
 $('.developer.networks').ready ->
-
+    reset()
     networksManager = new NetworksManager(
         new TripThru($('#access_token').val())
         'network-coverage-map'
@@ -352,7 +352,6 @@ $('.developer.networks').ready ->
         'network-info'
         'network-select'
     )
-    clearInterval(window.tripthruinterval)
 
     update = ->
         networksManager.update()

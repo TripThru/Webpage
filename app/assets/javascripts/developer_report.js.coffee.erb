@@ -1,5 +1,5 @@
 $('.developer.report').ready ->
-    clearInterval(window.tripthruinterval)
+    reset()
     gateway = new TripThru($('#access_token').val())
     query = {}
     lastHour = new Date();

@@ -404,7 +404,7 @@ class NetworkSettings
 
 
 $('.developer.settings').ready ->
-  clearInterval(window.tripthruinterval)
+  reset()
 
   networkSettings = new NetworkSettings(
     new TripThru($('#access_token').val()),

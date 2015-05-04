@@ -814,7 +814,7 @@ class DashboardManager
       for i in [0...data.length]
         trip = data[i]
         if trip.trip_id.indexOf('web') > -1
-          data.move(i, data.length-1)
+          data = moveArray(data, i, data.length-1)
 
       for newTrip in data
         tripsIds.push newTrip.trip_id
@@ -1050,7 +1050,7 @@ class InvoiceDisplay
 
 
 $('.developer.money').ready ->
-
+  reset()
   tripthru = new TripThru($('#access_token').val())
   dashboardManager = new DashboardManager(
       tripthru
@@ -1066,6 +1066,4 @@ $('.developer.money').ready ->
       ]
   )
   new InvoiceDisplay(tripthru, dashboardManager, 'invoice-summary-table')
-  clearInterval(window.tripthruinterval)
-
   return

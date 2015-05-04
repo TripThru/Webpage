@@ -1,23 +1,294 @@
-<div id="swagger">
-<div id='body' class="swagger-ui-wrap">
-    <p>Use the GET /partners service to get a list of simulated partners and their coverage areas.</p>
+<div id="api">
+  <div id='body' class="swagger-ui-wrap">
+    <p>Use the GET /network service to get a list of simulated partners and their coverage areas.</p>
     <p>Once you know the areas covered by our partners, you can dispatch pickup requests to them via the POST /dispatch service.</p>
-    <p>Dispatching to an area not covered by any of our partners will result in a reject. Alternatively, you can get a list of quotes via</p>
-    <p>GET /quotes, and then dispatch to the partner of your choice.  After dispatching, you can get the status of your trip via GET /tripstatus.</p>
-    <p>To get a list of all active trips use GET /trips.</p>
+    <p>Dispatching to an area not covered by any of our partners will result in a reject response. Alternatively, you can get a list of quotes via</p>
+    <p>GET /quote, and then dispatch to the partner of your choice.  After dispatching, you can get the status of your trip via GET /tripstatus.</p>
     <br/>
-    <p><b>1. Enter your api_key</b></p>
-    <form id='api_selector'>
-      <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text" /></div>
-    </form>
-    <p>2. Click on the path to get the API details</p>
-    <p>3. Enter in the API parameters and press TryIt</p>
-    <p>4. The test client will return the Json response</p>
-    <p>* We will soon be providing API wrappers in most major languages *</p>
+    <p>1. Click on the path to get the API details</p>
+    <p>2. Enter in the API parameters and press Try it out!</p>
+    <p>3. The test client will return the Json response</p>
+    <br/>
+    <p>Connection status: <span id="socket-status">Connecting...</span></p>
   </div>
-  <div id="message-bar" class="swagger-ui-wrap">
-    &nbsp;
+  <div class="col-md-8" id="swagger-panel">
+    <div class="panel panel-default">
+      <div class="panel-heading text-center">
+        <span class="panel-title">Outgoing requests</span>
+      </div>
+      <div class="panel-body">
+        <div id="message-bar" class="swagger-ui-wrap">
+          &nbsp;
+        </div>
+        <div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+      </div>
+    </div>
   </div>
-  <div id="swagger-ui-container" class="swagger-ui-wrap">
-</div>
+  <div class="col-md-4">
+    <div class="panel panel-default" id="incoming-panel">
+      <div class="panel-heading text-center" id="incoming-panel-header">
+        <span class="panel-title">Incoming requests</span><span id="incoming-socket-status"></span>
+      </div>
+      <div class="panel-body" id="incoming-panel-list">
+        <ul class="endpoints" id="network_endpoint_list" style="">
+          <li class="endpoint">
+            <ul class="operations">
+              <li class="post operation" id="incoming-set-network">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-set-network-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-set-network-content">post</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-set-network-content">/network/{id}</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-set-network-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-set-network-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+              <li class="get operation" id="incoming-get-network">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-get-network-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-get-network-content">get</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-get-network-content">/network/{id}</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-get-network-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-get-network-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+              <li class="post operation" id="incoming-dispatch-trip">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-dispatch-trip-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-dispatch-trip-content">post</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-dispatch-trip-content">/trip/{id}</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-dispatch-trip-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-dispatch-trip-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+              <li class="put operation" id="incoming-update-trip-status">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-update-trip-status-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-update-trip-status-content">put</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-update-trip-status-content">/tripstatus/{id}</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-update-trip-status-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-update-trip-status-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+              <li class="get operation" id="incoming-get-trip-status">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-get-trip-status-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-get-trip-status-content">get</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-get-trip-status-content">/tripstatus/{id}</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-get-trip-status-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-get-trip-status-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+              <li class="get operation" id="incoming-get-quote">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-get-quote-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-get-quote-content">get</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-get-quote-content">/quote</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-get-quote-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-get-quote-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+              <li class="get operation" id="incoming-get-drivers">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-get-drivers-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-get-drivers-content">get</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-get-drivers-content">/drivers</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-get-drivers-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-get-drivers-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+              <li class="post operation" id="incoming-request-payment">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-request-payment-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-request-payment-content">post</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-request-payment-content">/payment/{id}</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-request-payment-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-request-payment-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+              <li class="put operation" id="incoming-accept-payment">
+                <div class="heading incoming-request-heading" data-toggle="collapse" data-target="#incoming-accept-payment-content">
+                  <h3>
+                    <span class="http_method">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-accept-payment-content">put</a>
+                    </span>
+                    <span class="path">
+                    <a href="#" data-toggle="collapse" data-target="#incoming-accept-payment-content">/payment/{id}</a>
+                    </span>
+                  </h3>
+                  <ul class="options">
+                    <li>
+                      <a href="#" data-toggle="collapse" data-target="#incoming-accept-payment-content"></a>
+                    </li>
+                  </ul>
+                  <span class="badge incoming-request-counter">0</span>
+                </div>
+                <div class="content collapse" id="incoming-accept-payment-content">
+                  <div class="response">
+                    <div class="response_header">
+                      <h4>Request Body</h4>
+                      <a href="#" class="accept disabled">Accept</a>
+                      <a href="#" class="reject disabled">Reject</a>
+                    </div>
+                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>

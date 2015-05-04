@@ -10,7 +10,17 @@
 // Read Sprockets README (https://github.com/sstephenson/sprockets#sprockets-directives) for details
 // about supported directives.
 //
+//= require swagger/shred.bundle
 //= require jquery
+//= require swagger/jquery.slideto.min
+//= require swagger/jquery.wiggle.min
+//= require swagger/jquery.ba-bbq.min
+//= require swagger/handlebars-1.0.0
+//= require swagger/underscore-min
+//= require swagger/backbone-min
+//= require swagger/swagger
+//= require swagger/swagger-ui
+//= require swagger/highlight.7.3.pack
 //= require jquery.turbolinks
 //= require jquery_ujs
 //= require turbolinks
@@ -23,12 +33,6 @@
 //= require json.formatter.js
 //= require morris.min
 //= require jquery.flexible.stars.js
-//= require swagger/underscore-min.js
-//= require swagger/backbone-min.js
-//= require swagger/handlebars-1.0.rc.1.js
-//= require swagger/highlight.7.3.pack.js
-//= require swagger/swagger.js
-//= require swagger/swagger-ui.min.js
 //= require moment
 //= require bootstrap-datetimepicker.min
 //= require highcharts
@@ -37,23 +41,31 @@
 //= require modernizr-custom-v2.7.1.min.js
 //= require jquery.visible.min.js
 //= require jstz-1.0.4.min
+//= require socket.io-1.3.5
 //= require_tree .
 
-Array.prototype.move = function (old_index, new_index) {
+function reset() {
+  clearInterval(window.tripthruinterval);
+  if(window.socket) {
+    window.socket.disconnect();
+  }
+}
+
+function moveArray(array, old_index, new_index) {
   while (old_index < 0) {
-    old_index += this.length;
+    old_index += array.length;
   }
   while (new_index < 0) {
-    new_index += this.length;
+    new_index += array.length;
   }
-  if (new_index >= this.length) {
-    var k = new_index - this.length;
+  if (new_index >= array.length) {
+    var k = new_index - array.length;
     while ((k--) + 1) {
-      this.push(undefined);
+      array.push(undefined);
     }
   }
-  this.splice(new_index, 0, this.splice(old_index, 1)[0]);
-  return this; // for testing purposes
+  array.splice(new_index, 0, array.splice(old_index, 1)[0]);
+  return array;
 };
 
 Date.prototype.getDayOfYear = function() {

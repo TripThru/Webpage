@@ -1147,7 +1147,7 @@ class DashboardManager
       for i in [0...data.trips.length]
         trip = data.trips[i]
         if trip.id.indexOf('web') > -1
-          data.trips.move(i, data.trips.length-1)
+          data.trips = moveArray(data.trips, i, data.trips.length-1)
 
       for newTrip in data.trips
         tripsIds.push newTrip.id
@@ -1282,7 +1282,7 @@ $(document).ready(function(){
 `
 
 $('.developer.dashboard').ready ->
-
+  reset()
   dashboardManager = new DashboardManager(
     new TripThru($('#access_token').val())
     'trip-status-selector'
@@ -1294,7 +1294,6 @@ $('.developer.dashboard').ready ->
       new ActivityLog('activity-log')
     ]
   )
-  clearInterval(window.tripthruinterval)
   update = ->
     dashboardManager.update()
 
