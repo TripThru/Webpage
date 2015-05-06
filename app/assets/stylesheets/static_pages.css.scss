@@ -136,6 +136,10 @@
       margin-bottom: 50px;
     }
 
+    .container {
+      width: 100%;
+    }
+
     .featurette-item {
       text-align: center;
       img {
@@ -156,7 +160,10 @@
       }
       #success-easytaxi {
         height: 70px;
-        margin-top: 5px;
+        margin: 5px 0 0 5px;
+      }
+      #success-hailo {
+        height: 85px;
       }
     }
     #tripthru-stats {
@@ -267,7 +274,7 @@
         }
         #success-easytaxi {
           height: 85px;
-          margin-top: 0px;
+          margin: 0 0 0 45px;
         }
       }
       #tripthru-stats {
