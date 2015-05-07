@@ -90,19 +90,21 @@ class SocketIOClient
   resetIncomingRequestPanel: (type, interval) =>
     clearInterval(interval)
     $('#incoming-' + type + ' .heading .incoming-request-counter').toggleClass('counting')
-    $('body').off('click', '#incoming-' + type + '-content .response .response_header .accept')
-    $('body').off('click', '#incoming-' + type + '-content .response .response_header .reject')
-    $('#incoming-' + type + '-content .response .response_header .accept').toggleClass('disabled')
-    $('#incoming-' + type + '-content .response .response_header .reject').toggleClass('disabled')
+    $('body').off('click', '#incoming-' + type + '-content .request .request_header .accept')
+    $('body').off('click', '#incoming-' + type + '-content .request .request_header .reject')
+    $('#incoming-' + type + '-content .request .request_header .accept').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .reject').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_body .json').html('No active request')
     $('#incoming-' + type + '-content .response .response_body .json').html('No active request')
     $('#incoming-' + type + ' .heading .incoming-request-counter').html('0')
       
   handleRequest: (type, request, acceptResponse, rejectResponse, responseCallback) =>
-    $('#incoming-' + type + '-content .response .response_body .json').html('<code class="language-javascript">' + FormatJSON(request) + '</code>')
+    $('#incoming-' + type + '-content .request .request_body .json').html('<code class="language-javascript">' + FormatJSON(request) + '</code>')
+    $('#incoming-' + type + '-content .response .response_body .json').html('<code class="language-javascript">' + FormatJSON(acceptResponse) + '</code>')
     Prism.highlightAll()
     $('#incoming-' + type + ' .heading .incoming-request-counter').toggleClass('counting')
-    $('#incoming-' + type + '-content .response .response_header .accept').toggleClass('disabled')
-    $('#incoming-' + type + '-content .response .response_header .reject').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .accept').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .reject').toggleClass('disabled')
 
     responded = false
     counter = 7
@@ -117,12 +119,12 @@ class SocketIOClient
           $('#incoming-' + type + ' .heading .incoming-request-counter').html(counter.toString())
     , 1000)
 
-    $('body').on('click', '#incoming-' + type + '-content .response .response_header .accept', () =>
+    $('body').on('click', '#incoming-' + type + '-content .request .request_header .accept', () =>
       responded = true
       @resetIncomingRequestPanel(type, interval)
       responseCallback(acceptResponse)
     )
-    $('body').on('click', '#incoming-' + type + '-content .response .response_header .reject', () =>
+    $('body').on('click', '#incoming-' + type + '-content .request .request_header .reject', () =>
       responded = true
       @resetIncomingRequestPanel(type, interval)
       responseCallback(rejectResponse)

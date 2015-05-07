@@ -2,12 +2,12 @@
   <div id='body' class="swagger-ui-wrap">
     <p>Use the GET /network service to get a list of simulated partners and their coverage areas.</p>
     <p>Once you know the areas covered by our partners, you can dispatch pickup requests to them via the POST /dispatch service.</p>
-    <p>Dispatching to an area not covered by any of our partners will result in a reject response. Alternatively, you can get a list of quotes via</p>
+    <p>Dispatching to an area not covered by any of our partners will result in a reject request. Alternatively, you can get a list of quotes via</p>
     <p>GET /quote, and then dispatch to the partner of your choice.  After dispatching, you can get the status of your trip via GET /tripstatus.</p>
     <br/>
     <p>1. Click on the path to get the API details</p>
     <p>2. Enter in the API parameters and press Try it out!</p>
-    <p>3. The test client will return the Json response</p>
+    <p>3. The test client will return the Json request</p>
     <br/>
     <p>Connection status: <span id="socket-status">Connecting...</span></p>
   </div>
@@ -51,13 +51,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-set-network-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>
@@ -79,13 +85,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-get-network-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>
@@ -107,13 +119,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-dispatch-trip-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>
@@ -135,13 +153,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-update-trip-status-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>
@@ -163,13 +187,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-get-trip-status-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>
@@ -191,13 +221,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-get-quote-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>
@@ -219,13 +255,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-get-drivers-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>
@@ -247,13 +289,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-request-payment-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>
@@ -275,13 +323,19 @@
                   <span class="badge incoming-request-counter">0</span>
                 </div>
                 <div class="content collapse" id="incoming-accept-payment-content">
-                  <div class="response">
-                    <div class="response_header">
+                  <div class="request json_block">
+                    <div class="request_header json_block_header">
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
                     </div>
-                    <div class="block response_body json"><pre class="json">No active request</pre></div>
+                    <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
+                  </div>
+                  <div class="response json_block">
+                    <div class="response_header json_block_header">
+                      <h4>Response Body</h4>
+                    </div>
+                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
                 </div>
               </li>

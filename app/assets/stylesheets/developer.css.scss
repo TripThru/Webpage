@@ -4098,14 +4098,14 @@
         padding-left: 0;
       }
 
-      ul.endpoints li.endpoint ul.operations li.operation div.content div.response div.block pre {
+      ul.endpoints li.endpoint ul.operations li.operation div.content div.json_block div.block pre {
         font-family: "Anonymous Pro", "Menlo", "Consolas", "Bitstream Vera Sans Mono", "Courier New", monospace;
         padding: 10px;
         font-size: 12px;
         max-height: 400px;
         overflow-y: auto;
       }
-      ul.endpoints li.endpoint ul.operations li.operation div.content div.response div.response_header a {
+      ul.endpoints li.endpoint ul.operations li.operation div.content div.json_block div.json_block_header a {
         float: right;
         display: inline-block;
         margin: 7px 3px;
@@ -4118,17 +4118,17 @@
         padding: 2px 8px;
         text-decoration: none;
       }
-      ul.endpoints li.endpoint ul.operations li.operation div.content div.response div.response_header a.accept {
+      ul.endpoints li.endpoint ul.operations li.operation div.content div.json_block div.json_block_header a.accept {
         background-color: #329439;
       }
-      ul.endpoints li.endpoint ul.operations li.operation div.content div.response div.response_header a.reject {
+      ul.endpoints li.endpoint ul.operations li.operation div.content div.json_block div.json_block_header a.reject {
         background-color: #bb150b;
       }
-      ul.endpoints li.endpoint ul.operations li.operation div.content div.response div.response_header a.disabled {
+      ul.endpoints li.endpoint ul.operations li.operation div.content div.json_block div.json_block_header a.disabled {
         background-color: #555555;
       }
-      ul.endpoints li.endpoint ul.operations li.operation div.content div.response div.response_body pre.json {
-        max-height: 300px;
+      ul.endpoints li.endpoint ul.operations li.operation div.content div.json_block div.json_block_body pre.json {
+        max-height: 200px;
         overflow-y: scroll;
       }
       ul.endpoints li.endpoint ul.operations li.operation div.content {
