@@ -36,7 +36,7 @@ class SocketIOClient
         console.log('Socket.IO connected')
         $('#incoming-socket-status').removeClass()
         $('#incoming-socket-status').addClass('connected')
-        $('#socket-status').html('<span class="connected">Connected</span>')
+        $('#socket-status').html('<span class="connected">Connected as ' + @id + '</span>')
         @connected = true
         @setApiEvents(@socket)
         callback(@socket)
@@ -276,3 +276,50 @@ $('.developer.api').ready ->
   $(window).resize(() ->
     $('#incoming-panel-list').height($('#main').height() - $('#header').height() - 30)
   )
+
+
+  #Autofill functions
+
+  userPosition = null
+  getUserPosition = (callback) =>
+    if userPosition
+      callback(userPosition)
+    else
+      navigator.geolocation.getCurrentPosition((position) =>
+        userPosition = position
+        callback(position)
+      )
+
+  setTimeout(() =>
+    $('#trip_dispatch_trip_post_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-dispatch-trip" name="auto-fill" value="Auto-fill" type="button">')
+    $('#quote_get_quote_get_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-get-quote" name="auto-fill" value="Auto-fill" type="button">')
+    $('#drivers_get_drivers_nearby_get_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-get-drivers" name="auto-fill" value="Auto-fill" type="button">')
+
+    $('body').on('click', '#auto-fill-dispatch-trip', () =>
+      getUserPosition((position)->
+        $("#trip_dispatch_trip_post_0_body input[name='body.id']").val(guid())
+        $("#trip_dispatch_trip_post_0_body input[name='body.customer.name']").val('John')
+        $("#trip_dispatch_trip_post_0_body input[name='body.passengers']").val('1')
+        $("#trip_dispatch_trip_post_0_body input[name='body.luggage']").val('0')
+        $("#trip_dispatch_trip_post_0_body input[name='body.pickup_time']").val(moment().utc().format())
+        $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude)
+        $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude)
+      )
+    )
+    $('body').on('click', '#auto-fill-get-quote', () =>
+      getUserPosition((position)->
+        $("#quote_get_quote_get_0_body input[name='body.passengers']").val('1')
+        $("#quote_get_quote_get_0_body input[name='body.luggage']").val('0')
+        $("#quote_get_quote_get_0_body input[name='body.pickup_time']").val(moment().utc().format())
+        $("#quote_get_quote_get_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude)
+        $("#quote_get_quote_get_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude)
+      )
+    )
+    $('body').on('click', '#auto-fill-get-drivers', () =>
+      getUserPosition((position)->
+        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val(position.coords.latitude)
+        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val(position.coords.longitude)
+      )
+    )
+  , 1000)
+
