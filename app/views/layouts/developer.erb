@@ -40,38 +40,40 @@
                       </div>
                     </a>
                   </li>
-                  <li>
-                    <a class="list-group-item" id="statistics-button" href="<%= developer_statistics_path %>">
-                      <i class="icon-home icon-1x"></i>
-                      <div class="image-wrapper">
-                        <%= image_tag('statistics.png', alt: 'Statistics') %>
-                      </div>
-                    </a>
-                  </li>
-                  <li>
-                    <a class="list-group-item" id="networks-button" href="<%= developer_networks_path %>">
-                      <i class="icon-home icon-1x"></i>
-                      <div class="image-wrapper">
-                        <%= image_tag('networks.png', alt: 'Networks') %>
-                      </div>
-                    </a>
-                  </li>
-                  <li>
-                    <a class="list-group-item" id="networks-button" href="<%= developer_money_path %>">
-                      <i class="icon-home icon-1x"></i>
-                      <div class="image-wrapper">
-                        <%= image_tag('money.png', alt: 'Money') %>
-                      </div>
-                    </a>
-                  </li>
-                  <li>
-                    <a class="list-group-item" id="report-button" href="<%= developer_report_path %>">
-                      <i class="icon-home icon-1x"></i>
-                      <div class="image-wrapper">
-                        <%= image_tag('report.png', alt: 'Report') %>
-                      </div>
-                    </a>
-                  </li>
+                  <% if experimentalFeaturesEnabled %>
+                    <li>
+                      <a class="list-group-item" id="statistics-button" href="<%= developer_statistics_path %>">
+                        <i class="icon-home icon-1x"></i>
+                        <div class="image-wrapper">
+                          <%= image_tag('statistics.png', alt: 'Statistics') %>
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="list-group-item" id="networks-button" href="<%= developer_networks_path %>">
+                        <i class="icon-home icon-1x"></i>
+                        <div class="image-wrapper">
+                          <%= image_tag('networks.png', alt: 'Networks') %>
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="list-group-item" id="networks-button" href="<%= developer_money_path %>">
+                        <i class="icon-home icon-1x"></i>
+                        <div class="image-wrapper">
+                          <%= image_tag('money.png', alt: 'Money') %>
+                        </div>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="list-group-item" id="report-button" href="<%= developer_report_path %>">
+                        <i class="icon-home icon-1x"></i>
+                        <div class="image-wrapper">
+                          <%= image_tag('report.png', alt: 'Report') %>
+                        </div>
+                      </a>
+                    </li>
+                  <% end %>
                   <li>
                     <a class="list-group-item" id="api-button" href="<%= developer_api_path %>">
                       <i class="icon-home icon-1x"></i>
@@ -80,19 +82,21 @@
                       </div>
                     </a>
                   </li>
-                  <li>
-                    <% if roleUser == 'admin' %>
-                        <% url = settings_users_path %>
-                    <% else %>
-                        <% url = developer_settings_path %>
-                    <% end %>
-                    <a class="list-group-item" id="settings-button" href="<%= url %>">
-                      <i class="icon-home icon-1x"></i>
-                      <div class="image-wrapper">
-                        <%= image_tag('settings.png', alt: 'Settings') %>
-                      </div>
-                    </a>
-                  </li>
+                  <% if experimentalFeaturesEnabled %>
+                    <li>
+                      <% if roleUser == 'admin' %>
+                          <% url = settings_users_path %>
+                      <% else %>
+                          <% url = developer_settings_path %>
+                      <% end %>
+                      <a class="list-group-item" id="settings-button" href="<%= url %>">
+                        <i class="icon-home icon-1x"></i>
+                        <div class="image-wrapper">
+                          <%= image_tag('settings.png', alt: 'Settings') %>
+                        </div>
+                      </a>
+                    </li>
+                  <% end %>
                 </ul>
               </div>
             </div>

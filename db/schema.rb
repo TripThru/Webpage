@@ -84,6 +84,7 @@ ActiveRecord::Schema.define(version: 20140511085515) do
     t.string   "routing_strategy"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.boolean  "experimental_features_enabled"
   end
 
   create_table "trip_locations",force: true do |t|

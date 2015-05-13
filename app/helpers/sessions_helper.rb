@@ -43,6 +43,13 @@ module SessionsHelper
       return nil
     end
   end
+  def experimentalFeaturesEnabled
+    if signed_in?
+      return current_user.experimental_features_enabled
+    else
+      return nil
+    end
+  end
   def current_user=(user)
     @current_user = user
   end

@@ -19,7 +19,11 @@ class DeveloperController < ApplicationController
 
   def statistics
     if userAccessToken
-      render 'statistics'
+      if experimentalFeaturesEnabled
+        render 'statistics'
+      else
+        redirect_to developer_dashboard_path
+      end
     else
       redirect_to signin_path
     end
@@ -35,7 +39,11 @@ class DeveloperController < ApplicationController
 
   def settings
     if userAccessToken
-      render 'settings'
+      if experimentalFeaturesEnabled
+        render 'settings'
+      else
+        redirect_to developer_dashboard_path
+      end
     else
       redirect_to signin_path
     end
@@ -43,7 +51,11 @@ class DeveloperController < ApplicationController
 
   def networks
     if userAccessToken
-      render 'networks'
+      if experimentalFeaturesEnabled
+        render 'networks'
+      else
+        redirect_to developer_dashboard_path
+      end
     else
       redirect_to signin_path
     end
@@ -51,7 +63,11 @@ class DeveloperController < ApplicationController
 
   def money
     if userAccessToken
-      render 'money'
+      if experimentalFeaturesEnabled
+        render 'money'
+      else
+        redirect_to developer_dashboard_path
+      end
     else
       redirect_to signin_path
     end
@@ -59,7 +75,11 @@ class DeveloperController < ApplicationController
 
   def report
     if userAccessToken
-      render 'report'
+      if experimentalFeaturesEnabled
+        render 'report'
+      else
+        redirect_to developer_dashboard_path
+      end
     else
       redirect_to signin_path
     end

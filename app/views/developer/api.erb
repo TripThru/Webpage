@@ -1,7 +1,6 @@
 <div id="api">
   <div id='body' class="swagger-ui-wrap">
-    <p>Use the GET /network service to get a list of simulated partners and their coverage areas.</p>
-    <p>Once you know the areas covered by our partners, you can dispatch pickup requests to them via the POST /dispatch service.</p>
+    <p>You can dispatch pickup requests to our simulated partners via the POST /dispatch service.</p>
     <p>Dispatching to an area not covered by any of our partners will result in a reject request. Alternatively, you can get a list of quotes via</p>
     <p>GET /quote, and then dispatch to the partner of your choice.  After dispatching, you can get the status of your trip via GET /tripstatus.</p>
     <p>To serve a trip you can accept a GET /quote request and then accept the following POST /trip. You are expected to send out PUT /tripstatus</p>

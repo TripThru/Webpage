@@ -17,6 +17,7 @@ class CreateUsers < ActiveRecord::Migration
       t.boolean :must_accept_cash_payments
       t.boolean :must_accept_account_payments
       t.boolean :must_accept_creditcard_payments
+      t.boolean :experimental_features_enabled
       t.timestamps
     end
 
