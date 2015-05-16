@@ -277,8 +277,7 @@ $('.developer.api').ready ->
     $('#incoming-panel-list').height($('#main').height() - $('#header').height() - 30)
   )
 
-
-  #Autofill functions
+  #Custom swagger functions
 
   userPosition = null
   getUserPosition = (callback) =>
@@ -290,36 +289,228 @@ $('.developer.api').ready ->
         callback(position)
       )
 
+
+  defaultCleanMapZoom = 14
+  mapOptions =
+    center: if typeof google isnt "undefined" then new google.maps.LatLng(40.32004,-98.9290212) else null
+    zoom: defaultCleanMapZoom
+    mapTypeControl: false
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  markers = {
+    pickup: null,
+    dropoff: null
+  }
+  map = null
+  resourceId = null
+  rendererOptions = {
+    preserveViewport: true
+    suppressMarkers: true
+    polylineOptions: {
+      strokeColor: "#008000"
+      strokeOpacity: 1
+      strokeWeight: 5
+    }
+  }
+  directionsDisplay = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions) else null
+  directionsService = if typeof google isnt "undefined" then new google.maps.DirectionsService() else null
+
+  drawRoute = () ->
+    if map? and markers.pickup? and markers.dropoff?
+      directionsDisplay.setMap(null)
+      google.maps.event.addListener(markers.pickup, 'dragend', () ->
+        drawRoute()
+      )
+      google.maps.event.addListener(markers.dropoff, 'dragend', () ->
+        drawRoute()
+      )
+      directionsDisplay.setMap(map)
+      request =
+        origin: markers.pickup.getPosition()
+        destination: markers.dropoff.getPosition()
+        travelMode: google.maps.TravelMode.DRIVING
+      directionsService.route request, (result, status) =>
+          directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and directionsDisplay?
+
+  setZoom = () ->
+    if markers.pickup?
+      map.setCenter markers.pickup.getPosition()
+      map.setZoom defaultCleanMapZoom
+    else if markers.dropoff?
+      map.setCenter markers.dropoff.getPosition()
+      map.setZoom defaultCleanMapZoom
+
+  updateMapMarkers = (resourceId) ->
+    if resourceId == 'trip_dispatch_trip_post_0_body' or resourceId == 'quote_get_quote_get_0_body'
+      pickupLocationLat = parseFloat($("#" + resourceId + " input[name='body.pickup_location.lat']").val())
+      pickupLocationLng =  parseFloat($("#" + resourceId + " input[name='body.pickup_location.lng']").val())
+      dropoffLocationLat =  parseFloat($("#" + resourceId + " input[name='body.dropoff_location.lat']").val())
+      dropoffLocationLng =  parseFloat($("#" + resourceId + " input[name='body.dropoff_location.lng']").val())
+      #if either location is incomplete
+      if isNaN(pickupLocationLat) or isNaN(pickupLocationLng) or isNaN(dropoffLocationLat) or isNaN(dropoffLocationLng)
+        getUserPosition((position)->
+          if !isNaN(pickupLocationLat) and !isNaN(pickupLocationLng)
+            markers.pickup = new google.maps.Marker({
+              position: new google.maps.LatLng(pickupLocationLat, pickupLocationLng)
+              map: map
+              title: 'Pickup'
+              draggable:true
+              animation: google.maps.Animation.DROP
+              icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+            })
+          else
+            markers.pickup = new google.maps.Marker({
+              position: new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+              map: map
+              title: 'Pickup'
+              draggable:true
+              animation: google.maps.Animation.DROP
+              icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+            })
+          if !isNaN(dropoffLocationLat) and !isNaN(dropoffLocationLng)
+            markers.dropoff = new google.maps.Marker({
+              position: new google.maps.LatLng(dropoffLocationLat, dropoffLocationLng)
+              map: map
+              title: 'Dropoff'
+              draggable:true
+              animation: google.maps.Animation.DROP
+              icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+            })
+          else
+            markers.dropoff = new google.maps.Marker({
+              position: new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+              map: map
+              title: 'Dropoff'
+              draggable:true
+              animation: google.maps.Animation.DROP
+              icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+            })
+          setZoom()
+          drawRoute()
+        )
+      else
+        markers.pickup = new google.maps.Marker({
+          position: new google.maps.LatLng(pickupLocationLat, pickupLocationLng)
+          map: map
+          title: 'Pickup'
+          draggable:true
+          animation: google.maps.Animation.DROP
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+        })
+        markers.dropoff = new google.maps.Marker({
+          position: new google.maps.LatLng(dropoffLocationLat, dropoffLocationLng)
+          map: map
+          title: 'Dropoff'
+          draggable:true
+          animation: google.maps.Animation.DROP
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+        })
+        setZoom()
+        drawRoute()
+    else if resourceId == 'drivers_get_drivers_nearby_get_0_body'
+      locationLat = parseFloat($("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val())
+      locationLng = parseFloat($("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val())
+      if isNaN(pickupLocationLat) or isNaN(pickupLocationLng)
+        getUserPosition((position)->
+          markers.pickup = new google.maps.Marker({
+            position: new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+            map: map
+            title: 'Center'
+            draggable:true
+            animation: google.maps.Animation.DROP
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+          })
+        )
+        setZoom()
+      else
+        markers.pickup = new google.maps.Marker({
+          position: new google.maps.LatLng(locationLat, locationLng)
+          map: map
+          title: 'Center'
+          draggable:true
+          animation: google.maps.Animation.DROP
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+        })
+        setZoom()
+
+  updateLocationFieldsFromMarkers = (resourceId) ->
+    if resourceId == 'trip_dispatch_trip_post_0_body' or resourceId == 'quote_get_quote_get_0_body'
+      if markers.pickup
+        position = markers.pickup.getPosition()
+        $("#" + resourceId + " input[name='body.pickup_location.lat']").val(position.lat())
+        $("#" + resourceId + " input[name='body.pickup_location.lng']").val(position.lng())
+      if markers.dropoff
+        position = markers.dropoff.getPosition()
+        $("#" + resourceId + " input[name='body.dropoff_location.lat']").val(position.lat())
+        $("#" + resourceId + " input[name='body.dropoff_location.lng']").val(position.lng())
+    if resourceId == 'drivers_get_drivers_nearby_get_0_body'
+      if markers.pickup
+        position = markers.pickup.getPosition()
+        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val(position.lat())
+        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val(position.lng())
+    if markers.pickup
+      markers.pickup.setMap(null)
+      markers.pickup = null
+    if markers.dropoff
+      markers.dropoff.setMap(null)
+      markers.dropoff = null
+    directionsDisplay.setMap null
+
+
   setTimeout(() =>
-    $('#trip_dispatch_trip_post_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-dispatch-trip" name="auto-fill" value="Auto-fill" type="button">')
-    $('#quote_get_quote_get_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-get-quote" name="auto-fill" value="Auto-fill" type="button">')
-    $('#drivers_get_drivers_nearby_get_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-get-drivers" name="auto-fill" value="Auto-fill" type="button">')
+    $('#trip_dispatch_trip_post_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-dispatch-trip" name="auto-fill" value="Auto-fill" type="button">' +
+        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#map-dialog"/>')
+    $('#quote_get_quote_get_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-get-quote" name="auto-fill" value="Auto-fill" type="button">' +
+        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#map-dialog"/>')
+    $('#drivers_get_drivers_nearby_get_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-get-drivers" name="auto-fill" value="Auto-fill" type="button">' +
+        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#map-dialog"/>')
 
     $('body').on('click', '#auto-fill-dispatch-trip', () =>
-      getUserPosition((position)->
         $("#trip_dispatch_trip_post_0_body input[name='body.id']").val(guid())
         $("#trip_dispatch_trip_post_0_body input[name='body.customer.name']").val('John')
         $("#trip_dispatch_trip_post_0_body input[name='body.passengers']").val('1')
         $("#trip_dispatch_trip_post_0_body input[name='body.luggage']").val('0')
         $("#trip_dispatch_trip_post_0_body input[name='body.pickup_time']").val(moment().utc().format())
-        $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude)
-        $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude)
-      )
+        if isNaN(parseFloat($("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lat']").val())) or
+            isNaN(parseFloat($("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lng']").val()))
+          getUserPosition((position)->
+            $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude)
+            $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude)
+          )
     )
     $('body').on('click', '#auto-fill-get-quote', () =>
-      getUserPosition((position)->
-        $("#quote_get_quote_get_0_body input[name='body.passengers']").val('1')
-        $("#quote_get_quote_get_0_body input[name='body.luggage']").val('0')
-        $("#quote_get_quote_get_0_body input[name='body.pickup_time']").val(moment().utc().format())
-        $("#quote_get_quote_get_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude)
-        $("#quote_get_quote_get_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude)
-      )
+      $("#quote_get_quote_get_0_body input[name='body.passengers']").val('1')
+      $("#quote_get_quote_get_0_body input[name='body.luggage']").val('0')
+      $("#quote_get_quote_get_0_body input[name='body.pickup_time']").val(moment().utc().format())
+      if isNaN(parseFloat($("#quote_get_quote_get_0_body input[name='body.pickup_location.lat']").val())) or
+          isNaN(parseFloat($("#quote_get_quote_get_0_body input[name='body.pickup_location.lng']").val()))
+        getUserPosition((position)->
+          $("#quote_get_quote_get_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude)
+          $("#quote_get_quote_get_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude)
+        )
     )
     $('body').on('click', '#auto-fill-get-drivers', () =>
-      getUserPosition((position)->
-        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val(position.coords.latitude)
-        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val(position.coords.longitude)
-      )
+      if isNaN(parseFloat($("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val())) or
+          isNaN(parseFloat($("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val()))
+        getUserPosition((position)->
+          $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val(position.coords.latitude)
+          $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val(position.coords.longitude)
+        )
+    )
+
+    $('.document-type').each(() ->
+      if($(this).html() == 'Location')
+        $(this).parent().append('')
+    )
+    $('body').on('click', '.document-location-selector', () ->
+      resourceId = $(this).parent().parent().find('.object-inner').attr('id')
+    )
+    $('#map-dialog').on('shown.bs.modal', () ->
+      if !map?
+        map = if typeof google isnt "undefined" then new google.maps.Map(document.getElementById("map-canvas"), mapOptions) else null
+      updateMapMarkers(resourceId)
+    )
+    $('#map-dialog').on('hidden.bs.modal', () ->
+      updateLocationFieldsFromMarkers(resourceId)
     )
   , 1000)
 

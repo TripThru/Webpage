@@ -3783,6 +3783,12 @@
       padding: 6px 8px;
       height: 23px;
     }
+    .swagger-ui-wrap .document-location-selector {
+      background: url("/assets/swagger-location-selector.png") no-repeat top left;
+      background-size: 20px 20px;
+      padding: 10px 15px 10px 10px;
+      float: right;
+    }
 
     #socket-status {
       .connected {
@@ -3836,6 +3842,21 @@
     }
     .counting {
       background-color: #bb150b;
+    }
+
+    #map-dialog {
+      .modal-dialog {
+        width: 500px;
+        height: 435px;
+
+        .modal-content {
+          border-radius: 3px;
+        }
+      }
+      #map-canvas {
+        height: 400px;
+        width: 470px;
+      }
     }
 
     #incoming-panel-list {
@@ -4161,6 +4182,7 @@
         padding: 10px 0 5px;
         display: inline-block;
       }
+
       pre {
         font-family: "Anonymous Pro", "Menlo", "Consolas", "Bitstream Vera Sans Mono", "Courier New", monospace;
         background-color: #fcf6db;
@@ -4183,6 +4205,17 @@
         font-size: 12px;
         margin-top: 5px;
         padding: 5px;
+      }
+    }
+
+    @media (max-width: 991px) {
+      .affix-top {
+        position: relative;
+      }
+      .affix {
+        position: relative;
+        top: unset;
+        width: unset;
       }
     }
   }
