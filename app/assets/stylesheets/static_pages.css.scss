@@ -243,6 +243,13 @@
       h1 {
         font-size: 30px;
         font-weight: 300;
+
+        .role {
+          font-size: 18px;
+          display: inline-block;
+          color: #1698F4;
+          margin-left: 10px;
+        }
       }
 
       .lead {
