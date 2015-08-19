@@ -42,6 +42,8 @@
 //= require jquery.visible.min.js
 //= require jstz-1.0.4.min
 //= require socket.io-1.3.5
+//= require jsoneditor.min
+//= require jquery-ui-1.10.3.custom.min
 //= require_tree .
 
 function reset() {
@@ -216,3 +218,61 @@ function getFrequencyDistribution(values, classes, dataTypeName, prependDataType
     }
   });
 })(jQuery);
+
+function autocompleteGetLocation(selector, callback){
+
+  var cache = {};
+  $( selector ).autocomplete({
+    minLength: 2,
+    delay:500,
+    select: function(event, ui) {
+
+      if(jQuery.isFunction(callback) && ui.item && ui.item.otherdata)
+        callback(ui.item.otherdata);
+
+    },
+    source: function( request, response ) {
+      var term = request.term;
+      if ( term in cache ) {
+        response( cache[ term ] );
+        return;
+      }
+
+      $.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + term + '&sensor=false', function(res){
+        var data = {
+          status: res.status,
+          locations: []
+        };
+        for(var i = 0; i < res.results.length; i++) {
+          var r = res.results[i];
+          var location = {
+            address: r.formatted_address,
+            location: {
+              lat: r.geometry.location.lat,
+              lng: r.geometry.location.lng
+            }
+          };
+          data.locations.push(location);
+        }
+        if(data.status === 'OK' && data.locations.length)
+        {
+          cache[ term ] = $.map(data.locations, function(item) {
+            return {
+              label: item.address,
+              value: item.address,
+              otherdata: item
+            }
+          });
+          response($.map(data.locations, function(item) {
+            return {
+              label: item.address,
+              value: item.address,
+              otherdata: item
+            }
+          }))
+        }
+      });
+
+    }
+  });
+}

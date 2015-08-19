@@ -10,9 +10,9 @@ default: &default
 #
 development:
   <<: *default
-  username: tripservice
-  password: Tr1PServ1CeMySqL
-  host: tripthru.cegl4aakuq4b.us-west-2.rds.amazonaws.com
+  #username: tripservice
+  #password: Tr1PServ1CeMySqL
+  #host: tripthru.cegl4aakuq4b.us-west-2.rds.amazonaws.com
 
 production:
   <<: *default

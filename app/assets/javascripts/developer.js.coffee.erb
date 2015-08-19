@@ -8,7 +8,7 @@ window.timezone = jstz.determine().name()
 class window.TripThru
 
   constructor: (@accessToken) ->
-    @apiUrl = 'http://107.170.220.160/'
+    @apiUrl = 'http://localhost:3300/'
     @dbUrl = '/';
     if not @accessToken?
       console.error('Wrong parameters')
@@ -136,6 +136,56 @@ class window.TripThru
   updatePartnershipRules: (request, _callback) =>
     $.post(@dbUrl + 'partnership_rules', request, (data) =>
       _callback(data)
+    )
+
+  getCurrenctBalance: (filter, _callback) =>
+    $.get(@dbUrl + 'current_balance?' + @filterToQuery(filter), (data) =>
+      if data?
+        _callback(data)
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
+    )
+
+  getTransactions: (filter, _callback) =>
+    $.get(@dbUrl + 'user_transactions?' + @filterToQuery(filter) , (data) =>
+      if data?
+        _callback(data)
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
+    )
+
+  getCurrencyRates: (filter, _callback) =>
+    $.get(@dbUrl + 'currency_rates?' + @filterToQuery(filter) , (data) =>
+      if data?
+        _callback(data)
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
+    )
+
+  getAggregatedDetail: (filter, _callback) =>
+    $.get(@dbUrl + 'aggregated_detail?' + @filterToQuery(filter) , (data) =>
+      if data?
+        _callback(data)
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
+    )
+
+  getAggregatedTotal: (filter, _callback) =>
+    $.get(@dbUrl + 'aggregated_total?' + @filterToQuery(filter) , (data) =>
+      if data?
+        _callback(data)
+      else
+        _callback(null)
+    ).error( ->
+      _callback(null)
     )
 
   filterToQuery: (filter) =>

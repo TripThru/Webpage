@@ -47,6 +47,11 @@ Rails.application.routes.draw do
   post '/partnership_rules', to:'tripthru#update_partnership_rules'
   get '/partnerships', to: 'tripthru#get_partnerships'
   get '/partner_details', to: 'tripthru#get_partner_details'
+  get '/user_transactions', to: 'tripthru#user_transactions'
+  get '/current_balance', to: 'tripthru#current_balance'
+  get '/currency_rates', to: 'tripthru#currency_rates'
+  get '/aggregated_detail', to: 'tripthru#aggregated_detail'
+  get '/aggregated_total', to: 'tripthru#aggregated_total'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

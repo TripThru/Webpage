@@ -11,12 +11,250 @@ class SocketIOClient
     }
     @successfulResponse = {
       result_code: 200,
-      result: 'ok'
+      result: 'OK'
     }
-    @lastUpdateByTripId = {
+    @requestTypes = [
+      'dispatch-trip'
+      'get-trip-status'
+      'update-trip-status'
+      'request-payment'
+      'accept-payment'
+      'get-quote'
+      'set-network'
+      'get-network'
+      'get-drivers'
+    ]
+    @editors = {}
+    @lastUpdateByTripId = {}
+    @acceptedTripsById = {}
+    @activeIncomingRequests = {}
+    @getConnection (socket) => @initEditors()
 
-    };
-    @getConnection (socket) =>
+  initEditors: () =>
+    @editors = {}
+    editorOptions = {
+      mode: 'code'
+      search: false
+      indentation: 2
+      error: (err) ->
+        console.log(err.toString())
+    }
+    mapButton = '<a href="#" class="response-location-selector disabled" data-target="#response-map-dialog"/>'
+    for type in @requestTypes
+      @editors[type] = new JSONEditor($('#incoming-' + type + '-content .response .response_body')[0], editorOptions)
+
+    $('#incoming-get-trip-status-content .response .response_body .jsoneditor .menu').append(mapButton)
+
+    defaultCleanMapZoom = 14
+    mapOptions =
+      center: if typeof google isnt "undefined" then new google.maps.LatLng(40.32004,-98.9290212) else null
+      zoom: defaultCleanMapZoom
+      mapTypeControl: false
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    markers = {
+      pickup: null
+      dropoff: null
+      driver: null
+    }
+    map = null
+    resourceId = null
+    rendererOptions = {
+      preserveViewport: true
+      suppressMarkers: true
+      polylineOptions: {
+        strokeColor: "#008000"
+        strokeOpacity: 1
+        strokeWeight: 5
+      }
+    }
+    directionsDisplay = if typeof google isnt "undefined" then new google.maps.DirectionsRenderer(rendererOptions) else null
+    directionsService = if typeof google isnt "undefined" then new google.maps.DirectionsService() else null
+
+    drawRoute = () ->
+      if map? and markers.pickup? and markers.dropoff?
+        directionsDisplay.setMap(null)
+        directionsDisplay.setMap(map)
+        request =
+          origin: markers.pickup.getPosition()
+          destination: markers.dropoff.getPosition()
+          travelMode: google.maps.TravelMode.DRIVING
+        directionsService.route request, (result, status) =>
+          directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and directionsDisplay?
+
+    getCentrePointFromListOfCoordinates = (list) ->
+      minlat = null
+      minlng = null
+      maxlat = null
+      maxlng = null
+      for point in list
+        minlat = if !minlat? or point.lat < minlat then point.lat else minlat
+        maxlat = if !maxlat? or point.lat > maxlat then point.lat else maxlat
+        minlng = if !minlng? or point.lng < minlng then point.lng else minlng
+        maxlng = if !maxlng? or point.lng > maxlng then point.lng else maxlng
+
+      lat = maxlat - ((maxlat - minlat)/2)
+      lng = maxlng - ((maxlng - minlng)/2)
+      {lat: lat, lng: lng, maxlat: maxlat, maxlng: maxlng, minlat: minlat, minlng: minlng}
+
+    setZoom = () ->
+      if markers.pickup? and markers.dropoff?
+        pickup = markers.pickup.getPosition()
+        dropoff = markers.dropoff.getPosition()
+        locations = [
+          {
+            lat: pickup.lat()
+            lng: pickup.lng()
+          }
+          {
+            lat: dropoff.lat()
+            lng: dropoff.lng()
+          }
+        ]
+        geoCenter = getCentrePointFromListOfCoordinates(locations)
+        bounds = new google.maps.LatLngBounds()
+        bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+        bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+        map.fitBounds(bounds)
+      if markers.pickup?
+        map.setCenter markers.pickup.getPosition()
+        map.setZoom defaultCleanMapZoom
+      else if markers.driver?
+        map.setCenter markers.driver.getPosition()
+        map.setZoom defaultCleanMapZoom
+
+    updateMapMarkers = (resourceId) =>
+      if resourceId == 'incoming-get-trip-status-content'
+        getTripRequest = @activeIncomingRequests['get-trip-status']
+        driverLocationLat = null
+        driverLocationLng = null
+        pickupLocationLat = null
+        pickupLocationLng = null
+        dropoffLocationLat = null
+        dropoffLocationLng = null
+        if getTripRequest? and @acceptedTripsById.hasOwnProperty(getTripRequest.id)
+          tripId = getTripRequest.id
+          if @lastUpdateByTripId.hasOwnProperty(tripId)
+            lastRequest = @lastUpdateByTripId[tripId]
+            if lastRequest.driver? and lastRequest.driver.location?
+              driverLocationLat = lastRequest.driver.location.lat
+              driverLocationLng = lastRequest.driver.location.lng
+          editorRequest = @editors['get-trip-status'].get()
+          if editorRequest? and editorRequest.driver? and editorRequest.driver.location
+            driverLocationLat = editorRequest.driver.location.lat
+            driverLocationLng = editorRequest.driver.location.lng
+          dispatchRequest = @acceptedTripsById[tripId]
+          pickupLocationLat = dispatchRequest.pickup_location.lat
+          pickupLocationLng = dispatchRequest.pickup_location.lng
+          dropoffLocationLat = dispatchRequest.dropoff_location.lat
+          dropoffLocationLng = dispatchRequest.dropoff_location.lng
+          if isNaN(driverLocationLat) or isNaN(driverLocationLng)
+            driverLocationLat = pickupLocationLat
+            driverLocationLng = pickupLocationLng
+          markers.pickup = new google.maps.Marker({
+            position: new google.maps.LatLng(pickupLocationLat, pickupLocationLng)
+            map: map
+            title: 'Pickup'
+            draggable: false
+            animation: google.maps.Animation.DROP
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+          })
+          markers.dropoff = new google.maps.Marker({
+            position: new google.maps.LatLng(dropoffLocationLat, dropoffLocationLng)
+            map: map
+            title: 'Dropoff'
+            draggable: false
+            animation: google.maps.Animation.DROP
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+          })
+          markers.driver = new google.maps.Marker({
+            position: new google.maps.LatLng(driverLocationLat, driverLocationLng)
+            map: map
+            title: 'Driver'
+            draggable: true
+            animation: google.maps.Animation.DROP
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
+          })
+          setZoom()
+          drawRoute()
+      else if resourceId == 'incoming-dispatch-trip-content' or resourceId == 'incoming-get-quote-content'
+        if resourceId == 'incoming-dispatch-trip-content'
+          request = @activeIncomingRequests['dispatch-trip']
+        else if resourceId == 'incoming-get-quote-content'
+          request = @activeIncomingRequests['get-quote']
+        if request?
+          markers.pickup = new google.maps.Marker({
+            position: new google.maps.LatLng(request.pickup_location.lat, request.pickup_location.lng)
+            map: map
+            title: 'Pickup'
+            draggable: false
+            animation: google.maps.Animation.DROP
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+          })
+          markers.dropoff = new google.maps.Marker({
+            position: new google.maps.LatLng(request.dropoff_location.lat, request.dropoff_location.lng)
+            map: map
+            title: 'Dropoff'
+            draggable: false
+            animation: google.maps.Animation.DROP
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+          })
+          setZoom()
+          drawRoute()
+      else if resourceId == 'incoming-update-trip-status-content'
+        request = @activeIncomingRequests['update-trip-status']
+        if request? and request.driver? and request.driver.location?
+          markers.driver = new google.maps.Marker({
+            position: new google.maps.LatLng(request.driver.location.lat, request.driver.location.lng)
+            map: map
+            title: 'Driver'
+            draggable: true
+            animation: google.maps.Animation.DROP
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
+          })
+          setZoom()
+
+    updateLocationFieldsFromMarkers = (resourceId) =>
+      if resourceId == 'incoming-get-trip-status-content'
+        getTripResponse = @editors['get-trip-status'].get()
+        if markers.driver?
+          position = markers.driver.getPosition()
+          if !getTripResponse?
+            getTripResponse = {
+              result: 'OK'
+              result_code: 200
+            }
+          if !getTripResponse.driver?
+            getTripResponse.driver = {}
+          getTripResponse.driver.location = {
+            lat: position.lat()
+            lng: position.lng()
+          }
+          @editors['get-trip-status'].set(getTripResponse)
+      if markers.driver?
+        markers.driver.setMap(null)
+        markers.driver = null
+      if markers.pickup?
+        markers.pickup.setMap(null)
+        markers.pickup = null
+      if markers.dropoff?
+        markers.dropoff.setMap(null)
+        markers.dropoff = null
+
+    resourceElement = null
+    $('body').off('click', '.response-location-selector').on('click', '.response-location-selector', (e) ->
+      resourceId = $(this).parent().parent().parent().parent().parent().attr('id')
+    )
+    $('body').off('click', '.request-location-preview').on('click', '.request-location-preview', (e) ->
+      resourceId = $(this).parent().parent().parent().attr('id')
+    )
+    $('#response-map-dialog').off('shown.bs.modal').on('shown.bs.modal', (e) ->
+      if !map?
+        map = if typeof google isnt "undefined" then new google.maps.Map(document.getElementById("response-map-canvas"), mapOptions) else null
+      updateMapMarkers(resourceId)
+    )
+    $('#response-map-dialog').off('hidden.bs.modal').on('hidden.bs.modal', (e) ->
+      updateLocationFieldsFromMarkers(resourceId)
+    )
 
   setProducts: (products) =>
     @products = products
@@ -76,7 +314,7 @@ class SocketIOClient
       callback(@socket)
 
   connect: () =>
-    @getConnection () ->
+    @getConnection () => @initEditors()
 
   disconnect: () =>
     @socket.disconnect()
@@ -84,27 +322,58 @@ class SocketIOClient
   emit: (action, request, callback) =>
     if action == 'update-trip-status'
       @lastUpdateByTripId[request.id] = request
+      if @activeIncomingRequests['get-trip-status']? and @activeIncomingRequests['get-trip-status'].id == request.id
+        @editors['get-trip-status'].set(request)
+        r = @editors['get-trip-status'].get()
+        r.result = 'OK'
+        r.result_code = 200
+        @editors['get-trip-status'].set(r)
     @getConnection (socket) =>
       socket.emit(action, request, callback)
 
+  enableButtons: (type) =>
+    $('#incoming-' + type + ' .heading .incoming-request-counter').toggleClass('counting')
+    $('#incoming-' + type + '-content .request .request_header .accept').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .reject').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .request-location-preview').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .request-location-preview').attr('data-toggle', 'modal')
+    $('#incoming-' + type + '-content .response .response_body .jsoneditor .menu .response-location-selector').toggleClass('disabled')
+    $('#incoming-' + type + '-content .response .response_body .jsoneditor .menu .response-location-selector').attr('data-toggle', 'modal')
+
+  disableButtons: (type) =>
+    $('#incoming-' + type + ' .heading .incoming-request-counter').toggleClass('counting')
+    $('#incoming-' + type + ' .heading .incoming-request-counter').html('0')
+    $('#incoming-' + type + '-content .request .request_header .accept').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .reject').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .request-location-preview').toggleClass('disabled')
+    $('#incoming-' + type + '-content .request .request_header .request-location-preview').removeAttr('data-toggle', 'modal')
+    $('#incoming-' + type + '-content .response .response_body .jsoneditor .menu .response-location-selector').toggleClass('disabled')
+    $('#incoming-' + type + '-content .response .response_body .jsoneditor .menu .response-location-selector').removeAttr('data-toggle', 'modal')
+
+
   resetIncomingRequestPanel: (type, interval) =>
     clearInterval(interval)
-    $('#incoming-' + type + ' .heading .incoming-request-counter').toggleClass('counting')
-    $('body').off('click', '#incoming-' + type + '-content .request .request_header .accept')
-    $('body').off('click', '#incoming-' + type + '-content .request .request_header .reject')
-    $('#incoming-' + type + '-content .request .request_header .accept').toggleClass('disabled')
-    $('#incoming-' + type + '-content .request .request_header .reject').toggleClass('disabled')
+    @disableButtons(type)
+    $('body').off('click', '#incoming-' + type + '-content .request .request_header .accept').on('click', '#incoming-' + type + '-content .request .request_header .accept', (e) ->
+      e.preventDefault()
+    )
+    $('body').off('click', '#incoming-' + type + '-content .request .request_header .reject').on('click', '#incoming-' + type + '-content .request .request_header .reject', (e) ->
+      e.preventDefault()
+    )
     $('#incoming-' + type + '-content .request .request_body .json').html('No active request')
-    $('#incoming-' + type + '-content .response .response_body .json').html('No active request')
-    $('#incoming-' + type + ' .heading .incoming-request-counter').html('0')
+    @editors[type].set({})
       
   handleRequest: (type, request, acceptResponse, rejectResponse, responseCallback) =>
+    if @requestTypes.indexOf(type) < 0
+      console.error('Uknown request type "' + type + '"')
+      responseCallback(rejectResponse)
+      return
+
+    @enableButtons(type)
+
     $('#incoming-' + type + '-content .request .request_body .json').html('<code class="language-javascript">' + FormatJSON(request) + '</code>')
-    $('#incoming-' + type + '-content .response .response_body .json').html('<code class="language-javascript">' + FormatJSON(acceptResponse) + '</code>')
     Prism.highlightAll()
-    $('#incoming-' + type + ' .heading .incoming-request-counter').toggleClass('counting')
-    $('#incoming-' + type + '-content .request .request_header .accept').toggleClass('disabled')
-    $('#incoming-' + type + '-content .request .request_header .reject').toggleClass('disabled')
+    @editors[type].set(acceptResponse)
 
     responded = false
     counter = 57
@@ -119,12 +388,13 @@ class SocketIOClient
           $('#incoming-' + type + ' .heading .incoming-request-counter').html(counter.toString())
     , 1000)
 
-    $('body').on('click', '#incoming-' + type + '-content .request .request_header .accept', () =>
+    $('body').off('click', '#incoming-' + type + '-content .request .request_header .accept').on('click', '#incoming-' + type + '-content .request .request_header .accept', () =>
       responded = true
+      response = @editors[type].get()
       @resetIncomingRequestPanel(type, interval)
-      responseCallback(acceptResponse)
+      responseCallback(response)
     )
-    $('body').on('click', '#incoming-' + type + '-content .request .request_header .reject', () =>
+    $('body').off('click', '#incoming-' + type + '-content .request .request_header .reject').on('click', '#incoming-' + type + '-content .request .request_header .reject', () =>
       responded = true
       @resetIncomingRequestPanel(type, interval)
       responseCallback(rejectResponse)
@@ -132,20 +402,22 @@ class SocketIOClient
 
   setApiEvents: (socket) =>
     socket.on('dispatch-trip', (request, cb) =>
-      if $('#incoming-dispatch-trip-content .response .response_body .json').html() == 'No active request'
+      if $('#incoming-dispatch-trip-content .request .request_body .json').html() == 'No active request'
+        @activeIncomingRequests['dispatch-trip'] = request
         @handleRequest('dispatch-trip', request, @successfulResponse, @rejectedResponse, (response) =>
             if response.result == @successfulResponse.result
-              $("#tripstatus_update_trip_status_put_1_body input[name='body.id']").val(request.id)
-              $("#tripstatus_update_trip_status_put_1_body input[name='body.eta']").val(request.pickup_time)
-              $("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lat']").val(request.pickup_location.lat)
-              $("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lng']").val(request.pickup_location.lng)
-              $("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lng']").val(request.pickup_location.lng)
-              $("#tripstatus_update_trip_status_put_1_body input[name='body.product.id']").val(@products[0].client_id)
-              $("#tripstatus_update_trip_status_put_1_body input[name='body.product.name']").val(@products[0].name)
-              $("#tripstatus_update_trip_status_put_1_body input[name='body.product.image_url']").val(@products[0].image_url)
-              $('#payment_request_payment_post_0_body input[name="body.id"').val(request.id)
-              $('#payment_request_payment_post_0_body input[name="body.currency_code"').val('USD')
-              $("#tripstatus_get_trip_status_get_0_body input[name='body.id']").val(request.id)
+              $("#tripstatus_update_trip_status_put_1_body input[name='body.id']").val(request.id).change()
+              $("#tripstatus_update_trip_status_put_1_body input[name='body.eta']").val(request.pickup_time).change()
+              $("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lat']").val(request.pickup_location.lat).change()
+              $("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lng']").val(request.pickup_location.lng).change()
+              $("#tripstatus_update_trip_status_put_1_body input[name='body.product.id']").val(@products[0].client_id).change()
+              $("#tripstatus_update_trip_status_put_1_body input[name='body.product.name']").val(@products[0].name).change()
+              $("#tripstatus_update_trip_status_put_1_body input[name='body.product.image_url']").val(@products[0].image_url).change()
+              $('#payment_request_payment_post_0_body input[name="body.id"').val(request.id).change()
+              $('#payment_request_payment_post_0_body input[name="body.currency_code"').val('USD').change()
+              $("#tripstatus_get_trip_status_get_0_body input[name='body.id']").val(request.id).change()
+              @acceptedTripsById[request.id] = request
+              @activeIncomingRequests['dispatch-trip'] = null
             cb(response)
         )
       else
@@ -155,34 +427,70 @@ class SocketIOClient
       cb(@rejectedResponse)
     )
     socket.on('get-trip-status', (request, cb) =>
-      if $('#incoming-get-trip-status-content .response .response_body .json').html() == 'No active request'
+      if $('#incoming-get-trip-status-content .request .request_body .json').html() == 'No active request'
         acceptResponse = @rejectedResponse
         if request.id? and @lastUpdateByTripId.hasOwnProperty(request.id)
           acceptResponse = @lastUpdateByTripId[request.id]
-        @handleRequest('get-trip-status', request, acceptResponse, @rejectedResponse, (response) => cb(response))
+          if !acceptResponse.result?
+            acceptResponse.result = 'OK'
+            acceptResponse.result_code = 200
+        else
+          dispatchRequest = @acceptedTripsById[request.id]
+          if dispatchRequest?
+            position = if dispatchRequest? then dispatchRequest.pickup_location else null
+            acceptResponse = {
+              result: 'OK',
+              result_code: 200,
+              status: "accepted",
+              product: {
+                id: @products[0].client_id,
+                name: @products[0].name,
+                image_url: @products[0].image_url
+              },
+              eta: dispatchRequest.pickup_time,
+              driver: {
+                name: "Bob",
+                location: {
+                  lat: dispatchRequest.pickup_location.lat,
+                  lng: dispatchRequest.pickup_location.lng
+                }
+              }
+            }
+            @lastUpdateByTripId[request.id] = acceptResponse
+        @activeIncomingRequests['get-trip-status'] = request
+        @handleRequest('get-trip-status', request, acceptResponse, @rejectedResponse, (response) =>
+          @activeIncomingRequests['get-trip-status'] = null
+          if response.result_code == 200
+            @lastUpdateByTripId[request.id] = response
+          cb(response)
+        )
       else
         cb(@rejectedResponse)
     )
     socket.on('update-trip-status', (request, cb) =>
-      if $('#incoming-update-trip-status-content .response .response_body .json').html() == 'No active request'
-        @handleRequest('update-trip-status', request, @successfulResponse, @rejectedResponse, (response) => cb(response))
+      if $('#incoming-update-trip-status-content .request .request_body .json').html() == 'No active request'
+        @activeIncomingRequests['update-trip-status'] = request
+        @handleRequest('update-trip-status', request, @successfulResponse, @rejectedResponse, (response) =>
+          @activeIncomingRequests['update-trip-status'] = null
+          cb(response)
+        )
       else
         cb(@rejectedResponse)
     )
     socket.on('request-payment', (request, cb) =>
-      if $('#incoming-request-payment-content .response .response_body .json').html() == 'No active request'
+      if $('#incoming-request-payment-content .request .request_body .json').html() == 'No active request'
         @handleRequest('request-payment', request, @successfulResponse, @rejectedResponse, (response) => cb(response))
       else
         cb(@successfulResponse)
     )
     socket.on('accept-payment', (request, cb) =>
-      if $('#incoming-accept-payment-content .response .response_body .json').html() == 'No active request'
+      if $('#incoming-accept-payment-content .request .request_body .json').html() == 'No active request'
         @handleRequest('accept-payment', request, @successfulResponse, @rejectedResponse, (response) => cb(response))
       else
         cb(@successfulResponse)
     )
     socket.on('get-quote', (request, cb) =>
-      if $('#incoming-get-quote-content .response .response_body .json').html() == 'No active request'
+      if $('#incoming-get-quote-content .request .request_body .json').html() == 'No active request'
         acceptResponse = {
           result_code: 200
           result: 'OK'
@@ -203,67 +511,34 @@ class SocketIOClient
             duration: 300
           }]
         }
-        @handleRequest('get-quote', request, acceptResponse, @rejectedResponse, (response) => cb(response))
+        @activeIncomingRequests['get-quote'] = request
+        @handleRequest('get-quote', request, acceptResponse, @rejectedResponse, (response) =>
+          @activeIncomingRequests['get-quote'] = null
+          cb(response)
+        )
       else
         cb(@rejectedResponse)
     )
     socket.on('set-network-info', (request, cb) =>
-      if $('#incoming-set-network-content .response .response_body .json').html() == 'No active request'
+      if $('#incoming-set-network-content .request .request_body .json').html() == 'No active request'
         @handleRequest('set-network', request, @successfulResponse, @rejectedResponse, (response) => cb(response))
       else
         cb(@successfulResponse)
     )
     socket.on('get-network-info', (request, cb) =>
-      if $('#incoming-get-network-content .response .response_body .json').html() == 'No active request'
+      if $('#incoming-get-network-content .request .request_body .json').html() == 'No active request'
         @handleRequest('get-network', request, @rejectedResponse, @rejectedResponse, (response) => cb(response))
       else
         cb(@rejectedResponse)
     )
     socket.on('get-drivers-nearby', (request, cb) =>
-      if $('#incoming-get-drivers-content .response .response_body .json').html() == 'No active request'
+      if $('#incoming-get-drivers-content .request .request_body .json').html() == 'No active request'
         @handleRequest('get-drivers', request, @rejectedResponse, @rejectedResponse, (response) => cb(response))
       else
         cb(@rejectedResponse)
     )
 
 $('.developer.api').ready ->
-
-  reset()
-  tripthru = new TripThru($('#access_token').val())
-  baseUrl = tripthru.getBaseUrl()
-
-  if !window.socket?
-    window.socket = new SocketIOClient(baseUrl, $('#access_token').val(), $('#user_client_id').val())
-    tripthru.getNetworks((networks) =>
-      id = parseInt($('#user_id').val())
-      products = []
-      for network in networks
-        if id == network.id
-          window.socket.setProducts(network.products)
-          break
-    )
-  else
-    window.socket.connect()
-
-  if !window.swaggerUi?
-    window.swaggerUi = new SwaggerUi({
-      url: baseUrl + 'api-docs'
-      apiKey: $('#access_token').val()
-      socket: window.socket
-      dom_id: "swagger-ui-container"
-      supportHeaderParams: false
-      headers: { "Content-Type": "application/json"}
-      supportedSubmitMethods: ['get', 'post', 'put', 'options']
-      onComplete: (swaggerApi, swaggerUi) ->
-        if (console)
-          $('pre code').each((i, e) ->  hljs.highlightBlock(e) )
-      onFailure: (data) ->
-        if (console)
-          console.log("Unable to Load SwaggerUI")
-          console.log(data)
-      docExpansion: "none"
-    })
-  window.swaggerUi.load()
 
   $('#incoming-panel').affix({
     offset: {
@@ -298,7 +573,8 @@ $('.developer.api').ready ->
     mapTypeId: google.maps.MapTypeId.ROADMAP
   markers = {
     pickup: null,
-    dropoff: null
+    dropoff: null,
+    location: null
   }
   map = null
   resourceId = null
@@ -331,12 +607,48 @@ $('.developer.api').ready ->
       directionsService.route request, (result, status) =>
           directionsDisplay.setDirections result  if status is google.maps.DirectionsStatus.OK and directionsDisplay?
 
-  setZoom = () ->
-    if markers.pickup?
+  getCentrePointFromListOfCoordinates = (list) ->
+    minlat = null
+    minlng = null
+    maxlat = null
+    maxlng = null
+    for point in list
+      minlat = if !minlat? or point.lat < minlat then point.lat else minlat
+      maxlat = if !maxlat? or point.lat > maxlat then point.lat else maxlat
+      minlng = if !minlng? or point.lng < minlng then point.lng else minlng
+      maxlng = if !maxlng? or point.lng > maxlng then point.lng else maxlng
+
+    lat = maxlat - ((maxlat - minlat)/2)
+    lng = maxlng - ((maxlng - minlng)/2)
+    {lat: lat, lng: lng, maxlat: maxlat, maxlng: maxlng, minlat: minlat, minlng: minlng}
+
+  setZoom = (fitBounds) ->
+    if markers.pickup? and markers.dropoff? and fitBounds
+      pickup = markers.pickup.getPosition()
+      dropoff = markers.dropoff.getPosition()
+      locations = [
+        {
+          lat: pickup.lat()
+          lng: pickup.lng()
+        }
+        {
+          lat: dropoff.lat()
+          lng: dropoff.lng()
+        }
+      ]
+      geoCenter = getCentrePointFromListOfCoordinates(locations)
+      bounds = new google.maps.LatLngBounds()
+      bounds.extend(new google.maps.LatLng(geoCenter.maxlat, geoCenter.maxlng))
+      bounds.extend(new google.maps.LatLng(geoCenter.minlat, geoCenter.minlng))
+      map.fitBounds(bounds)
+    else if markers.pickup?
       map.setCenter markers.pickup.getPosition()
       map.setZoom defaultCleanMapZoom
     else if markers.dropoff?
       map.setCenter markers.dropoff.getPosition()
+      map.setZoom defaultCleanMapZoom
+    else if markers.driver?
+      map.setCenter markers.driver.getPosition()
       map.setZoom defaultCleanMapZoom
 
   updateMapMarkers = (resourceId) ->
@@ -406,29 +718,97 @@ $('.developer.api').ready ->
         })
         setZoom()
         drawRoute()
+    else if resourceId == 'tripstatus_update_trip_status_put_1_body'
+      driverLocationLat = parseFloat($("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lat']").val())
+      driverLocationLng = parseFloat($("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lng']").val())
+      pickupLocationLat = null
+      pickupLocationLng = null
+      dropoffLocationLat = null
+      dropoffLocationLng = null
+      tripId = $("#tripstatus_update_trip_status_put_1_body input[name='body.id']").val()
+      if tripId?
+        if window.socket.lastUpdateByTripId.hasOwnProperty(tripId)
+          lastRequest = window.socket.lastUpdateByTripId[tripId]
+          if lastRequest.driver? and lastRequest.driver.location?
+            driverLocationLat = lastRequest.driver.location.lat
+            driverLocationLng = lastRequest.driver.location.lng
+        if window.socket.acceptedTripsById.hasOwnProperty(tripId)
+          dispatchRequest = window.socket.acceptedTripsById[tripId]
+          pickupLocationLat = dispatchRequest.pickup_location.lat
+          pickupLocationLng = dispatchRequest.pickup_location.lng
+          dropoffLocationLat = dispatchRequest.dropoff_location.lat
+          dropoffLocationLng = dispatchRequest.dropoff_location.lng
+          if isNaN(driverLocationLat) or isNaN(driverLocationLng)
+            driverLocationLat = pickupLocationLat
+            driverLocationLng = pickupLocationLng
+        markers.pickup = new google.maps.Marker({
+          position: new google.maps.LatLng(pickupLocationLat, pickupLocationLng)
+          map: map
+          title: 'Pickup'
+          draggable: false
+          animation: google.maps.Animation.DROP
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+        })
+        markers.dropoff = new google.maps.Marker({
+          position: new google.maps.LatLng(dropoffLocationLat, dropoffLocationLng)
+          map: map
+          title: 'Dropoff'
+          draggable: false
+          animation: google.maps.Animation.DROP
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+        })
+        markers.driver = new google.maps.Marker({
+          position: new google.maps.LatLng(driverLocationLat, driverLocationLng)
+          map: map
+          title: 'Driver'
+          draggable: true
+          animation: google.maps.Animation.DROP
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
+        })
+        setZoom()
+        drawRoute()
+    else if resourceId == 'tripstatus_get_trip_status_get_0_body'
+      id = $("#tripstatus_get_trip_status_get_0_body input[name='body.id']").val()
+      if id? and id != '' and window.socket.connected
+        window.socket.emit('get-trip-status', { id: id }, (response) ->
+          if response? and response.driver? and response.driver.location?
+            locationLat = parseFloat(response.driver.location.lat)
+            locationLng = parseFloat(response.driver.location.lng)
+            if !isNaN(locationLat) and !isNaN(locationLng)
+              markers.driver = new google.maps.Marker({
+                position: new google.maps.LatLng(locationLat, locationLng)
+                map: map
+                title: 'Center'
+                draggable: false
+                animation: google.maps.Animation.DROP
+                icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
+              })
+              setZoom()
+        )
     else if resourceId == 'drivers_get_drivers_nearby_get_0_body'
       locationLat = parseFloat($("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val())
       locationLng = parseFloat($("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val())
-      if isNaN(pickupLocationLat) or isNaN(pickupLocationLng)
+
+      if isNaN(locationLat) or isNaN(locationLng)
         getUserPosition((position)->
-          markers.pickup = new google.maps.Marker({
+          markers.driver = new google.maps.Marker({
             position: new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
             map: map
             title: 'Center'
             draggable:true
             animation: google.maps.Animation.DROP
-            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+            icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
           })
+          setZoom()
         )
-        setZoom()
       else
-        markers.pickup = new google.maps.Marker({
+        markers.driver = new google.maps.Marker({
           position: new google.maps.LatLng(locationLat, locationLng)
           map: map
           title: 'Center'
           draggable:true
           animation: google.maps.Animation.DROP
-          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=taxi|FFFF00"
         })
         setZoom()
 
@@ -436,81 +816,155 @@ $('.developer.api').ready ->
     if resourceId == 'trip_dispatch_trip_post_0_body' or resourceId == 'quote_get_quote_get_0_body'
       if markers.pickup
         position = markers.pickup.getPosition()
-        $("#" + resourceId + " input[name='body.pickup_location.lat']").val(position.lat())
-        $("#" + resourceId + " input[name='body.pickup_location.lng']").val(position.lng())
+        $("#" + resourceId + " input[name='body.pickup_location.lat']").val(position.lat()).change()
+        $("#" + resourceId + " input[name='body.pickup_location.lng']").val(position.lng()).change()
       if markers.dropoff
         position = markers.dropoff.getPosition()
-        $("#" + resourceId + " input[name='body.dropoff_location.lat']").val(position.lat())
-        $("#" + resourceId + " input[name='body.dropoff_location.lng']").val(position.lng())
-    if resourceId == 'drivers_get_drivers_nearby_get_0_body'
-      if markers.pickup
-        position = markers.pickup.getPosition()
-        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val(position.lat())
-        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val(position.lng())
+        $("#" + resourceId + " input[name='body.dropoff_location.lat']").val(position.lat()).change()
+        $("#" + resourceId + " input[name='body.dropoff_location.lng']").val(position.lng()).change()
+    else if resourceId == 'drivers_get_drivers_nearby_get_0_body' or resourceId == ''
+      if markers.driver
+        position = markers.driver.getPosition()
+        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val(position.lat()).change()
+        $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val(position.lng()).change()
+    else if resourceId == 'tripstatus_update_trip_status_put_1_body'
+      if markers.driver
+        position = markers.driver.getPosition()
+        $("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lat']").val(position.lat()).change()
+        $("#tripstatus_update_trip_status_put_1_body input[name='body.driver.location.lng']").val(position.lng()).change()
     if markers.pickup
       markers.pickup.setMap(null)
       markers.pickup = null
     if markers.dropoff
       markers.dropoff.setMap(null)
       markers.dropoff = null
+    if markers.driver
+      markers.driver.setMap(null)
+      markers.driver = null
     directionsDisplay.setMap null
 
 
-  setTimeout(() =>
+  addCustomSwaggerFunctions = () =>
     $('#trip_dispatch_trip_post_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-dispatch-trip" name="auto-fill" value="Auto-fill" type="button">' +
-        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#map-dialog"/>')
+        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#request-map-dialog"/>')
+    $('#tripstatus_get_trip_status_get_0_content .sandbox .sandbox_header').append('<a href="#" class="document-location-selector" data-toggle="modal" data-target="#request-map-dialog"/>')
+    $('#tripstatus_update_trip_status_put_1_content .sandbox .sandbox_header').append('<a href="#" class="document-location-selector" data-toggle="modal" data-target="#request-map-dialog"/>')
     $('#quote_get_quote_get_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-get-quote" name="auto-fill" value="Auto-fill" type="button">' +
-        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#map-dialog"/>')
+        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#request-map-dialog"/>')
     $('#drivers_get_drivers_nearby_get_0_content .sandbox .sandbox_header').append('<input class="auto-fill" id="auto-fill-get-drivers" name="auto-fill" value="Auto-fill" type="button">' +
-        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#map-dialog"/>')
+        '<a href="#" class="document-location-selector" data-toggle="modal" data-target="#request-map-dialog"/>')
 
-    $('body').on('click', '#auto-fill-dispatch-trip', () =>
-        $("#trip_dispatch_trip_post_0_body input[name='body.id']").val(guid())
-        $("#trip_dispatch_trip_post_0_body input[name='body.customer.name']").val('John')
-        $("#trip_dispatch_trip_post_0_body input[name='body.passengers']").val('1')
-        $("#trip_dispatch_trip_post_0_body input[name='body.luggage']").val('0')
-        $("#trip_dispatch_trip_post_0_body input[name='body.pickup_time']").val(moment().utc().format())
+    $('body').off('click', '#auto-fill-dispatch-trip').on('click', '#auto-fill-dispatch-trip', () =>
+        $("#trip_dispatch_trip_post_0_body input[name='body.id']").val(guid()).change()
+        $("#trip_dispatch_trip_post_0_body input[name='body.customer.name']").val('John').change()
+        $("#trip_dispatch_trip_post_0_body input[name='body.passengers']").val('1').change()
+        $("#trip_dispatch_trip_post_0_body input[name='body.luggage']").val('0').change()
+        $("#trip_dispatch_trip_post_0_body input[name='body.pickup_time']").val(moment().utc().format()).change()
         if isNaN(parseFloat($("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lat']").val())) or
             isNaN(parseFloat($("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lng']").val()))
           getUserPosition((position)->
-            $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude)
-            $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude)
+            $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude).change()
+            $("#trip_dispatch_trip_post_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude).change()
           )
     )
-    $('body').on('click', '#auto-fill-get-quote', () =>
-      $("#quote_get_quote_get_0_body input[name='body.passengers']").val('1')
-      $("#quote_get_quote_get_0_body input[name='body.luggage']").val('0')
-      $("#quote_get_quote_get_0_body input[name='body.pickup_time']").val(moment().utc().format())
+    $('body').off('click', '#auto-fill-get-quote').on('click', '#auto-fill-get-quote', () =>
+      $("#quote_get_quote_get_0_body input[name='body.passengers']").val('1').change()
+      $("#quote_get_quote_get_0_body input[name='body.luggage']").val('0').change()
+      $("#quote_get_quote_get_0_body input[name='body.pickup_time']").val(moment().utc().format()).change()
       if isNaN(parseFloat($("#quote_get_quote_get_0_body input[name='body.pickup_location.lat']").val())) or
           isNaN(parseFloat($("#quote_get_quote_get_0_body input[name='body.pickup_location.lng']").val()))
         getUserPosition((position)->
-          $("#quote_get_quote_get_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude)
-          $("#quote_get_quote_get_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude)
+          $("#quote_get_quote_get_0_body input[name='body.pickup_location.lat']").val(position.coords.latitude).change()
+          $("#quote_get_quote_get_0_body input[name='body.pickup_location.lng']").val(position.coords.longitude).change()
         )
     )
-    $('body').on('click', '#auto-fill-get-drivers', () =>
+    $('body').off('click', '#auto-fill-get-drivers').on('click', '#auto-fill-get-drivers', () =>
       if isNaN(parseFloat($("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val())) or
           isNaN(parseFloat($("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val()))
         getUserPosition((position)->
-          $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val(position.coords.latitude)
-          $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val(position.coords.longitude)
+          $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lat']").val(position.coords.latitude).change()
+          $("#drivers_get_drivers_nearby_get_0_body input[name='body.location.lng']").val(position.coords.longitude).change()
         )
     )
-
-    $('.document-type').each(() ->
-      if($(this).html() == 'Location')
-        $(this).parent().append('')
-    )
-    $('body').on('click', '.document-location-selector', () ->
+    $('body').off('click', '.document-location-selector').on('click', '.document-location-selector', () ->
       resourceId = $(this).parent().parent().find('.object-inner').attr('id')
+      if resourceId == 'trip_dispatch_trip_post_0_body'
+        $('#request-map-dialog').find('.modal-header').removeClass('modal-header-hidden')
+      else
+        $('#request-map-dialog').find('.modal-header').addClass('modal-header-hidden')
     )
-    $('#map-dialog').on('shown.bs.modal', () ->
+    $('#request-map-dialog').off('shown.bs.modal').on('shown.bs.modal', () ->
       if !map?
-        map = if typeof google isnt "undefined" then new google.maps.Map(document.getElementById("map-canvas"), mapOptions) else null
+        map = if typeof google isnt "undefined" then new google.maps.Map(document.getElementById("request-map-canvas"), mapOptions) else null
       updateMapMarkers(resourceId)
     )
-    $('#map-dialog').on('hidden.bs.modal', () ->
+    $('#request-map-dialog').off('hidden.bs.modal').on('hidden.bs.modal', () ->
       updateLocationFieldsFromMarkers(resourceId)
     )
-  , 1000)
+    autocompleteGetLocation('#map-pickup-address-input', (location) ->
+      if markers.pickup? and location.location? and location.location.lat? and location.location.lng?
+        markers.pickup.setMap(null)
+        markers.pickup = new google.maps.Marker({
+          position: new google.maps.LatLng(location.location.lat, location.location.lng)
+          map: map
+          title: 'Pickup'
+          draggable: true
+          animation: google.maps.Animation.DROP
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=home|FFFF00"
+        })
+        setZoom(true)
+        drawRoute()
+    )
+    autocompleteGetLocation('#map-dropoff-address-input', (location) ->
+      if markers.dropoff? and location.location? and location.location.lat? and location.location.lng?
+        markers.dropoff.setMap(null)
+        markers.dropoff = new google.maps.Marker({
+          position: new google.maps.LatLng(location.location.lat, location.location.lng)
+          map: map
+          title: 'Dropoff'
+          draggable: true
+          animation: google.maps.Animation.DROP
+          icon: "http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=cafe|FFFF00"
+        })
+        setZoom(true)
+        drawRoute()
+    )
+
+  reset()
+  tripthru = new TripThru($('#access_token').val())
+  baseUrl = tripthru.getBaseUrl()
+
+  if !window.socket?
+    window.socket = new SocketIOClient(baseUrl, $('#access_token').val(), $('#user_client_id').val())
+    tripthru.getNetworks((networks) =>
+      id = parseInt($('#user_id').val())
+      products = []
+      for network in networks
+        if id == network.id
+          window.socket.setProducts(network.products)
+          break
+    )
+  else
+    window.socket.connect()
+
+  if !window.swaggerUi?
+    window.swaggerUi = new SwaggerUi({
+      url: baseUrl + 'api-docs'
+      apiKey: $('#access_token').val()
+      socket: window.socket
+      dom_id: "swagger-ui-container"
+      supportHeaderParams: false
+      headers: { "Content-Type": "application/json"}
+      supportedSubmitMethods: ['get', 'post', 'put', 'options']
+      onComplete: (swaggerApi, swaggerUi) =>
+        if (console)
+          $('pre code').each((i, e) ->  hljs.highlightBlock(e) )
+        addCustomSwaggerFunctions()
+      onFailure: (data) ->
+        if (console)
+          console.log("Unable to Load SwaggerUI")
+          console.log(data)
+      docExpansion: "none"
+    })
+  window.swaggerUi.load()
 

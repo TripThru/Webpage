@@ -919,96 +919,77 @@ class DashboardManager
 class InvoiceDisplay
 
   constructor: (@gateway, @dashboardManager, @containerId) ->
-    @gateway.getUserBalance({}, @initTable)
-
-  initTable: (userBalanceByMonth) =>
-    if userBalanceByMonth? and userBalanceByMonth.length > 0
-      balanceDate = moment(userBalanceByMonth[0].date_id)
-      filter = {
-        startDate: moment(balanceDate).startOf('month')
-        endDate: moment().endOf('day')
-        originatingNetworkId: $('#user_id').val()
-        interval: 'day'
-      }
-      @gateway.getInvoiceSummary(filter, (farmedOutInvoices) =>
-        filter.originatingNetworkId = null
-        filter.servicingNetworkId = $('#user_id').val()
-        @gateway.getInvoiceSummary(filter, (farmedInInvoices) =>
-            farmedOutInvoicesByDay = {}
-            farmedInInvoicesByDay = {}
-            for invoice in farmedOutInvoices
-              farmedOutInvoicesByDay[moment(invoice.date_id).format('YYYY-MM-DD')] = invoice
-            for invoice in farmedInInvoices
-              farmedInInvoicesByDay[moment(invoice.date_id).format('YYYY-MM-DD')] = invoice
-            tableData = @prepareTableData(userBalanceByMonth, farmedOutInvoicesByDay, farmedInInvoicesByDay)
-            @displayTable(tableData)
+    if $('#getUserRole').html() isnt 'admin' and $('#getUserRole').html() isnt 'demo'
+      @gateway.getTransactions({}, (transactions) =>
+        @gateway.getAggregatedTotal({}, (totals) =>
+          @gateway.getCurrenctBalance({}, (currentBalance) =>
+            @displayUserInvoice(transactions, totals, currentBalance)
+          )
         )
       )
+    else
+      @networksById = {}
+      startDate = moment().startOf('month')
+      endDate = moment().endOf('month')
+      @gateway.getTransactions({
+        startDate: startDate
+        endDate: endDate
+      }, @displayTransactions)
+      @gateway.getAggregatedDetail({
+        startDate: startDate,
+        endDate: endDate
+      }, @displayAggregatedDetail)
+      @gateway.getAggregatedTotal({
+        startDate: startDate,
+        endDate: endDate
+      }, @displayAggregatedTotal)
+      @gateway.getCurrencyRates({
+        startDate: startDate
+        endDate: endDate
+      }, @displayCurrencyRates)
 
-  prepareTableData: (userBalanceByMonth, farmedOutInvoicesByDay, farmedInInvoicesByDay) =>
-    invoicesByMonth = {}
-    totalBalanceStartOfMonth = 10000
-    for balance in userBalanceByMonth
-      balanceDate = moment(balance.date_id).startOf('day')
-      dateIndex = balanceDate.format('YYYY-MM-DD')
-      invoiceDate = balanceDate
-      balanceEndDate = moment(balanceDate).endOf('month').startOf('day')
-      balanceEndDate = if balanceEndDate.isAfter(moment()) then moment() else balanceEndDate
-      invoicesByMonth[dateIndex] = []
-      totalInvoice = {
-        type: ''
-        amount: 0
-        farmedOut: 0
+  displayUserInvoice: (transactions, totals, currentBalance) =>
+    entriesByMonth = {}
+    for transaction in transactions
+      date = moment(new Date(transaction.datetime)).startOf('month').format('YYYY-MM-DD')
+      if not entriesByMonth.hasOwnProperty(date)
+        entriesByMonth[date] = []
+      entriesByMonth[date].push({
+        date: moment(new Date(transaction.datetime))
+        type: transaction.transaction_type
+        amount: transaction.amount
         farmedIn: 0
+        farmedOut: 0
         tripthruFee: 0
-        availableBalance: totalBalanceStartOfMonth
-      }
-      invoice = {}
-      invoicesByMonth[dateIndex].push { type: 'Deposit', date: invoiceDate.format('YYYY-MM-DD'), amount: -10000, farmedIn: 0, farmedOut: 0, tripthruFee: 0, availableBalance: totalBalanceStartOfMonth }
-      while invoiceDate.isBefore(balanceEndDate) or invoiceDate.isSame(balanceEndDate)
-        invoice = {
-          farmedOut: if farmedOutInvoicesByDay[invoiceDate.format('YYYY-MM-DD')]? then farmedOutInvoicesByDay[invoiceDate.format('YYYY-MM-DD')].total else 0
-          farmedIn: if farmedInInvoicesByDay[invoiceDate.format('YYYY-MM-DD')]? then farmedInInvoicesByDay[invoiceDate.format('YYYY-MM-DD')].total else 0
-        }
-        if invoice.farmedOut > 0 or invoice.farmedIn > 0
-          invoice.type = 'Trip fare'
-          invoice.amount = invoice.farmedIn - invoice.farmedOut
-          invoice.tripthruFee = (invoice.farmedIn + invoice.farmedOut) * 0.01
-          invoice.amount += invoice.tripthruFee
-          while (totalBalanceStartOfMonth - invoice.amount) < 0
-            totalBalanceStartOfMonth += 10000
-            invoicesByMonth[dateIndex].push { type: 'Deposit', date: invoiceDate.format('YYYY-MM-DD'), amount: -10000, farmedIn: 0, farmedOut: 0, tripthruFee: 0, availableBalance: totalBalanceStartOfMonth }
-          totalBalanceStartOfMonth -= invoice.amount
-          invoice.availableBalance = totalBalanceStartOfMonth
-          invoice.date = invoiceDate.format('YYYY-MM-DD')
-          invoicesByMonth[dateIndex].push invoice
-          totalInvoice.amount += invoice.amount
-          totalInvoice.farmedOut += invoice.farmedOut
-          totalInvoice.farmedIn += invoice.farmedIn
-          totalInvoice.tripthruFee += invoice.tripthruFee
-        invoiceDate = invoiceDate.add(1, 'day')
-      totalInvoice.availableBalance = totalBalanceStartOfMonth
-      invoicesByMonth[dateIndex].push totalInvoice
+        available_balance: transaction.available_balance
+      })
+    for total in totals
+      date = moment(new Date(total.datetime)).startOf('month').format('YYYY-MM-DD')
+      if not entriesByMonth.hasOwnProperty(date)
+        entriesByMonth[date] = []
+      entriesByMonth[date].push({
+        date: moment(new Date(total.datetime))
+        type: 'Trip fare'
+        amount: total.farmed_out_amount - total.farmed_in_amount
+        farmedIn: total.farmed_in_amount
+        farmedOut: total.farmed_out_amount
+        tripthruFee: 0
+        available_balance: 0
+      })
+    @displayUserInvoiceTable(entriesByMonth)
 
-    return invoicesByMonth
-
-  formatNumber: (number) =>
-    number =  number.toFixed(2)
-    return if number < 0 then '- $' + Math.abs(number) else '$' + number
-
-  displayTable: (invoicesByMonth) =>
+  displayUserInvoiceTable: (invoicesByMonth) =>
     for date, invoice of invoicesByMonth
-      totalInvoice = invoice[invoice.length-1]
       startDate = moment(date).format('YYYY-MM-DD')
       endDate = moment(date).endOf('month').format('YYYY-MM-DD')
       monthRow = '<tr data-toggle="collapse" data-target="#' + date + '" class="accordion-toggle">
                       <td class="text-center" width="20%"> ' + startDate + ' to ' + endDate + ' </td>
-                      <td class="text-right" width="11.6%"> ' + totalInvoice.type + ' </td>
-                      <td class="text-right" width="11.6%"> ' + @formatNumber(totalInvoice.amount) + ' </td>
-                      <td class="text-right" width="11.6%"> ' + @formatNumber(totalInvoice.farmedIn) + ' </td>
-                      <td class="text-right" width="11.6%"> ' + @formatNumber(totalInvoice.farmedOut) + ' </td>
-                      <td class="text-right" width="11.6%"> ' + @formatNumber(totalInvoice.tripthruFee) + ' </td>
-                      <th class="text-right" width="11.6%"> ' + @formatNumber(totalInvoice.availableBalance) + ' </th>
+                      <td class="text-right" width="11.6%"></td>
+                      <td class="text-right" width="11.6%"></td>
+                      <td class="text-right" width="11.6%"></td>
+                      <td class="text-right" width="11.6%"></td>
+                      <td class="text-right" width="11.6%"></td>
+                      <th class="text-right" width="11.6%"></th>
                       <td class="text-center" width="10%"><img src="/assets/arrow.png"></a></td>
                     </tr>'
       innerRows = ' <tr>
@@ -1016,16 +997,16 @@ class InvoiceDisplay
                         <div class="accordion-body collapse" id="' + date + '">
                           <table class="table table-condensed table-striped table-hover">
                             <tbody>'
-      for i in [0..invoice.length-2]
-        id = 'd-' + invoice[i].date
+      for i in [0..invoice.length-1]
+        id = 'd-' + invoice[i].date.format('YYYY-MM-DD')
         innerRows +=          ' <tr>
-                                  <td class="text-right" width="20%">' + invoice[i].date + '</td>
+                                  <td class="text-right" width="20%">' + invoice[i].date.format('YYYY-MM-DD HH:mm') + '</td>
                                   <td class="text-right" width="11.6%"> ' + invoice[i].type + ' </td>
                                   <td class="text-right" width="11.6%"> ' + @formatNumber(invoice[i].amount) + ' </td>
                                   <td class="text-right" width="11.6%"> ' + @formatNumber(invoice[i].farmedIn) + ' </td>
                                   <td class="text-right" width="11.6%"> ' + @formatNumber(invoice[i].farmedOut) + ' </td>
                                   <td class="text-right" width="11.6%"> ' + @formatNumber(invoice[i].tripthruFee) + ' </td>
-                                  <th class="text-right" width="11.6%"> ' + @formatNumber(invoice[i].availableBalance) + ' </th>
+                                  <th class="text-right" width="11.6%"> ' + @formatNumber(invoice[i].available_balance) + ' </th>
                                   <td class="text-center" width="10%"><a href="#" id="' + id + '">See details</a></td>
                                 </tr>'
         do(id) =>
@@ -1038,7 +1019,65 @@ class InvoiceDisplay
                         </div>
                       </td>
                     </tr>'
-      $('#' + @containerId).append(monthRow + innerRows)
+      $('#invoice-summary tbody').append(monthRow + innerRows)
+
+  displayTransactions: (transactions) =>
+    rows = ''
+    for transaction in transactions
+      rows +=          ' <tr>
+                          <td class="text-center">' + transaction.user_client_id + '</td>
+                          <td class="text-center">' + transaction.datetime.split('T')[0] + '</td>
+                          <td class="text-center">' + transaction.transaction_type + '</td>
+                          <td class="text-center">' + transaction.currency_code + '</td>
+                          <td class="text-center">' + @formatNumber(transaction.amount) + '</td>
+                          <td class="text-center">' + @formatNumber(transaction.available_balance) + '</td>
+                        </tr>'
+    $('#transactions-table tbody').append(rows)
+
+  displayAggregatedDetail: (data) =>
+    rows = ''
+    for d in data
+      if d.user_client_id? and d.datetime? and d.is_farmed_in? and d.currency_code? and d.amount?
+        rows +=        ' <tr>
+                          <td class="text-center">' + d.user_client_id + '</td>
+                          <td class="text-center">' + d.datetime.split('T')[0] + '</td>
+                          <td class="text-center">' + (if d.is_farmed_in == 1 then 'Farmed In' else 'Farmed Out') + '</td>
+                          <td class="text-center">' + d.currency_code + '</td>
+                          <td class="text-center">' + @formatNumber(d.amount) + '</td>
+                        </tr>'
+    $('#aggregated-detail-table tbody').append(rows)
+
+  displayAggregatedTotal: (data) =>
+    rows = ''
+    for d in data
+      if d.user_client_id? and d.datetime? and d.currency_code? and d.farmed_in_amount? and d.farmed_out_amount?
+        rows +=          ' <tr>
+                          <td class="text-center">' + d.user_client_id + '</td>
+                          <td class="text-center">' + d.datetime.split('T')[0] + '</td>
+                          <td class="text-center">' + d.currency_code + '</td>
+                          <td class="text-center">' + @formatNumber(d.farmed_in_amount) + '</td>
+                          <td class="text-center">' + @formatNumber(d.farmed_out_amount) + '</td>
+                        </tr>'
+    $('#aggregated-total-table tbody').append(rows)
+
+  displayCurrencyRates: (currencyRates) =>
+    rows = ''
+    for rate in currencyRates
+      rows +=          ' <tr>
+                          <td class="text-center">' + rate.datetime.split('T')[0] + '</td>
+                          <td class="text-center">' + rate.buy_currency_code + '</td>
+                          <td class="text-center">' + rate.sell_currency_code + '</td>
+                          <td class="text-center">' + @formatNumber(rate.rate) + '</td>
+                        </tr>'
+    $('#currency-rates-table tbody').append(rows)
+
+
+  formatNumber: (number) =>
+    number =  number.toFixed(2)
+    return if number < 0 then '-' + Math.abs(number) else  number
+
+  displayInvoices: (transactions) =>
+
 
   switchToDashboard: (date) =>
     @dashboardManager.setDate(moment(date))

@@ -64,7 +64,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -98,7 +98,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -125,6 +125,7 @@
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
+                      <a href="#" class="request-location-preview disabled" data-target="#response-map-dialog"></a>
                     </div>
                     <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
@@ -132,7 +133,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -159,6 +160,7 @@
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
+                      <a href="#" class="request-location-preview disabled" data-target="#response-map-dialog"></a>
                     </div>
                     <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
@@ -166,7 +168,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -200,7 +202,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -227,6 +229,7 @@
                       <h4>Request Body</h4>
                       <a href="#" class="accept disabled">Accept</a>
                       <a href="#" class="reject disabled">Reject</a>
+                      <a href="#" class="request-location-preview disabled" data-target="#response-map-dialog"></a>
                     </div>
                     <div class="block request_body json_block_body json"><pre class="json">No active request</pre></div>
                   </div>
@@ -234,7 +237,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -268,7 +271,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -302,7 +305,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -336,7 +339,7 @@
                     <div class="response_header json_block_header">
                       <h4>Response Body</h4>
                     </div>
-                    <div class="block response_body json_block_body json"><pre class="json">No active request</pre></div>
+                    <div class="block response_body json"></div>
                   </div>
                 </div>
               </li>
@@ -346,11 +349,24 @@
       </div>
     </div>
   </div>
-  <div class="modal fade map-dialog" id="map-dialog" tabindex="-1" role="dialog" aria-labelledby="map-dialog-label" aria-hidden="true">
+  <div class="modal fade map-dialog" id="request-map-dialog" tabindex="-1" role="dialog" aria-labelledby="request-map-dialog-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <input type="text" class="ui-autocomplete-input" autocomplete="off" id="map-pickup-address-input" name="pickup" placeholder="Pickup address"/>
+          <input type="text" class="ui-autocomplete-input" autocomplete="off" id="map-dropoff-address-input" name="dropoff" placeholder="Destination address"/>
+        </div>
+        <div class="modal-body">
+          <div id="request-map-canvas"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade map-dialog" id="response-map-dialog" tabindex="-1" role="dialog" aria-labelledby="response-map-dialog-label" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body">
-          <div id="map-canvas"></div>
+          <div id="response-map-canvas"></div>
         </div>
       </div>
     </div>

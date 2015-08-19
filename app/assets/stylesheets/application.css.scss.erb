@@ -16,6 +16,9 @@
  *= require bootstrap-datetimepicker.min
  *= require flickerplate
  *= require morris
+ *= require jsoneditor.min
+ *= require jquery-ui-1.10.3.custom
+
  *= require_self
  */
 @import url('http://fonts.googleapis.com/css?family=Open+Sans:200,300,400,600');
@@ -416,4 +419,45 @@ body {
       margin-top: 14px;
     }
   }
+}
+
+.ui-widget-content{
+  background: none repeat scroll 0 0 #FFFFFF;
+  border: 1px solid #0087BC;
+  float: left;
+  margin: 37px 0 0;
+  padding: 0;
+  position: absolute;
+  width: 440px;
+  z-index: 1100;
+  border-radius: 0px;
+
+}
+.ui-widget-content li{
+  float: left;
+  list-style: none outside none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.ui-widget-content li a{
+  color: #424242;
+  display: inline-block;
+  float: left;
+  font-size: 13px;
+  overflow: hidden;
+  padding: 5px 2%;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 96%;
+  font-family: 'Open Sans',sans-serif;
+
+}
+
+.ui-widget-content li a:hover,.ui-widget-content li a.ui-state-focus,.ui-widget-content li a.ui-state-hover  {
+  background: none repeat scroll 0 0 #F8F8F8;
+  color: #424242;
+  border:none;
+  border-radius: 0px;
 }

@@ -6,6 +6,7 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="invoice-summary">
+        <% if roleUser == 'network' %>
         <table class="table table-bordered table-striped table-hover" id="invoice-summary-table">
           <thead>
             <tr>
@@ -20,9 +21,62 @@
             </tr>
           </thead>
           <tbody>
-
           </tbody>
         </table>
+        <% elsif roleUser == 'admin' %>
+          <table class="table table-bordered table-striped table-hover" id="transactions-table">
+            <thead>
+            <tr>
+              <th class="text-center">User</th>
+              <th class="text-center">Date</th>
+              <th class="text-center">Type</th>
+              <th class="text-center">Currency</th>
+              <th class="text-center">Amount</th>
+              <th class="text-center">Available balance</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+          <table class="table table-bordered table-striped table-hover" id="aggregated-total-table">
+            <thead>
+            <tr>
+              <th class="text-center">User</th>
+              <th class="text-center">Date</th>
+              <th class="text-center">Currency</th>
+              <th class="text-center">Farmed out</th>
+              <th class="text-center">Farmed in</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+          <table class="table table-bordered table-striped table-hover" id="aggregated-detail-table">
+            <thead>
+            <tr>
+              <th class="text-center">User</th>
+              <th class="text-center">Date</th>
+              <th class="text-center">Type</th>
+              <th class="text-center">Currency</th>
+              <th class="text-center">Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+          <table class="table table-bordered table-striped table-hover" id="currency-rates-table">
+            <thead>
+            <tr>
+              <th class="text-center">Date</th>
+              <th class="text-center">Buy currency</th>
+              <th class="text-center">Sell currency</th>
+              <th class="text-center">Rate</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        <% end %>
       </div>
       <div class="tab-pane" id="invoice-detail">
         <div id="trips-main-panel" class="col-md-12 col-sm-12 col-xs-12">

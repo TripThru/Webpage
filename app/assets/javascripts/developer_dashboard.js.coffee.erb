@@ -502,10 +502,11 @@ class ActivityLog
     @originatingNetworkLogo = null
     @servicingNetworkLogo = null
     @globalNetworkLogo = '<img alt="Networks" src="/assets/networks/all.png"/>'
-    @outgoingLogo = '<img alt="Networks" src="/assets/outgoing.png"/>'
-    @incomingLogo = '<img alt="Networks" src="/assets/incoming.png"/>'
-    @bidirectionalLogo = '<img alt="Networks" src="/assets/bidirectional.png"/>'
-    @findLogo = '<img alt="Networks" src="/assets/find.png"/>'
+    @outgoingLogo = '<img alt="Outgoing" src="/assets/outgoing.png"/>'
+    @incomingLogo = '<img alt="Incoming" src="/assets/incoming.png"/>'
+    @bidirectionalLogo = '<img alt="Bidirectional" src="/assets/bidirectional.png"/>'
+    @findLogo = '<img alt="Find" src="/assets/find.png"/>'
+    @moneyLogo = '<img alt="Payment" src="/assets/payment.png"/>'
 
   tripChanged: (trip) =>
     $('#' + @containerId).html('<%= image_tag('loading.gif') %>')
@@ -568,6 +569,8 @@ class ActivityLog
       directionIcon = @bidirectionalLogo
     else if log.type == 'quote'
       directionIcon = @findLogo
+    else if log.type == 'payment'
+      directionIcon = @moneyLogo
     else if log.origin == 'tripthru'
       directionIcon = @outgoingLogo
     else if log.destination == 'tripthru'
@@ -576,7 +579,7 @@ class ActivityLog
 
   getLogTag: (id, log) =>
     id =  id + 'parent-accordion'
-    request = if log.messages[0].json? then log.messages[0].json else {}
+    request = if log.messages[0].json? then log.messages[0].json else undefined
     response = if log.messages.length > 1 and log.messages[log.messages.length-1].json? then log.messages[log.messages.length-1].json else undefined
     logo = @getLogTagLogo(log)
     directionIcon = @getLogTagDirectionIcon(log)
@@ -589,7 +592,9 @@ class ActivityLog
                                     ' + logo + '
                                 </div>
                                 <div id="' + id + '-accordion" class="accordion-body collapse">
-                                    <div class="accordion-inner">
+                                    <div class="accordion-inner">'
+    if request?
+      logString += '
                                               <div class="accordion-group json-inner-log">
                                                   <div class="accordion-heading">
                                                       <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-request">
@@ -650,6 +655,14 @@ class ActivityLog
                                                             <pre><code class="language-javascript">' + FormatJSON(response) + '</code></pre>
                                                         </div>
                                                     </div>
+                                                </div>'
+    else if log.messages.length > 1 and log.messages[log.messages.length-1].text != ''
+      logString += '                            <div class="accordion-group simple-inner-log">
+                                                   <div class="accordion-heading">
+                                                       <a class="accordion-toggle" data-parent="#accordion" data-toggle="collapse" href="#' + id + '-accordion-' + i + '">
+                                                           ' + log.messages[log.messages.length-1].text + '
+                                                       </a>
+                                                   </div>
                                                 </div>'
     logString +=                        '</div>
                                     </div>
@@ -821,9 +834,6 @@ class ActiveTripsChart
     @chart.select(@statusIndex)
 
   updateChart: (total, statuses) =>
-    if @totalChart == total
-      return
-    @totalChart = total
     @chart.setData([
         {label: "New", value: statuses.new + statuses.queued}
         {label: "Accepted", value: statuses.accepted}
@@ -990,7 +1000,7 @@ class StatisticsDashboard
       else if stat.status == 'rejected'
         statuses.rejected += stat.count
       else if stat.status == 'cancelled'
-        statuses.cancelled += stats.count
+        statuses.cancelled += stat.count
     total = statuses.completed + statuses.rejected + statuses.cancelled
     @updateCounter(total)
     @updateTotalTrips(total, statuses)

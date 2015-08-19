@@ -66,6 +66,10 @@ class CreateUsers < ActiveRecord::Migration
       t.string :code
     end
 
+    create_table :currency_rates do |t|
+
+    end
+
     create_table :user_transactions do |t|
       t.references  :user
       t.reference   :user_transaction_types

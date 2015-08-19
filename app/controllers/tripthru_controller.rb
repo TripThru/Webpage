@@ -144,6 +144,115 @@ class TripthruController < ApplicationController
     end
   end
 
+  def current_balance
+    query = get_query_from_params(params)
+    id = if roleUser == 'network' then
+           userId
+         else
+           query[:origin_id] != nil ? query[:origin_id] : query[:service_id]
+         end
+    res = User.select(
+        'currency_codes.name as currency_code,
+         users.balance')
+    res = res.joins('left join currency_codes on currency_codes.id = users.currency_code_id')
+    res = res.where(:id => id)
+    respond_to do |format|
+      format.json { render text: res.to_json }
+    end
+  end
+
+  def user_transactions
+    query = get_query_from_params(params)
+    id = if roleUser == 'network' then
+           userId
+         else
+           query[:origin_id] != nil ? query[:origin_id] : query[:service_id]
+         end
+    date_field = "convert_tz(user_transactions.datetime, 'GMT', '#{query[:tz]}')"
+    res = UserTransaction.select(
+         "currency_codes.name as currency_code,
+          users.client_id as user_client_id,
+          user_transaction_types.name as transaction_type,
+          convert_tz(user_transactions.datetime, 'GMT', '#{query[:tz]}') as datetime,
+          user_transactions.amount,
+          user_transactions.available_balance
+          ")
+    res = res.joins('left join user_transaction_types on user_transactions.user_transaction_type_id = user_transaction_types.id')
+    res = res.joins('left join currency_codes on currency_codes.id = user_transactions.currency_code_id')
+    res = res.joins('left join users on user_transactions.user_id = users.id')
+    if query[:start_date] != nil and query[:end_date] != nil
+      res = res.where("#{date_field} BETWEEN '#{query[:start_date]}' AND '#{query[:end_date]}'")
+    end
+    if id != nil
+      res = res.where(:user_id => id)
+    end
+    respond_to do |format|
+      format.json { render text: res.to_json }
+    end
+  end
+
+  def aggregated_detail
+    query = get_query_from_params(params)
+    id = if roleUser == 'network' then userId else nil end
+    date_field = "convert_tz(aggregated_trip_payments_detailed_daily.datetime, 'GMT', '#{query[:tz]}')"
+    res = AggregatedTripPaymentsDetailedDaily.select(
+          "currency_codes.name as currency_code,
+           users.client_id as user_client_id,
+           convert_tz(aggregated_trip_payments_detailed_daily.datetime, 'GMT', '#{query[:tz]}') as datetime,
+           aggregated_trip_payments_detailed_daily.amount,
+           aggregated_trip_payments_detailed_daily.is_farmed_in
+          ")
+    res = res.joins('left join currency_codes on currency_codes.id = aggregated_trip_payments_detailed_daily.currency_code_id')
+    res = res.joins('left join users on aggregated_trip_payments_detailed_daily.user_id = users.id')
+    if query[:start_date] != nil and query[:end_date] != nil
+      res = res.where("#{date_field} BETWEEN '#{query[:start_date]}' AND '#{query[:end_date]}'")
+    end
+    if id != nil
+      res = res.where(:user_id => id)
+    end
+    respond_to do |format|
+      format.json { render text: res.to_json }
+    end
+  end
+
+  def aggregated_total
+    query = get_query_from_params(params)
+    id = if roleUser == 'network' then userId else nil end
+    date_field = "convert_tz(aggregated_trip_payments_total_daily.datetime, 'GMT', '#{query[:tz]}')"
+    res = AggregatedTripPaymentsTotalDaily.select(
+          "currency_codes.name as currency_code,
+           users.client_id as user_client_id,
+           convert_tz(aggregated_trip_payments_total_daily.datetime, 'GMT', '#{query[:tz]}') as datetime,
+           aggregated_trip_payments_total_daily.farmed_in_amount,
+           aggregated_trip_payments_total_daily.farmed_out_amount
+          ")
+    res = res.joins('left join currency_codes on currency_codes.id = aggregated_trip_payments_total_daily.currency_code_id')
+    res = res.joins('left join users on aggregated_trip_payments_total_daily.user_id = users.id')
+    if query[:start_date] != nil and query[:end_date] != nil
+      res = res.where("#{date_field} BETWEEN '#{query[:start_date]}' AND '#{query[:end_date]}'")
+    end
+    if id != nil
+      res = res.where(:user_id => id)
+    end
+    respond_to do |format|
+      format.json { render text: res.to_json }
+    end
+  end
+
+  def currency_rates
+    query = get_query_from_params(params)
+    date_field = "convert_tz(currency_rates.datetime, 'GMT', '#{query[:tz]}')"
+    res = CurrencyRates.select(
+        " currency_rates.*,
+          convert_tz(currency_rates.datetime, 'GMT', '#{query[:tz]}'),
+          (SELECT name FROM currency_codes WHERE id = currency_rates.buy_currency_code_id) as buy_currency_code,
+          (SELECT name FROM currency_codes WHERE id = currency_rates.sell_currency_code_id) as sell_currency_code")
+    res = res.where("#{date_field} BETWEEN '#{query[:start_date]}' AND '#{query[:end_date]}'")
+    respond_to do |format|
+      format.json { render text: res.to_json }
+    end
+  end
+
   def user_balance
     query = get_query_from_params(params)
     id = if roleUser == 'network' then
@@ -195,9 +304,9 @@ class TripthruController < ApplicationController
     if roleUser == 'network'
       res = res.where("user_id = '#{userId}' OR servicing_network_id = '#{userId}' ")
     end
-    locations = TripLocations.where(:trip_id => params[:id] != nil ? params[:id] : res[0].id)
     response = res[0]
     if response != nil
+      locations = TripLocations.where(:trip_id => params[:id] != nil ? params[:id] : res[0].id)
       response = response.attributes
       response[:location_updates] = locations
     end

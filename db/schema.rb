@@ -98,6 +98,13 @@ ActiveRecord::Schema.define(version: 20140511085515) do
     t.string  "code"
   end
 
+  create table "currency_rate", force: true do |t|
+    t.integer   "buy_currency_code_id"
+    t.integer   "sell_currency_code_id"
+    t.datetime  "datetime"
+    t.float     "amount"
+  end
+
   create table "user_transaction_types", force: true do |t|
     t.string  "name"
   end
